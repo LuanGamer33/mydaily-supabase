@@ -1,60 +1,45 @@
+// js/script.js
 const container = document.querySelector('.container');
 const registerBtn = document.querySelector('.register-btn');
 const loginBtn = document.querySelector('.login-btn');
 
-registerBtn.addEventListener('click', () => {
-    container.classList.add('active');
-});
+registerBtn.addEventListener('click', () => container.classList.add('active'));
+loginBtn.addEventListener('click', () => container.classList.remove('active'));
 
-loginBtn.addEventListener('click', () => {
+// Login social con Supabase
+async function loginWith(providerName) {
+  let provider;
+  if (providerName === 'google') provider = supabase.auth.signInWithOAuth({ provider: 'google' });
+  if (providerName === 'github') provider = supabase.auth.signInWithOAuth({ provider: 'github' });
+  // La redirección la gestiona Supabase → volverá a index.html
+}
+
+// Formulario clásico (email/pass) – DOM que ya tienes
+document.addEventListener('DOMContentLoaded', () => {
+  // Login
+  const loginForm = document.querySelector('.form-box.login form');
+  loginForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = loginForm.Correo.value.trim();
+    const pass = loginForm.pass.value.trim();
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+    if (error) return alert('Error: ' + error.message);
+    window.location.href = '../dashboard.html';
+  });
+
+  // Registro
+  const regForm = document.querySelector('.form-box.register form');
+  regForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = regForm.Correo.value.trim();
+    const pass = regForm.pass.value.trim();
+    const nombre = regForm.nombre.value.trim();
+    if (pass !== regForm.conf_pass.value.trim()) return alert('Las contraseñas no coinciden');
+    const { data, error } = await supabase.auth.signUp({ email, password: pass });
+    if (error) return alert('Error: ' + error.message);
+    // Opcional: actualizar perfil con nombre
+    await supabase.auth.updateUser({ data: { full_name: nombre } });
+    alert('Usuario creado – revisa tu correo');
     container.classList.remove('active');
-});
-
-function loginWith(providerName) {
-let provider;
-
-if (providerName === 'google') {
-    provider = new firebase.auth.GoogleAuthProvider();
-} else if (providerName === 'github') {
-    provider = new firebase.auth.GithubAuthProvider();
-} else {
-    return;
-}
-
-firebase.auth().signInWithPopup(provider)
-    .then((result) => {
-        const user = result.user;
-        const email = user.email;
-        const nombre = user.displayName || email.split('@')[0];
-        const firebase_uid = user.uid;
-
-        // Enviar datos al backend para sincronizar
-        return fetch("../php/sync_user.php", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, nombre, firebase_uid })
-        });
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.id_us) {
-            localStorage.setItem("id_us", data.id_us);
-            window.location.href = "../dashboard.html";
-        } else {
-            console.error("Error al sincronizar usuario:", data.msg);
-            alert("Error al sincronizar usuario con el servidor.");
-        }
-    })
-    .catch((error) => {
-        console.error("Error al iniciar sesión:", error);
-        alert("Error al iniciar sesión con " + providerName);
-    });
-}
-
-firebase.auth().onAuthStateChanged((user) => {
-if (user) {
-    console.log("Usuario autenticado:", user.email);
-} else {
-    console.log("No hay usuario autenticado");
-}
+  });
 });
