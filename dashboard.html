@@ -1,31 +1,72 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>MyDaily</title>
+    <meta charset="UTF-8"/>
+    <title>MyDaily – Dashboard</title>
     <link rel="stylesheet" href="css/styles.css"/>
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'/>
+    <link rel="icon" type="image/png" href="img/calendar.png"/>
 </head>
-
 <body>
-    <div class="dashboard">
-        <h1>¡Bienvenido a tu gestor de tareas!</h1>
+    <header>
+        <h1>MyDaily</h1>
         <p id="user-info"></p>
         <button onclick="logout()">Cerrar sesión</button>
-    </div>
-    <h2>Agregar Nota</h2>
-<input type="text" id="nota-nombre" placeholder="Título de la nota">
-<textarea id="nota-contenido" placeholder="Contenido"></textarea>
-<button onclick="guardarNota()">Guardar Nota</button>
-<h2>Tus Notas</h2>
-<div id="lista-notas"></div>
-<div id="resultado"></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabase.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<script src="js/firebase-config.js"></script>
-<script src="js/script_dashboard.js"></script>
+    </header>
+
+    <!-- NOTAS -->
+    <section>
+        <h2>Mis Notas</h2>
+        <form id="form-notas">
+            <input type="text" id="nota-nombre" placeholder="Título" required/>
+            <textarea id="nota-contenido" placeholder="Contenido" required></textarea>
+            <button type="submit">Guardar Nota</button>
+        </form>
+        <div id="lista-notas"></div>
+    </section>
+
+    <!-- LISTAS -->
+    <section>
+        <h2>Mis Listas</h2>
+        <form id="form-listas">
+            <input type="text" id="lista-nom" placeholder="Nombre" required/>
+            <textarea id="lista-cont" placeholder="Contenido" required></textarea>
+            <input type="number" id="lista-prior" placeholder="Prioridad" min="1" max="5" required/>
+            <button type="submit">Guardar Lista</button>
+        </form>
+        <div id="lista-listas"></div>
+    </section>
+
+    <!-- HÁBITOS -->
+    <section>
+        <h2>Mis Hábitos</h2>
+        <form id="form-habitos">
+            <input type="text" id="hab-nom" placeholder="Nombre" required/>
+            <input type="time" id="hab-hora" required/>
+            <input type="number" id="hab-prior" placeholder="Prioridad" min="1" max="5" required/>
+            <textarea id="hab-descr" placeholder="Descripción" required></textarea>
+            <button type="submit">Guardar Hábito</button>
+        </form>
+        <div id="lista-habitos"></div>
+    </section>
+
+    <!-- EVENTOS + AGENDA -->
+    <section>
+        <h2>Calendario / Eventos</h2>
+        <form id="form-eventos">
+            <input type="text" id="evt-nom" placeholder="Nombre" required/>
+            <textarea id="evt-descr" placeholder="Descripción" required></textarea>
+            <input type="date" id="evt-fecha" required/>
+            <input type="text" id="evt-lugar" placeholder="Lugar" required/>
+            <input type="number" id="evt-prior" placeholder="Prioridad" min="1" max="5" required/>
+            <label>Hora inicio</label><input type="time" id="evt-hora-i" required/>
+            <label>Hora fin</label><input type="time" id="evt-hora-f" required/>
+            <button type="submit">Guardar Evento</button>
+        </form>
+        <div id="lista-eventos"></div>
+    </section>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/script_dashboard.js" defer></script>
+    <script src="js/funciones.js" defer></script>
 </body>
 </html>

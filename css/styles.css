@@ -62,6 +62,20 @@ form {
     width: 100%;
 }
 
+section { margin: 2rem 0; }
+.nota-card, .lista-card, .habito-card, .evento-card {
+    border: 1px solid #ccc;
+    padding: 1rem;
+    margin: .5rem 0;
+    border-radius: 6px;
+}
+form input, form textarea, form button {
+    display: block;
+    margin: .5rem 0;
+    width: 100%;
+    max-width: 400px;
+}
+
 .container h2 {
     font-size: 27px;
     margin: -10px 0 10px 0;
