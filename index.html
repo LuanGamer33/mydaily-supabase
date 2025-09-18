@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset=" UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyDaily - Entrar o registrarse</title>
+    <link rel="icon" type="image/png" href="img/calendar.png">
+    <link rel="stylesheet" href="css/styles.css">
+    <link href='https://cdn.boxicons.com/fonts/basic/boxicons.min.css' rel='stylesheet' href="css/styles.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet' href="css/styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="form-box login">
+            <form action="php/login.php" method="POST">
+                <h2>Iniciar Sesion</h2>
+                <div class="input-box">
+                    <input type="text" name="Correo" placeholder="Correo" required>
+                    <i class='bx bx-envelope'></i>
+                </div>
+                <div class="input-box">
+                    <input type="password" name="pass" placeholder="Contraseña" required>
+                    <i class='bx bxs-lock'></i>
+                </div>
+                <div class="forgot-link">
+                    <a href="#">¿olvidaste tu contraseña?</a>
+                </div>
+                <button type="submit" class="btn">Ingresar</button>
+                <p>o ingresar con redes sociales</p>
+                <div class="social-icons">
+                    <a href="#" onclick="loginWith('google'); return false;"><i class='bx bxl-google'></i></a>
+                    <a href="#" onclick="loginWith('github'); return false;"><i class='bx bxl-github'></i></a>
+                </div>
+            </form>
+        </div>
+
+        <div class="form-box register">
+            <form action="php/register.php" method="POST">
+                <h2>Registrar</h2>
+                <div class="reg">
+                    <div class="inb">
+                        <input type="text" name="nombre" placeholder="Nombre" required>
+                    </div>
+                    <div class="inb">
+                        <input type="text"
+                        name="apellido" placeholder="Apellido" required>
+                    </div>
+                </div>
+                <div class="reg">
+                    <div class="inb">
+                        <input type="date"
+                        name="fn" required>
+                    </div>
+                    <div class="inb">
+                        <input type="text" name="sexo" placeholder="Sexo" required>
+                    </div>
+                </div>
+                <div class="complete">
+                    <input type="text" name="Correo" placeholder="Correo" required>
+                </div>
+                <div class="complete">
+                    <input type="text" name="username" placeholder="Nombre de Usuario" required>
+                </div>
+                <div class="reg">
+                    <div class="inb">
+                        <input type="password" name="pass" placeholder="Contraseña" required>
+                    </div>
+                    <div class="inb">
+                        <input type="password" name="conf_pass" placeholder="confirme Contraseña" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">Registrarse</button>
+                <p>o ingresar con redes sociales</p>
+                <div class="social-icons">
+                    <a href="#" onclick="loginWith('google'); return false;"><i class='bx bxl-google'></i></a>
+                    <a href="#" onclick="loginWith('github'); return false;"><i class='bx bxl-github'></i></a>
+                </div>
+            </form>
+        </div>
+
+        <div class="toggle-box">
+            <div class="toggle-panel toggle-left">
+                <h1>Gestor de tareas</h1>
+                <br>
+                <h2 class="h2">Bienvenido a MyDaily su gestor de tareas personal</h2>
+                <p>¿No tienes una cuenta?</p>
+                <button class="btn register-btn">Registrarse</button>
+            </div>
+            <div class="toggle-panel toggle-right">
+                <h2>Volver al Inicio!</h2>
+                <p>¿Ya tienes una cuenta?</p>
+                <button class="btn login-btn">Ingresar</button>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/script.js"></script>
+</body>

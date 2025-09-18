@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>MyDaily</title>
+    <link rel="stylesheet" href="css/styles.css"/>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'/>
+</head>
+
+<body>
+    <div class="dashboard">
+        <h1>¡Bienvenido a tu gestor de tareas!</h1>
+        <p id="user-info"></p>
+        <button onclick="logout()">Cerrar sesión</button>
+    </div>
+    <h2>Agregar Nota</h2>
+<input type="text" id="nota-nombre" placeholder="Título de la nota">
+<textarea id="nota-contenido" placeholder="Contenido"></textarea>
+<button onclick="guardarNota()">Guardar Nota</button>
+<h2>Tus Notas</h2>
+<div id="lista-notas"></div>
+<div id="resultado"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/script_dashboard.js"></script>
+</body>
+</html>
