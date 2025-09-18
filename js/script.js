@@ -9,11 +9,11 @@ loginBtn.addEventListener('click', () => container.classList.remove('active'));
 // Login social con Supabase
 async function loginWith(providerName) {
   if (providerName === 'google') {
-    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/MyDaily/dashboard.html'
+    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/dashboard.html'
     } });
   } else if (providerName === 'github') {
     await supabase.auth.signInWithOAuth({ provider: 'github', options: {
-    redirectTo: window.location.origin + '/MyDaily/dashboard.html'
+    redirectTo: window.location.origin + '/dashboard.html'
     } });
   }
   // La redirección la gestiona Supabase → volverá a index.html
@@ -47,4 +47,5 @@ document.addEventListener('DOMContentLoaded', () => {
     alert('Usuario creado – revisa tu correo');
     container.classList.remove('active');
   });
+
 });
