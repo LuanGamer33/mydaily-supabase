@@ -13,6 +13,27 @@
         <button onclick="logout()">Cerrar sesión</button>
     </header>
 
+    <!-- CALENDARIO -->
+    <section class="calendario">
+        <h2>Hábitos Diarios</h2>
+        <div class="cal-header">
+            <button onclick="cambiarMes(-1)">‹</button>
+            <span id="mes-actual">Septiembre 2025</span>
+            <button onclick="cambiarMes(1)">›</button>
+        </div>
+        <div class="cal-dias">
+            <div class="dia-nombre">Dom</div>
+            <div class="dia-nombre">Lun</div>
+            <div class="dia-nombre">Mar</div>
+            <div class="dia-nombre">Mié</div>
+            <div class="dia-nombre">Jue</div>
+            <div class="dia-nombre">Vie</div>
+            <div class="dia-nombre">Sáb</div>
+        </div>
+        <div class="cal-grid" id="cal-grid">
+        <!-- Los días se generarán con JS -->
+        </div>
+    </section>
     <!-- NOTAS -->
     <section>
         <h2>Mis Notas</h2>

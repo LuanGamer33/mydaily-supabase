@@ -8,9 +8,11 @@ loginBtn.addEventListener('click', () => container.classList.remove('active'));
 
 // Login social con Supabase
 async function loginWith(providerName) {
-  let provider;
-  if (providerName === 'google') provider = supabase.auth.signInWithOAuth({ provider: 'google' });
-  if (providerName === 'github') provider = supabase.auth.signInWithOAuth({ provider: 'github' });
+  if (providerName === 'google') {
+    await supabase.auth.signInWithOAuth({ provider: 'google' });
+  } else if (providerName === 'github') {
+    await supabase.auth.signInWithOAuth({ provider: 'github' });
+  }
   // La redirección la gestiona Supabase → volverá a index.html
 }
 

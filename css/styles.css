@@ -62,19 +62,64 @@ form {
     width: 100%;
 }
 
-section { margin: 2rem 0; }
-.nota-card, .lista-card, .habito-card, .evento-card {
-    border: 1px solid #ccc;
-    padding: 1rem;
-    margin: .5rem 0;
+/* Calendario */
+.calendario {
+    margin: 2rem 1rem;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+}
+
+.cal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.cal-header button {
+    background: cadetblue;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
     border-radius: 6px;
+    cursor: pointer;
 }
-form input, form textarea, form button {
-    display: block;
-    margin: .5rem 0;
-    width: 100%;
-    max-width: 400px;
+
+.cal-dias,
+.cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
 }
+
+.dia-nombre {
+    font-weight: bold;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.cal-grid .dia {
+    padding: 0.75rem;
+    background: #f5f5f5;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.cal-grid .dia:hover {
+    background: #ddd;
+}
+
+.cal-grid .dia.hoy {
+    background: cadetblue;
+    color: white;
+    font-weight: bold;
+}
+
+/**/
 
 .container h2 {
     font-size: 27px;

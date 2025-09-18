@@ -148,3 +148,67 @@ window.addEventListener('DOMContentLoaded', () => {
     cargarHabitos();
     cargarEventos();
 });
+
+let mesActual = new Date().getMonth();
+let anoActual = new Date().getFullYear();
+
+function generarCalendario(mes, ano) {
+    const grid = document.getElementById('cal-grid');
+    grid.innerHTML = '';
+
+    const primerDia = new Date(ano, mes, 1).getDay();
+    const diasEnMes = new Date(ano, mes + 1, 0).getDate();
+
+  // Días vacíos al inicio
+    for (let i = 0; i < primerDia; i++) {
+        const vacio = document.createElement('div');
+        grid.appendChild(vacio);
+    }
+
+  // Días del mes
+    for (let dia = 1; dia <= diasEnMes; dia++) {
+    const div = document.createElement('div');
+    div.classList.add('dia');
+    div.textContent = dia;
+
+    // Marcar hoy
+    const hoy = new Date();
+    if (
+        dia === hoy.getDate() &&
+        mes === hoy.getMonth() &&
+        ano === hoy.getFullYear()
+    ) {
+        div.classList.add('hoy');
+    }
+
+        grid.appendChild(div);
+    }
+
+    // Actualizar título
+    const meses = [
+        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    document.getElementById('mes-actual').textContent = `${meses[mes]} ${ano}`;
+}
+
+function cambiarMes(direccion) {
+    mesActual += direccion;
+    if (mesActual > 11) {
+        mesActual = 0;
+        anoActual++;
+    } else if (mesActual < 0) {
+        mesActual = 11;
+        anoActual--;
+    }
+    generarCalendario(mesActual, anoActual);
+}
+
+// Inicializar
+window.addEventListener('DOMContentLoaded', () => {
+    generarCalendario(mesActual, anoActual);
+    cargarNotas();
+    cargarListas();
+    cargarHabitos();
+    cargarEventos();
+});
