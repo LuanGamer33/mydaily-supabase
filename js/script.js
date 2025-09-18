@@ -12,8 +12,7 @@ async function loginWith(providerName) {
     await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/dashboard.html'
     } });
   } else if (providerName === 'github') {
-    await supabase.auth.signInWithOAuth({ provider: 'github', options: {
-    redirectTo: window.location.origin + '/dashboard.html'
+    await supabase.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: window.location.origin + '/dashboard.html'
     } });
   }
   // La redirección la gestiona Supabase → volverá a index.html
@@ -49,3 +48,4 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 });
+
