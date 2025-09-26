@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pass = loginForm.pass.value.trim();
     const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
     if (error) return alert('Error: ' + error.message);
-    window.location.href = '../dashboard.html';
+    window.location.href = 'dashboard.html';
   });
 
   // Registro

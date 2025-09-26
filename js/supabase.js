@@ -189,3 +189,23 @@ async function listarEventos() {
     return data;
 }
 
+async function insertarActividad(titulo, descripcion, fecha, hora, prioridad, categoria) {
+    const user = await getUser();
+    if (!user) return alert('Usuario no autenticado');
+    
+    const { error } = await supabase
+        .from('actividades')
+        .insert([{
+            titulo: titulo,
+            descripcion: descripcion,
+            fecha: fecha,
+            hora: hora,
+            prioridad: prioridad,
+            categoria: categoria,
+            completada: false,
+            user_id: user.id
+        }]);
+    
+    if (error) return alert('Error al guardar actividad: ' + error.message);
+    return true;
+}

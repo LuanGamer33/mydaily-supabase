@@ -1,93 +1,347 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8"/>
-    <title>MyDaily – Dashboard</title>
-    <link rel="stylesheet" href="css/styles.css"/>
-    <link rel="icon" type="image/png" href="img/calendar.png"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyDaily - Panel Principal</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="img/Carpincho de pie sobre un parche de hierba.png" rel="icon">
 </head>
 <body>
-    <header>
-        <h1>MyDaily</h1>
-        <p id="user-info"></p>
-        <button onclick="logout()">Cerrar sesión</button>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <img src="img/logo_capybara.gif" class="logo">
+                <h1>MyDaily</h1>
+            </div>
+        </div>
     </header>
 
-    <!-- CALENDARIO -->
-    <section class="calendario">
-        <h2>Hábitos Diarios</h2>
-        <div class="cal-header">
-            <button onclick="cambiarMes(-1)">‹</button>
-            <span id="mes-actual">Septiembre 2025</span>
-            <button onclick="cambiarMes(1)">›</button>
-        </div>
-        <div class="cal-dias">
-            <div class="dia-nombre">Dom</div>
-            <div class="dia-nombre">Lun</div>
-            <div class="dia-nombre">Mar</div>
-            <div class="dia-nombre">Mié</div>
-            <div class="dia-nombre">Jue</div>
-            <div class="dia-nombre">Vie</div>
-            <div class="dia-nombre">Sáb</div>
-        </div>
-        <div class="cal-grid" id="cal-grid">
-        <!-- Los días se generarán con JS -->
-        </div>
-    </section>
-    <!-- NOTAS -->
-    <section>
-        <h2>Mis Notas</h2>
-        <form id="form-notas">
-            <input type="text" id="nota-nombre" placeholder="Título" required/>
-            <textarea id="nota-contenido" placeholder="Contenido" required></textarea>
-            <button type="submit">Guardar Nota</button>
-        </form>
-        <div id="lista-notas"></div>
-    </section>
+    <!-- Container Principal -->
+    <div class="main-container">
+        <!-- Sidebar Izquierdo -->
+        <aside class="sidebar">
+            <!-- Información de Usuario -->
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <span class="username">Usuario Demo</span>
+            </div>
 
-    <!-- LISTAS -->
-    <section>
-        <h2>Mis Listas</h2>
-        <form id="form-listas">
-            <input type="text" id="lista-nom" placeholder="Nombre" required/>
-            <textarea id="lista-cont" placeholder="Contenido" required></textarea>
-            <input type="number" id="lista-prior" placeholder="Prioridad" min="1" max="5" required/>
-            <button type="submit">Guardar Lista</button>
-        </form>
-        <div id="lista-listas"></div>
-    </section>
+            <!-- Navegación -->
+            <nav class="nav-menu">
+                <ul>
+                    <li><a href="dashboard.html" class="nav-item active"><i class="fas fa-tachometer-alt"></i> Panel Principal</a></li>
+                    <li><a href="habits.html" class="nav-item"><i class="fas fa-check-circle"></i> Hábitos Diarios</a></li>
+                    <li><a href="events.html" class="nav-item"><i class="fas fa-calendar-alt"></i> Eventos</a></li>
+                    <li><a href="notes.html" class="nav-item"><i class="fas fa-sticky-note"></i> Notas</a></li>
+                    <li><a href="activities.html" class="nav-item"><i class="fas fa-tasks"></i> Actividades</a></li>
+                    <li><a href="settings.html" class="nav-item"><i class="fas fa-cog"></i> Configuraciones</a></li>
+                </ul>
+            </nav>
 
-    <!-- HÁBITOS -->
-    <section>
-        <h2>Mis Hábitos</h2>
-        <form id="form-habitos">
-            <input type="text" id="hab-nom" placeholder="Nombre" required/>
-            <input type="time" id="hab-hora" required/>
-            <input type="number" id="hab-prior" placeholder="Prioridad" min="1" max="5" required/>
-            <textarea id="hab-descr" placeholder="Descripción" required></textarea>
-            <button type="submit">Guardar Hábito</button>
-        </form>
-        <div id="lista-habitos"></div>
-    </section>
+            <!-- Botón Cerrar Sesión -->
+            <div class="logout-section">
+                <button class="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
+            </div>
+        </aside>
 
-    <!-- EVENTOS + AGENDA -->
-    <section>
-        <h2>Calendario / Eventos</h2>
-        <form id="form-eventos">
-            <input type="text" id="evt-nom" placeholder="Nombre" required/>
-            <textarea id="evt-descr" placeholder="Descripción" required></textarea>
-            <input type="date" id="evt-fecha" required/>
-            <input type="text" id="evt-lugar" placeholder="Lugar" required/>
-            <input type="number" id="evt-prior" placeholder="Prioridad" min="1" max="5" required/>
-            <label>Hora inicio</label><input type="time" id="evt-hora-i" required/>
-            <label>Hora fin</label><input type="time" id="evt-hora-f" required/>
-            <button type="submit">Guardar Evento</button>
-        </form>
-        <div id="lista-eventos"></div>
-    </section>
+        <!-- Contenido Principal -->
+        <main class="main-content">
+            <!-- Decoración Superior -->
+            <div class="top-decoration">
+                <div class="user-shortcut">
+                    <i class="fas fa-user"></i>
+                    <span>Acceso rápido al perfil</span>
+                </div>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div class="dashboard-section active">
+                <div class="dashboard-grid">
+                    <!-- Calendario -->
+                    <div class="calendar-section">
+                        <div class="section-header">
+                            <h3 id="current-month"></h3>
+                        </div>
+                        <div class="calendar-grid">
+                            <div class="calendar-header">
+                                <span>D</span><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span>
+                            </div>
+                            <div class="calendar-body" id="calendar-body">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Secciones Preview -->
+                    <div class="preview-sections">
+                        <!-- Notas Preview -->
+                        <div class="preview-card">
+                            <div class="card-header">
+                                <h4>NOTAS</h4>
+                                <button class="add-btn" onclick="openNoteModal()">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div class="card-content">
+                                <div class="preview-item" onclick="window.location.href='notes.html'">Mi primera nota</div>
+                                <div class="preview-item" onclick="window.location.href='notes.html'">Ideas importantes</div>
+                                <div class="preview-item" onclick="window.location.href='notes.html'">Lista de compras</div>
+                            </div>
+                        </div>
+
+                        <!-- Hábitos Diarios Preview -->
+                        <div class="preview-card">
+                            <div class="card-header">
+                                <h4>HÁBITOS DIARIOS</h4>
+                                <button class="add-btn" onclick="openHabitModal()">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div class="card-content">
+                                <div class="preview-item" onclick="window.location.href='habits.html'">Ejercicio matutino</div>
+                                <div class="preview-item" onclick="window.location.href='habits.html'">Leer 30 minutos</div>
+                                <div class="preview-item" onclick="window.location.href='habits.html'">Meditar</div>
+                            </div>
+                        </div>
+
+                        <!-- Actividades Preview -->
+                        <div class="preview-card">
+                            <div class="card-header">
+                                <h4>ACTIVIDADES</h4>
+                                <button class="add-btn" onclick="openActivityModal()">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div class="card-content">
+                                <div class="preview-item" onclick="window.location.href='activities.html'">Reunión de trabajo - 15/08</div>
+                                <div class="preview-item" onclick="window.location.href='activities.html'">Dentista - 20/08</div>
+                                <div class="preview-item" onclick="window.location.href='activities.html'">Cumpleaños María - 25/08</div>
+                            </div>
+                        </div>
+
+                        <!-- Eventos Preview -->
+                        <div class="preview-card">
+                            <div class="card-header">
+                                <h4>EVENTOS</h4>
+                                <button class="add-btn" onclick="openEventModal()">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div class="card-content">
+                                <div class="preview-item" onclick="window.location.href='events.html'">Conferencia Tech - 18/08</div>
+                                <div class="preview-item" onclick="window.location.href='events.html'">Concierto - 22/08</div>
+                                <div class="preview-item" onclick="window.location.href='events.html'">Viaje familiar - 30/08</div>
+                            </div>
+                        </div>
+
+                        <!-- Inspiración Diaria -->
+                        <div class="preview-card inspiration-card">
+                            <div class="card-header">
+                                <h4>INSPIRACIÓN DIARIA</h4>
+                            </div>
+                            <div class="card-content inspiration-content">
+                                <p class="inspiration-text" id="inspiration-message">El éxito es la suma de pequeños esfuerzos repetidos día tras día.</p>
+                                <small class="inspiration-time" id="inspiration-time">Actualizado: 09:30 AM</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modales para añadir desde el dashboard -->
+    <!-- Modal para notas -->
+    <div class="modal" id="note-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nueva Nota</h3>
+                <button class="close-btn" onclick="closeModal('note-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="note-form">
+                    <div class="form-field">
+                        <label>Título de la Nota</label>
+                        <input type="text" name="title" required placeholder="Título de tu nota">
+                    </div>
+                    <div class="form-field">
+                        <label>Contenido</label>
+                        <textarea name="content" rows="8" required placeholder="Escribe aquí el contenido de tu nota..."></textarea>
+                    </div>
+                    <div class="form-field">
+                        <label>
+                            <input type="checkbox" name="favorite"> Marcar como favorita
+                        </label>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" onclick="closeModal('note-modal')">Cancelar</button>
+                        <button type="submit">Guardar Nota</button>
+                    </div>
+                    <div class="form-field">
+                        <label>Imagen de la Nota</label>
+                        <input type="file" name="image" accept="image/*">
+                    </div>
+                    <div class="form-field">
+                        <label>Estado de Ánimo</label>
+                        <select name="mood">
+                            <option value="sun"><i class="fas fa-sun"></i> Soleado</option>
+                            <option value="cloud"><i class="fas fa-cloud"></i> Nublado</option>
+                            <option value="rain"><i class="fas fa-cloud-rain"></i> Lluvioso</option>
+                            <option value="storm"><i class="fas fa-bolt"></i> Tormenta</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para eventos -->
+    <div class="modal" id="event-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nuevo Evento</h3>
+                <button class="close-btn" onclick="closeModal('event-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="event-form">
+                    <div class="form-field">
+                        <label>Título del Evento</label>
+                        <input type="text" name="title" required placeholder="Nombre del evento">
+                    </div>
+                    <div class="form-field">
+                        <label>Descripción</label>
+                        <textarea name="description" rows="3" placeholder="Describe el evento..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label>Fecha</label>
+                            <input type="date" name="date" required>
+                        </div>
+                        <div class="form-field">
+                            <label>Hora</label>
+                            <input type="time" name="time">
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label>Ubicación</label>
+                        <input type="text" name="location" placeholder="Lugar del evento">
+                    </div>
+                    <div class="form-field">
+                        <label>Categoría</label>
+                        <select name="category">
+                            <option value="personal">Personal</option>
+                            <option value="work">Trabajo</option>
+                            <option value="tech">Tecnología</option>
+                            <option value="music">Música</option>
+                            <option value="sport">Deporte</option>
+                            <option value="education">Educación</option>
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" onclick="closeModal('event-modal')">Cancelar</button>
+                        <button type="submit">Guardar Evento</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para actividades -->
+    <div class="modal" id="activity-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nueva Actividad</h3>
+                <button class="close-btn" onclick="closeModal('activity-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="activity-form">
+                    <div class="form-field">
+                        <label>Título de la Actividad</label>
+                        <input type="text" name="title" required placeholder="¿Qué necesitas hacer?">
+                    </div>
+                    <div class="form-field">
+                        <label>Descripción</label>
+                        <textarea name="description" rows="3" placeholder="Detalles adicionales..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label>Fecha</label>
+                            <input type="date" name="date" required>
+                        </div>
+                        <div class="form-field">
+                            <label>Hora</label>
+                            <input type="time" name="time">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label>Prioridad</label>
+                            <select name="priority">
+                                <option value="low">Baja</option>
+                                <option value="medium" selected>Media</option>
+                                <option value="high">Alta</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label>Categoría</label>
+                            <select name="category">
+                                <option value="personal">Personal</option>
+                                <option value="work">Trabajo</option>
+                                <option value="health">Salud</option>
+                                <option value="administrative">Administrativa</option>
+                                <option value="education">Educación</option>
+                                <option value="other">Otro</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" onclick="closeModal('activity-modal')">Cancelar</button>
+                        <button type="submit">Guardar Actividad</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para hábitos -->
+    <div class="modal" id="habit-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nuevo Hábito</h3>
+                <button class="close-btn" onclick="closeModal('habit-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="habit-form">
+                    <div class="form-field">
+                        <label>Nombre del Hábito</label>
+                        <input type="text" name="name" required placeholder="Ej: Hacer ejercicio">
+                    </div>
+                    <div class="form-field">
+                        <label>Descripción</label>
+                        <textarea name="description" rows="3" placeholder="Describe tu hábito..."></textarea>
+                    </div>
+                    <div class="form-field">
+                        <label>Frecuencia</label>
+                        <select name="frequency">
+                            <option value="daily">Diario</option>
+                            <option value="weekly">Semanal</option>
+                            <option value="custom">Personalizado</option>
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" onclick="closeModal('habit-modal')">Cancelar</button>
+                        <button type="submit">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>
-    <script src="js/script_dashboard.js" defer></script>
-    <script src="js/funciones.js" defer></script>
+    <script src="js/main.js"></script>
 </body>
 </html>

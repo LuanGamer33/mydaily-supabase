@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyDaily - Notas</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/styles2.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="img/Carpincho de pie sobre un parche de hierba.png" rel="icon">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <img src="img/logo_capybara.gif" class="logo">
+                <h1>MyDaily</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Container Principal -->
+    <div class="main-container">
+        <!-- Sidebar Izquierdo -->
+        <aside class="sidebar">
+            <!-- Información de Usuario -->
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <span class="username">Usuario Demo</span>
+            </div>
+
+            <!-- Navegación -->
+            <nav class="nav-menu">
+                <ul>
+                    <li><a href="dashboard.html" class="nav-item"><i class="fas fa-tachometer-alt"></i> Panel Principal</a></li>
+                    <li><a href="habits.html" class="nav-item"><i class="fas fa-check-circle"></i> Hábitos Diarios</a></li>
+                    <li><a href="events.html" class="nav-item"><i class="fas fa-calendar-alt"></i> Eventos</a></li>
+                    <li><a href="notes.html" class="nav-item active"><i class="fas fa-sticky-note"></i> Notas</a></li>
+                    <li><a href="activities.html" class="nav-item"><i class="fas fa-tasks"></i> Actividades</a></li>
+                    <li><a href="settings.html" class="nav-item"><i class="fas fa-cog"></i> Configuraciones</a></li>
+                </ul>
+            </nav>
+
+            <!-- Botón Cerrar Sesión -->
+            <div class="logout-section">
+                <button class="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
+            </div>
+        </aside>
+
+        <!-- Contenido Principal -->
+        <main class="main-content">
+            <!-- Decoración Superior -->
+            <div class="top-decoration">
+                <div class="user-shortcut">
+                    <i class="fas fa-user"></i>
+                    <span>Acceso rápido al perfil</span>
+                </div>
+            </div>
+
+            <!-- Contenido de Notas -->
+            <div class="section active">
+                <div class="section-header-main">
+                    <h2>Mis Notas</h2>
+                    <p class="section-subtitle">Captura tus pensamientos, ideas y recordatorios importantes</p>
+                </div>
+                
+                <div class="section-actions">
+                    <button class="action-btn" onclick="openNoteModal()">
+                        <i class="fas fa-plus"></i> Nueva Nota
+                    </button>
+                    <div class="notes-search">
+                        <input type="text" placeholder="Buscar notas..." id="search-input">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="notes-filter">
+                        <select id="notes-filter">
+                            <option value="all">Todas</option>
+                            <option value="recent">Recientes</option>
+                            <option value="favorites">Favoritas</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="notes-container">
+                    <!-- Nota 1 -->
+                    <div class="note-card">
+                        <div class="note-header">
+                            <h4>Mi primera nota</h4>
+                            <div class="note-actions">
+                                <button class="favorite-btn"><i class="far fa-star"></i></button>
+                                <button onclick="editNote(1)" class="edit-btn"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteNote(1)" class="delete-btn"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="note-content">
+                            <p>Esta es mi primera nota en MyDaily. Aquí puedo escribir todas mis ideas importantes y pensamientos del día. Es genial tener un lugar organizado para guardar todo.</p>
+                        </div>
+                        <div class="note-footer">
+                            <span class="note-date"><i class="fas fa-calendar"></i> 15 Ago 2025</span>
+                            <span class="note-words"><i class="fas fa-file-word"></i> 28 palabras</span>
+                        </div>
+                    </div>
+
+                    <!-- Nota 2 -->
+                    <div class="note-card favorite">
+                        <div class="note-header">
+                            <h4>Ideas importantes</h4>
+                            <div class="note-actions">
+                                <button class="favorite-btn active"><i class="fas fa-star"></i></button>
+                                <button onclick="editNote(2)" class="edit-btn"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteNote(2)" class="delete-btn"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="note-content">
+                            <p>Recordar implementar las nuevas funciones en el proyecto. También investigar sobre las últimas tendencias en diseño UX. Contactar al equipo para la reunión del viernes.</p>
+                        </div>
+                        <div class="note-footer">
+                            <span class="note-date"><i class="fas fa-calendar"></i> 16 Ago 2025</span>
+                            <span class="note-words"><i class="fas fa-file-word"></i> 22 palabras</span>
+                        </div>
+                    </div>
+
+                    <!-- Nota 3 -->
+                    <div class="note-card">
+                        <div class="note-header">
+                            <h4>Lista de compras</h4>
+                            <div class="note-actions">
+                                <button class="favorite-btn"><i class="far fa-star"></i></button>
+                                <button onclick="editNote(3)" class="edit-btn"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteNote(3)" class="delete-btn"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="note-content">
+                            <p>Compras para la semana:</p>
+                            <ul>
+                                <li>Leche</li>
+                                <li>Pan integral</li>
+                                <li>Frutas variadas</li>
+                                <li>Verduras frescas</li>
+                                <li>Pollo</li>
+                            </ul>
+                        </div>
+                        <div class="note-footer">
+                            <span class="note-date"><i class="fas fa-calendar"></i> 17 Ago 2025</span>
+                            <span class="note-words"><i class="fas fa-file-word"></i> 12 palabras</span>
+                        </div>
+                    </div>
+
+                    <!-- Nota 4 -->
+                    <div class="note-card">
+                        <div class="note-header">
+                            <h4>Reflexiones del día</h4>
+                            <div class="note-actions">
+                                <button class="favorite-btn"><i class="far fa-star"></i></button>
+                                <button onclick="editNote(4)" class="edit-btn"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteNote(4)" class="delete-btn"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="note-content">
+                            <p>Hoy fue un día productivo. Logré completar la mayoría de mis tareas y me siento satisfecho con el progreso. Mañana me enfocaré en el nuevo proyecto.</p>
+                        </div>
+                        <div class="note-footer">
+                            <span class="note-date"><i class="fas fa-calendar"></i> 18 Ago 2025</span>
+                            <span class="note-words"><i class="fas fa-file-word"></i> 25 palabras</span>
+                        </div>
+                    </div>
+
+                    <!-- Nota 5 -->
+                    <div class="note-card">
+                        <div class="note-header">
+                            <h4>Libros por leer</h4>
+                            <div class="note-actions">
+                                <button class="favorite-btn"><i class="far fa-star"></i></button>
+                                <button onclick="editNote(5)" class="edit-btn"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteNote(5)" class="delete-btn"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="note-content">
+                            <p>Lista de lectura para este mes:</p>
+                            <ul>
+                                <li>"Atomic Habits" - James Clear</li>
+                                <li>"The Psychology of Money" - Morgan Housel</li>
+                                <li>"Deep Work" - Cal Newport</li>
+                            </ul>
+                        </div>
+                        <div class="note-footer">
+                            <span class="note-date"><i class="fas fa-calendar"></i> 19 Ago 2025</span>
+                            <span class="note-words"><i class="fas fa-file-word"></i> 18 palabras</span>
+                        </div>
+                    </div>
+
+                    <!-- Nota 6 -->
+                    <div class="note-card">
+                        <div class="note-header">
+                            <h4>Metas del mes</h4>
+                            <div class="note-actions">
+                                <button class="favorite-btn"><i class="far fa-star"></i></button>
+                                <button onclick="editNote(6)" class="edit-btn"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteNote(6)" class="delete-btn"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="note-content">
+                            <p>Objetivos para agosto: Terminar el curso online, hacer ejercicio 5 veces por semana, leer 2 libros completos y organizar mejor mi tiempo de trabajo.</p>
+                        </div>
+                        <div class="note-footer">
+                            <span class="note-date"><i class="fas fa-calendar"></i> 20 Ago 2025</span>
+                            <span class="note-words"><i class="fas fa-file-word"></i> 24 palabras</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para notas -->
+    <div class="modal" id="note-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Nueva Nota</h3>
+                <button class="close-btn" onclick="closeModal('note-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="note-form">
+                    <div class="form-field">
+                        <label>Título de la Nota</label>
+                        <input type="text" name="title" required placeholder="Título de tu nota">
+                    </div>
+                    <div class="form-field">
+                        <label>Contenido</label>
+                        <textarea name="content" rows="8" required placeholder="Escribe aquí el contenido de tu nota..."></textarea>
+                    </div>
+                    <div class="form-field">
+                        <label>Imagen de la Nota</label>
+                        <input type="file" name="image" accept="image/*">
+                        <img id="image-preview" style="display: none; max-width: 200px; margin-top: 10px; border-radius: 8px;">
+                    </div>
+                    <div class="form-field">
+                        <label>Estado de Ánimo</label>
+                        <select name="mood">
+                            <option value="sun"><i class="fas fa-sun"></i> Soleado</option>
+                            <option value="cloud"><i class="fas fa-cloud"></i> Nublado</option>
+                            <option value="rain"><i class="fas fa-cloud-rain"></i> Lluvioso</option>
+                            <option value="storm"><i class="fas fa-bolt"></i> Tormenta</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>
+                            <input type="checkbox" name="favorite"> Marcar como favorita
+                        </label>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" onclick="closeModal()">Cancelar</button>
+                        <button type="submit">Guardar Nota</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
