@@ -106,10 +106,10 @@ function validateForm(formData, isRegistration = false) {
         const nombre = formData.get('nombre')?.trim();
         const apellido = formData.get('apellido')?.trim();
         const fechaNacimiento = formData.get('fn');
-        const sexo = formData.get('sexo');
+        const genero = formData.get('genero');
         const username = formData.get('username')?.trim();
         
-        if (!confirmPassword || !nombre || !apellido || !fechaNacimiento || !sexo || !username) {
+        if (!confirmPassword || !nombre || !apellido || !fechaNacimiento || !genero || !username) {
             throw new Error('Por favor completa todos los campos del registro');
         }
         
@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const nombre = formData.get('nombre').trim();
                 const apellido = formData.get('apellido').trim();
                 const fechaNacimiento = formData.get('fn');
-                const sexo = formData.get('sexo');
+                const genero = formData.get('genero');
                 const username = formData.get('username').trim();
                 
                 setButtonLoading(submitBtn, true, originalText);
@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             full_name: `${nombre} ${apellido}`,
                             username: username,
                             fecha_nacimiento: fechaNacimiento,
-                            sexo: sexo,
+                            genero: genero,
                             nombre: nombre,
                             apellido: apellido
                         }
