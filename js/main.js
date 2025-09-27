@@ -11,6 +11,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Cargar datos desde Supabase
     await loadAllData();
+    
+    // Configurar atajos de teclado
+    setupKeyboardShortcuts();
 });
 
 // Variables globales para datos dinámicos
@@ -20,14 +23,59 @@ let eventsData = [];
 let activitiesData = [];
 let currentEditId = null;
 let currentEditType = null;
+let userAvatarGlobal = 'user-circle'; // Avatar por defecto
 
-// Cargar todos los datos desde Supabase
+// Configurar atajos de teclado
+function setupKeyboardShortcuts() {
+    document.addEventListener('keydown', function(e) {
+        // Solo activar si no hay un modal abierto y no estamos escribiendo en un input
+        const isModalOpen = document.querySelector('.modal.show');
+        const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName);
+        
+        if (isModalOpen || isTyping) return;
+        
+        if (e.ctrlKey) {
+            switch(e.key.toLowerCase()) {
+                case 'n':
+                    e.preventDefault();
+                    openNoteModal();
+                    break;
+                case 'h':
+                    e.preventDefault();
+                    window.location.href = 'habits.html';
+                    break;
+                case 'e':
+                    e.preventDefault();
+                    window.location.href = 'events.html';
+                    break;
+                case 'd':
+                    e.preventDefault();
+                    window.location.href = 'dashboard.html';
+                    break;
+            }
+        }
+    });
+}
+
+// Cargar todos los datos desde Supabase con cache temporal
 async function loadAllData() {
     try {
-        notesData = await listarNotas();
-        habitsData = await listarHabitos();
-        eventsData = await listarEventos();
-        activitiesData = await listarActividades();
+        // Mostrar indicador de carga si existe
+        const loadingIndicator = document.getElementById('loading-indicator');
+        if (loadingIndicator) loadingIndicator.style.display = 'block';
+        
+        // Cargar datos en paralelo para mejor rendimiento
+        const [notes, habits, events, activities] = await Promise.all([
+            listarNotas(),
+            listarHabitos(), 
+            listarEventos(),
+            listarActividades()
+        ]);
+        
+        notesData = notes;
+        habitsData = habits;
+        eventsData = events;
+        activitiesData = activities;
         
         // Renderizar según la página actual
         if (window.location.pathname.includes('notes.html')) {
@@ -38,11 +86,96 @@ async function loadAllData() {
             renderEvents();
         } else if (window.location.pathname.includes('activities.html')) {
             renderActivities();
+        } else if (window.location.pathname.includes('dashboard.html')) {
+            renderDashboardPreviews();
         }
         
         generateCalendar();
+        
+        // Ocultar indicador de carga
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
+        
     } catch (error) {
         console.error('Error cargando datos:', error);
+        // Ocultar indicador de carga en caso de error
+        const loadingIndicator = document.getElementById('loading-indicator');
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
+    }
+}
+
+// Renderizar previews del dashboard (solo los 3 más recientes)
+function renderDashboardPreviews() {
+    // Notas preview
+    const notesPreview = document.querySelector('.preview-card .card-content');
+    if (notesPreview && notesData.length > 0) {
+        notesPreview.innerHTML = '';
+        const recentNotes = notesData.slice(0, 3);
+        recentNotes.forEach(note => {
+            const item = document.createElement('div');
+            item.className = 'preview-item';
+            item.textContent = note.nom || note.title;
+            item.onclick = () => window.location.href = 'notes.html';
+            notesPreview.appendChild(item);
+        });
+        
+        if (notesData.length === 0) {
+            notesPreview.innerHTML = '<div class="preview-item">No hay notas aún</div>';
+        }
+    }
+    
+    // Hábitos preview
+    const habitsCards = document.querySelectorAll('.preview-card');
+    const habitsPreview = habitsCards[1]?.querySelector('.card-content');
+    if (habitsPreview && habitsData.length > 0) {
+        habitsPreview.innerHTML = '';
+        const recentHabits = habitsData.slice(0, 3);
+        recentHabits.forEach(habit => {
+            const item = document.createElement('div');
+            item.className = 'preview-item';
+            item.textContent = habit.nom || habit.name;
+            item.onclick = () => window.location.href = 'habits.html';
+            habitsPreview.appendChild(item);
+        });
+        
+        if (habitsData.length === 0) {
+            habitsPreview.innerHTML = '<div class="preview-item">No hay hábitos aún</div>';
+        }
+    }
+    
+    // Actividades preview
+    const activitiesPreview = habitsCards[2]?.querySelector('.card-content');
+    if (activitiesPreview && activitiesData.length > 0) {
+        activitiesPreview.innerHTML = '';
+        const recentActivities = activitiesData.slice(0, 3);
+        recentActivities.forEach(activity => {
+            const item = document.createElement('div');
+            item.className = 'preview-item';
+            item.textContent = activity.titulo || activity.title;
+            item.onclick = () => window.location.href = 'activities.html';
+            activitiesPreview.appendChild(item);
+        });
+        
+        if (activitiesData.length === 0) {
+            activitiesPreview.innerHTML = '<div class="preview-item">No hay actividades aún</div>';
+        }
+    }
+    
+    // Eventos preview
+    const eventsPreview = habitsCards[3]?.querySelector('.card-content');
+    if (eventsPreview && eventsData.length > 0) {
+        eventsPreview.innerHTML = '';
+        const recentEvents = eventsData.slice(0, 3);
+        recentEvents.forEach(event => {
+            const item = document.createElement('div');
+            item.className = 'preview-item';
+            item.textContent = event.nom || event.title;
+            item.onclick = () => window.location.href = 'events.html';
+            eventsPreview.appendChild(item);
+        });
+        
+        if (eventsData.length === 0) {
+            eventsPreview.innerHTML = '<div class="preview-item">No hay eventos aún</div>';
+        }
     }
 }
 
@@ -194,24 +327,6 @@ function getNextId(array) {
     return array.length > 0 ? Math.max(...array.map(item => item.id || item.id_notas || item.id_hab || item.id_cal)) + 1 : 1;
 }
 
-// Función para manejar carga de imagen
-function handleImageUpload(input, previewId) {
-    const file = input.files[0];
-    const preview = document.getElementById(previewId);
-    
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            preview.src = e.target.result;
-            preview.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-    } else {
-        preview.style.display = 'none';
-        preview.src = '';
-    }
-}
-
 // ========== FUNCIONES PARA NOTAS ==========
 function renderNotes() {
     const notesContainer = document.querySelector('.notes-container');
@@ -220,7 +335,7 @@ function renderNotes() {
     notesContainer.innerHTML = '';
     
     if (notesData.length === 0) {
-        notesContainer.innerHTML = '<p style="text-align: center; color: var(--text-light);">No tienes notas aún. ¡Crea tu primera nota!</p>';
+        notesContainer.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 2rem;">No tienes notas aún. ¡Crea tu primera nota!</p>';
         return;
     }
     
@@ -255,8 +370,14 @@ async function saveNote(noteData) {
         } else {
             // Crear nueva nota
             await insertarNota(noteData.title, noteData.content);
+            
+            // Recargar datos inmediatamente después de guardar
             await loadAllData();
-            renderNotes();
+            
+            // Si estamos en dashboard, actualizar previews
+            if (window.location.pathname.includes('dashboard.html')) {
+                renderDashboardPreviews();
+            }
         }
     } catch (error) {
         console.error('Error guardando nota:', error);
@@ -290,7 +411,6 @@ async function deleteNote(id) {
             if (error) throw error;
             
             await loadAllData();
-            renderNotes();
         } catch (error) {
             console.error('Error eliminando nota:', error);
             alert('Error al eliminar la nota: ' + error.message);
@@ -306,7 +426,7 @@ function renderHabits() {
     habitsContainer.innerHTML = '';
     
     if (habitsData.length === 0) {
-        habitsContainer.innerHTML = '<p style="text-align: center; color: var(--text-light);">No tienes hábitos aún. ¡Crea tu primer hábito!</p>';
+        habitsContainer.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 2rem;">No tienes hábitos aún. ¡Crea tu primer hábito!</p>';
         return;
     }
     
@@ -355,47 +475,15 @@ async function saveHabit(habitData) {
             // Crear nuevo hábito
             await insertarHabito(habitData.name, '08:00', 'medium', habitData.description);
             await loadAllData();
-            renderHabits();
+            
+            if (window.location.pathname.includes('dashboard.html')) {
+                renderDashboardPreviews();
+            }
         }
     } catch (error) {
         console.error('Error guardando hábito:', error);
         alert('Error al guardar el hábito: ' + error.message);
     }
-}
-
-function toggleHabit(id) {
-    // Implementar toggle de hábito
-    console.log('Toggle hábito:', id);
-}
-
-function updateHabitStats() {
-    const total = habitsData.length;
-    const completed = 0; // Implementar lógica de completados
-    const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
-    
-    const totalEl = document.getElementById('total-habits');
-    const completedEl = document.getElementById('completed-today');
-    const rateEl = document.getElementById('completion-rate');
-    
-    if (totalEl) totalEl.textContent = total;
-    if (completedEl) completedEl.textContent = completed;
-    if (rateEl) rateEl.textContent = rate + '%';
-}
-
-function editHabit(id) {
-    const habit = habitsData.find(h => (h.id_hab || h.id) === id);
-    if (!habit) return;
-    
-    currentEditId = id;
-    const modal = document.getElementById('habit-modal');
-    const form = modal.querySelector('form');
-    
-    form.name.value = habit.nom || habit.name;
-    form.description.value = habit.descr || habit.description;
-    form.frequency.value = 'daily';
-    
-    modal.querySelector('.modal-header h3').textContent = 'Editar Hábito';
-    openModal('habit-modal');
 }
 
 async function deleteHabit(id) {
@@ -409,7 +497,6 @@ async function deleteHabit(id) {
             if (error) throw error;
             
             await loadAllData();
-            renderHabits();
         } catch (error) {
             console.error('Error eliminando hábito:', error);
             alert('Error al eliminar el hábito: ' + error.message);
@@ -425,7 +512,7 @@ function renderEvents() {
     eventsContainer.innerHTML = '';
     
     if (eventsData.length === 0) {
-        eventsContainer.innerHTML = '<p style="text-align: center; color: var(--text-light);">No tienes eventos aún. ¡Crea tu primer evento!</p>';
+        eventsContainer.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 2rem;">No tienes eventos aún. ¡Crea tu primer evento!</p>';
         return;
     }
     
@@ -480,32 +567,15 @@ async function saveEvent(eventData) {
                 eventData.time ? eventData.time : '10:00'
             );
             await loadAllData();
-            renderEvents();
+            
+            if (window.location.pathname.includes('dashboard.html')) {
+                renderDashboardPreviews();
+            }
         }
     } catch (error) {
         console.error('Error guardando evento:', error);
         alert('Error al guardar el evento: ' + error.message);
     }
-}
-
-function editEvent(id) {
-    const event = eventsData.find(e => e.id_cal === id);
-    if (!event) return;
-    
-    currentEditId = id;
-    const modal = document.getElementById('event-modal');
-    const form = modal.querySelector('form');
-    
-    form.title.value = event.nom;
-    form.description.value = event.descr;
-    form.date.value = event.fecha;
-    form.location.value = event.lugar;
-    if (event.agenda && event.agenda[0]) {
-        form.time.value = event.agenda[0].hora_i;
-    }
-    
-    modal.querySelector('.modal-header h3').textContent = 'Editar Evento';
-    openModal('event-modal');
 }
 
 async function deleteEvent(id) {
@@ -528,7 +598,6 @@ async function deleteEvent(id) {
             if (calError) throw calError;
             
             await loadAllData();
-            renderEvents();
         } catch (error) {
             console.error('Error eliminando evento:', error);
             alert('Error al eliminar el evento: ' + error.message);
@@ -544,7 +613,7 @@ function renderActivities() {
     activitiesContainer.innerHTML = '';
     
     if (activitiesData.length === 0) {
-        activitiesContainer.innerHTML = '<p style="text-align: center; color: var(--text-light);">No tienes actividades aún. ¡Crea tu primera actividad!</p>';
+        activitiesContainer.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 2rem;">No tienes actividades aún. ¡Crea tu primera actividad!</p>';
         return;
     }
     
@@ -605,7 +674,10 @@ async function saveActivity(activityData) {
             
             if (success) {
                 await loadAllData();
-                renderActivities();
+                
+                if (window.location.pathname.includes('dashboard.html')) {
+                    renderDashboardPreviews();
+                }
             }
         }
     } catch (error) {
@@ -663,7 +735,6 @@ async function deleteActivity(id) {
             if (error) throw error;
             
             await loadAllData();
-            renderActivities();
         } catch (error) {
             console.error('Error eliminando actividad:', error);
             alert('Error al eliminar la actividad: ' + error.message);
@@ -696,6 +767,13 @@ async function loadUserProfile() {
             if (input) input.value = user.email;
         });
 
+        // Cargar avatar desde localStorage
+        const savedAvatar = localStorage.getItem('mydaily-avatar');
+        if (savedAvatar) {
+            userAvatarGlobal = savedAvatar;
+            updateAvatarDisplay(savedAvatar);
+        }
+
         // Cargar configuraciones guardadas
         const savedTheme = localStorage.getItem('mydaily-theme');
         if (savedTheme) {
@@ -710,10 +788,24 @@ async function loadUserProfile() {
     }
 }
 
+function updateAvatarDisplay(avatarType) {
+    const userAvatars = document.querySelectorAll('.user-avatar i');
+    userAvatars.forEach(avatar => {
+        if (avatar) avatar.className = `fas fa-${avatarType}`;
+    });
+    
+    // Actualizar también las opciones activas en configuración
+    const avatarOptions = document.querySelectorAll('.avatar-option');
+    avatarOptions.forEach(option => {
+        option.classList.toggle('active', option.dataset.avatar === avatarType);
+    });
+}
+
 async function saveProfile() {
     try {
         const user = await getUser();
         const username = document.getElementById('username').value;
+        const selectedAvatar = document.querySelector('.avatar-option.active')?.dataset.avatar || 'user-circle';
         
         // Actualizar nombre en auth.users
         const { error } = await supabase.auth.updateUser({
@@ -722,14 +814,20 @@ async function saveProfile() {
         
         if (error) throw error;
         
-        // Actualizar displays
+        // Guardar avatar en localStorage
+        localStorage.setItem('mydaily-avatar', selectedAvatar);
+        userAvatarGlobal = selectedAvatar;
+        
+        // Actualizar displays en toda la aplicación
         const usernameDisplays = document.querySelectorAll('.username');
         usernameDisplays.forEach(display => {
             if (display) display.textContent = username;
         });
         
+        // Actualizar avatar en toda la aplicación
+        updateAvatarDisplay(selectedAvatar);
+        
         alert('Perfil guardado exitosamente');
-        await loadUserProfile();
     } catch (error) {
         console.error('Error guardando perfil:', error);
         alert('Error al guardar perfil: ' + error.message);
@@ -803,24 +901,64 @@ function sendFeedback() {
     alert('Formulario de feedback. En una aplicación real, se abriría un formulario para enviar sugerencias de mejora.');
 }
 
-// Inicialización cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', function() {
-    // Cargar perfil de usuario
-    loadUserProfile();
+// Funciones adicionales necesarias
+function toggleHabit(id) {
+    console.log('Toggle hábito:', id);
+    // Implementar lógica de toggle
+}
+
+function editHabit(id) {
+    const habit = habitsData.find(h => (h.id_hab || h.id) === id);
+    if (!habit) return;
     
-    generateCalendar();
+    currentEditId = id;
+    const modal = document.getElementById('habit-modal');
+    const form = modal.querySelector('form');
     
-    // Renderizar contenido según la página actual
-    if (window.location.pathname.includes('notes.html')) {
-        renderNotes();
-    } else if (window.location.pathname.includes('habits.html')) {
-        renderHabits();
-    } else if (window.location.pathname.includes('events.html')) {
-        renderEvents();
-    } else if (window.location.pathname.includes('activities.html')) {
-        renderActivities();
+    form.name.value = habit.nom || habit.name;
+    form.description.value = habit.descr || habit.description;
+    form.frequency.value = 'daily';
+    
+    modal.querySelector('.modal-header h3').textContent = 'Editar Hábito';
+    openModal('habit-modal');
+}
+
+function editEvent(id) {
+    const event = eventsData.find(e => e.id_cal === id);
+    if (!event) return;
+    
+    currentEditId = id;
+    const modal = document.getElementById('event-modal');
+    const form = modal.querySelector('form');
+    
+    form.title.value = event.nom;
+    form.description.value = event.descr;
+    form.date.value = event.fecha;
+    form.location.value = event.lugar;
+    if (event.agenda && event.agenda[0]) {
+        form.time.value = event.agenda[0].hora_i;
     }
     
+    modal.querySelector('.modal-header h3').textContent = 'Editar Evento';
+    openModal('event-modal');
+}
+
+function updateHabitStats() {
+    const total = habitsData.length;
+    const completed = 0; // Implementar lógica de completados
+    const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+    
+    const totalEl = document.getElementById('total-habits');
+    const completedEl = document.getElementById('completed-today');
+    const rateEl = document.getElementById('completion-rate');
+    
+    if (totalEl) totalEl.textContent = total;
+    if (completedEl) completedEl.textContent = completed;
+    if (rateEl) rateEl.textContent = rate + '%';
+}
+
+// Inicialización cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
     // Event listeners para logout
     const logoutBtns = document.querySelectorAll('.logout-btn');
     logoutBtns.forEach(btn => {
@@ -858,7 +996,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function setupFormHandlers() {
-    // Formulario de notas - mejorado con imagen y estado de ánimo
+    // Formulario de notas
     const noteForm = document.getElementById('note-form');
     if (noteForm) {
         noteForm.addEventListener('submit', function(e) {
@@ -1019,13 +1157,6 @@ function setupAvatarAndThemeSelectors() {
             avatarOptions.forEach(o => o.classList.remove('active'));
             // activar el clicado
             this.classList.add('active');
-            
-            // Actualizar avatar en sidebar
-            const selectedAvatar = this.getAttribute('data-avatar');
-            const userAvatars = document.querySelectorAll('.user-avatar i');
-            userAvatars.forEach(avatar => {
-                if (avatar) avatar.className = `fas fa-${selectedAvatar}`;
-            });
         });
     });
 
