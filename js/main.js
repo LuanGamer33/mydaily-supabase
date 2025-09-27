@@ -23,12 +23,11 @@ let eventsData = [];
 let activitiesData = [];
 let currentEditId = null;
 let currentEditType = null;
-let userAvatarGlobal = 'user-circle'; // Avatar por defecto
+let userAvatarGlobal = 'user-circle';
 
 // Configurar atajos de teclado
 function setupKeyboardShortcuts() {
     document.addEventListener('keydown', function(e) {
-        // Solo activar si no hay un modal abierto y no estamos escribiendo en un input
         const isModalOpen = document.querySelector('.modal.show');
         const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName);
         
@@ -57,14 +56,12 @@ function setupKeyboardShortcuts() {
     });
 }
 
-// Cargar todos los datos desde Supabase con cache temporal
+// Cargar todos los datos desde Supabase
 async function loadAllData() {
     try {
-        // Mostrar indicador de carga si existe
         const loadingIndicator = document.getElementById('loading-indicator');
         if (loadingIndicator) loadingIndicator.style.display = 'block';
         
-        // Cargar datos en paralelo para mejor rendimiento
         const [notes, habits, events, activities] = await Promise.all([
             listarNotas(),
             listarHabitos(), 
@@ -91,13 +88,12 @@ async function loadAllData() {
         }
         
         generateCalendar();
+        updateDashboardStats();
         
-        // Ocultar indicador de carga
         if (loadingIndicator) loadingIndicator.style.display = 'none';
         
     } catch (error) {
         console.error('Error cargando datos:', error);
-        // Ocultar indicador de carga en caso de error
         const loadingIndicator = document.getElementById('loading-indicator');
         if (loadingIndicator) loadingIndicator.style.display = 'none';
     }
@@ -106,77 +102,96 @@ async function loadAllData() {
 // Renderizar previews del dashboard (solo los 3 más recientes)
 function renderDashboardPreviews() {
     // Notas preview
-    const notesPreview = document.querySelector('.preview-card .card-content');
-    if (notesPreview && notesData.length > 0) {
-        notesPreview.innerHTML = '';
+    const previewCards = document.querySelectorAll('.preview-card .card-content');
+    
+    // Notas (primer card)
+    if (previewCards[0] && notesData.length > 0) {
+        previewCards[0].innerHTML = '';
         const recentNotes = notesData.slice(0, 3);
         recentNotes.forEach(note => {
             const item = document.createElement('div');
             item.className = 'preview-item';
-            item.textContent = note.nom || note.title;
+            item.innerHTML = `
+                ${note.favorita ? '<i class="fas fa-star" style="color: #ffd700; margin-right: 5px;"></i>' : ''}
+                ${note.nom}
+            `;
             item.onclick = () => window.location.href = 'notes.html';
-            notesPreview.appendChild(item);
+            previewCards[0].appendChild(item);
         });
-        
-        if (notesData.length === 0) {
-            notesPreview.innerHTML = '<div class="preview-item">No hay notas aún</div>';
-        }
+    } else if (previewCards[0]) {
+        previewCards[0].innerHTML = '<div class="preview-item" style="color: var(--text-light);">No hay notas aún</div>';
     }
     
-    // Hábitos preview
-    const habitsCards = document.querySelectorAll('.preview-card');
-    const habitsPreview = habitsCards[1]?.querySelector('.card-content');
-    if (habitsPreview && habitsData.length > 0) {
-        habitsPreview.innerHTML = '';
+    // Hábitos (segundo card)
+    if (previewCards[1] && habitsData.length > 0) {
+        previewCards[1].innerHTML = '';
         const recentHabits = habitsData.slice(0, 3);
         recentHabits.forEach(habit => {
             const item = document.createElement('div');
             item.className = 'preview-item';
-            item.textContent = habit.nom || habit.name;
+            item.innerHTML = `
+                ${habit.completado_hoy ? '<i class="fas fa-check-circle" style="color: #4caf50; margin-right: 5px;"></i>' : '<i class="far fa-circle" style="margin-right: 5px;"></i>'}
+                ${habit.nom}
+                <small style="margin-left: auto; color: var(--text-light);">${habit.racha} días</small>
+            `;
             item.onclick = () => window.location.href = 'habits.html';
-            habitsPreview.appendChild(item);
+            previewCards[1].appendChild(item);
         });
-        
-        if (habitsData.length === 0) {
-            habitsPreview.innerHTML = '<div class="preview-item">No hay hábitos aún</div>';
-        }
+    } else if (previewCards[1]) {
+        previewCards[1].innerHTML = '<div class="preview-item" style="color: var(--text-light);">No hay hábitos aún</div>';
     }
     
-    // Actividades preview
-    const activitiesPreview = habitsCards[2]?.querySelector('.card-content');
-    if (activitiesPreview && activitiesData.length > 0) {
-        activitiesPreview.innerHTML = '';
+    // Actividades (tercer card)
+    if (previewCards[2] && activitiesData.length > 0) {
+        previewCards[2].innerHTML = '';
         const recentActivities = activitiesData.slice(0, 3);
         recentActivities.forEach(activity => {
             const item = document.createElement('div');
             item.className = 'preview-item';
-            item.textContent = activity.titulo || activity.title;
+            const priorityIcon = activity.prioridad === 'high' ? '🔴' : activity.prioridad === 'medium' ? '🟡' : '🟢';
+            item.innerHTML = `
+                ${priorityIcon} ${activity.titulo}
+                ${activity.completada ? '<i class="fas fa-check" style="color: #4caf50; margin-left: auto;"></i>' : ''}
+            `;
             item.onclick = () => window.location.href = 'activities.html';
-            activitiesPreview.appendChild(item);
+            previewCards[2].appendChild(item);
         });
-        
-        if (activitiesData.length === 0) {
-            activitiesPreview.innerHTML = '<div class="preview-item">No hay actividades aún</div>';
-        }
+    } else if (previewCards[2]) {
+        previewCards[2].innerHTML = '<div class="preview-item" style="color: var(--text-light);">No hay actividades aún</div>';
     }
     
-    // Eventos preview
-    const eventsPreview = habitsCards[3]?.querySelector('.card-content');
-    if (eventsPreview && eventsData.length > 0) {
-        eventsPreview.innerHTML = '';
+    // Eventos (cuarto card)
+    if (previewCards[3] && eventsData.length > 0) {
+        previewCards[3].innerHTML = '';
         const recentEvents = eventsData.slice(0, 3);
         recentEvents.forEach(event => {
             const item = document.createElement('div');
             item.className = 'preview-item';
-            item.textContent = event.nom || event.title;
+            const eventDate = new Date(event.fecha);
+            const isUpcoming = eventDate >= new Date();
+            item.innerHTML = `
+                ${isUpcoming ? '📅' : '📋'} ${event.nom}
+                <small style="margin-left: auto; color: var(--text-light);">${eventDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}</small>
+            `;
             item.onclick = () => window.location.href = 'events.html';
-            eventsPreview.appendChild(item);
+            previewCards[3].appendChild(item);
         });
-        
-        if (eventsData.length === 0) {
-            eventsPreview.innerHTML = '<div class="preview-item">No hay eventos aún</div>';
-        }
+    } else if (previewCards[3]) {
+        previewCards[3].innerHTML = '<div class="preview-item" style="color: var(--text-light);">No hay eventos aún</div>';
     }
+}
+
+// Actualizar estadísticas del dashboard
+function updateDashboardStats() {
+    const totalNotesEl = document.getElementById('total-notes-stat');
+    const totalHabitsEl = document.getElementById('total-habits-stat');
+    const totalEventsEl = document.getElementById('total-events-stat');
+    const pendingActivitiesEl = document.getElementById('pending-activities-stat');
+    
+    if (totalNotesEl) totalNotesEl.textContent = notesData.length;
+    if (totalHabitsEl) totalHabitsEl.textContent = habitsData.length;
+    if (totalEventsEl) totalEventsEl.textContent = eventsData.filter(e => new Date(e.fecha) >= new Date()).length;
+    if (pendingActivitiesEl) pendingActivitiesEl.textContent = activitiesData.filter(a => !a.completada).length;
 }
 
 // Función para cerrar sesión
@@ -185,21 +200,19 @@ async function logout() {
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
         
-        // Limpiar datos locales
         notesData = [];
         habitsData = [];
         eventsData = [];
         activitiesData = [];
         localStorage.clear();
         
-        // Redirigir al login
         window.location.href = 'index.html';
     } catch (error) {
         alert('Error al cerrar sesión: ' + error.message);
     }
 }
 
-// Generar calendario con fecha actual mejorado
+// Generar calendario
 function generateCalendar() {
     const calendarBody = document.getElementById('calendar-body');
     const currentMonthEl = document.getElementById('current-month');
@@ -216,32 +229,26 @@ function generateCalendar() {
     ];
 
     currentMonthEl.textContent = `${monthNames[month]} ${year}`;
-    
     calendarBody.innerHTML = '';
     
-    // Primer día del mes (0 = domingo, 1 = lunes, etc.)
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     
-    // Días vacíos al inicio
     for (let i = 0; i < firstDay; i++) {
         const emptyDay = document.createElement('div');
         emptyDay.className = 'calendar-day empty';
         calendarBody.appendChild(emptyDay);
     }
     
-    // Días del mes
     for (let day = 1; day <= daysInMonth; day++) {
         const dayElement = document.createElement('div');
         dayElement.className = 'calendar-day';
         dayElement.textContent = day;
         
-        // Marcar día actual
         if (day === today && month === new Date().getMonth() && year === new Date().getFullYear()) {
             dayElement.classList.add('current');
         }
         
-        // Verificar eventos y actividades para este día
         const currentDateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
         
         const hasEvent = eventsData.some(e => e.fecha === currentDateStr);
@@ -250,7 +257,6 @@ function generateCalendar() {
         if (hasEvent || hasActivity) {
             dayElement.classList.add('has-event');
             
-            // Agregar indicador visual
             const indicator = document.createElement('div');
             indicator.className = 'day-indicator';
             if (hasEvent && hasActivity) {
@@ -267,21 +273,13 @@ function generateCalendar() {
     }
 }
 
-// Funciones para modales - mejoradas para centrado
+// Funciones para modales
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.add('show');
         currentEditId = null;
         currentEditType = null;
-        
-        // Centrar modal en viewport
-        const modalContent = modal.querySelector('.modal-content');
-        if (modalContent) {
-            modalContent.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        
-        // Evitar scroll del body
         document.body.style.overflow = 'hidden';
     }
 }
@@ -290,24 +288,13 @@ function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.remove('show');
-        
-        // Restaurar scroll del body
         document.body.style.overflow = 'auto';
     }
     
-    // Limpiar formularios
     const forms = modal?.querySelectorAll('form');
     forms?.forEach(form => form.reset());
-    
-    // Limpiar preview de imagen
-    const imagePreview = modal?.querySelector('#image-preview');
-    if (imagePreview) {
-        imagePreview.style.display = 'none';
-        imagePreview.src = '';
-    }
 }
 
-// Funciones específicas para cada tipo
 function openNoteModal() { openModal('note-modal'); }
 function openEventModal() { openModal('event-modal'); }
 function openActivityModal() { openModal('activity-modal'); }
@@ -321,10 +308,6 @@ function formatDate(dateString) {
         month: 'short', 
         year: 'numeric' 
     });
-}
-
-function getNextId(array) {
-    return array.length > 0 ? Math.max(...array.map(item => item.id || item.id_notas || item.id_hab || item.id_cal)) + 1 : 1;
 }
 
 // ========== FUNCIONES PARA NOTAS ==========
@@ -341,21 +324,34 @@ function renderNotes() {
     
     notesData.forEach(note => {
         const noteCard = document.createElement('div');
-        noteCard.className = 'note-card';
+        noteCard.className = `note-card ${note.favorita ? 'favorite' : ''}`;
+        
+        const moodEmojis = {
+            sun: '☀️',
+            cloud: '☁️',  
+            rain: '🌧️',
+            storm: '⛈️'
+        };
+        
         noteCard.innerHTML = `
             <div class="note-header">
-                <h4>${note.nom || note.title}</h4>
+                <h4>${note.nom}</h4>
                 <div class="note-actions">
-                    <button onclick="editNote(${note.id_notas || note.id})" class="edit-btn"><i class="fas fa-edit"></i></button>
-                    <button onclick="deleteNote(${note.id_notas || note.id})" class="delete-btn"><i class="fas fa-trash"></i></button>
+                    <button class="favorite-btn ${note.favorita ? 'active' : ''}" onclick="toggleNoteFavorite(${note.id_notas})">
+                        <i class="fas fa-star"></i>
+                    </button>
+                    <button onclick="editNote(${note.id_notas})" class="edit-btn"><i class="fas fa-edit"></i></button>
+                    <button onclick="deleteNote(${note.id_notas})" class="delete-btn"><i class="fas fa-trash"></i></button>
                 </div>
             </div>
             <div class="note-content">
-                <p>${note.cont || note.content}</p>
+                <p>${note.cont}</p>
+                ${note.imagen ? `<img src="${note.imagen}" alt="Note Image" class="note-image" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">` : ''}
             </div>
             <div class="note-footer">
-                <span class="note-date"><i class="fas fa-calendar"></i> ${new Date().toLocaleDateString('es-ES')}</span>
-                <span class="note-words"><i class="fas fa-file-word"></i> ${(note.cont || note.content).split(' ').length} palabras</span>
+                <span class="note-date"><i class="fas fa-calendar"></i> ${formatDate(note.created_at || new Date())}</span>
+                <span class="note-words"><i class="fas fa-file-word"></i> ${note.cont.split(' ').length} palabras</span>
+                <span class="note-mood">${moodEmojis[note.estado_animo] || moodEmojis.sun}</span>
             </div>
         `;
         notesContainer.appendChild(noteCard);
@@ -365,19 +361,21 @@ function renderNotes() {
 async function saveNote(noteData) {
     try {
         if (currentEditId) {
-            // Editar nota existente - implementar cuando sea necesario
-            console.log('Editar nota no implementado aún');
+            await actualizarNota(currentEditId, noteData);
         } else {
-            // Crear nueva nota
-            await insertarNota(noteData.title, noteData.content);
-            
-            // Recargar datos inmediatamente después de guardar
-            await loadAllData();
-            
-            // Si estamos en dashboard, actualizar previews
-            if (window.location.pathname.includes('dashboard.html')) {
-                renderDashboardPreviews();
-            }
+            await insertarNota(
+                noteData.title, 
+                noteData.content,
+                noteData.image || '',
+                noteData.mood || 'sun',
+                noteData.favorite || false
+            );
+        }
+        
+        await loadAllData();
+        
+        if (window.location.pathname.includes('dashboard.html')) {
+            renderDashboardPreviews();
         }
     } catch (error) {
         console.error('Error guardando nota:', error);
@@ -385,35 +383,27 @@ async function saveNote(noteData) {
     }
 }
 
-function editNote(id) {
-    const note = notesData.find(n => (n.id_notas || n.id) === id);
-    if (!note) return;
-    
-    currentEditId = id;
-    const modal = document.getElementById('note-modal');
-    const form = modal.querySelector('form');
-    
-    form.title.value = note.nom || note.title;
-    form.content.value = note.cont || note.content;
-    
-    modal.querySelector('.modal-header h3').textContent = 'Editar Nota';
-    openModal('note-modal');
-}
-
 async function deleteNote(id) {
     if (confirm('¿Estás seguro de que quieres eliminar esta nota?')) {
         try {
-            const { error } = await supabase
-                .from('notas')
-                .delete()
-                .eq('id_notas', id);
-            
-            if (error) throw error;
-            
-            await loadAllData();
+            const success = await eliminarNota(id);
+            if (success) {
+                await loadAllData();
+            }
         } catch (error) {
             console.error('Error eliminando nota:', error);
-            alert('Error al eliminar la nota: ' + error.message);
+        }
+    }
+}
+
+async function toggleNoteFavorite(id) {
+    const note = notesData.find(n => n.id_notas === id);
+    if (note) {
+        try {
+            await actualizarNota(id, { favorita: !note.favorita });
+            await loadAllData();
+        } catch (error) {
+            console.error('Error actualizando favorito:', error);
         }
     }
 }
@@ -432,33 +422,34 @@ function renderHabits() {
     
     habitsData.forEach(habit => {
         const habitCard = document.createElement('div');
-        habitCard.className = 'item-card habit-card';
+        habitCard.className = `item-card habit-card ${habit.completado_hoy ? 'completed' : ''}`;
+        const progressPercent = Math.round((habit.progreso_semanal / 7) * 100);
         
         habitCard.innerHTML = `
             <div class="habit-header">
-                <h4>${habit.nom || habit.name}</h4>
+                <h4>${habit.nom}</h4>
                 <div class="habit-streak">
                     <i class="fas fa-fire"></i>
-                    <span>0 días</span>
+                    <span>${habit.racha} días</span>
                 </div>
             </div>
-            <p class="habit-description">${habit.descr || habit.description}</p>
+            <p class="habit-description">${habit.descr}</p>
             <div class="habit-progress">
                 <div class="progress-bar">
-                    <div class="progress-fill" style="width: 0%"></div>
+                    <div class="progress-fill" style="width: ${progressPercent}%"></div>
                 </div>
-                <small>0/7 días esta semana</small>
+                <small>${habit.progreso_semanal}/7 días esta semana</small>
             </div>
             <div class="habit-status">
                 <label class="habit-checkbox">
-                    <input type="checkbox" onchange="toggleHabit(${habit.id_hab || habit.id})">
+                    <input type="checkbox" ${habit.completado_hoy ? 'checked' : ''} onchange="toggleHabit(${habit.id_hab})">
                     <span class="checkmark"></span>
                     Completado hoy
                 </label>
             </div>
             <div class="item-actions">
-                <button onclick="editHabit(${habit.id_hab || habit.id})" class="edit-btn"><i class="fas fa-edit"></i></button>
-                <button onclick="deleteHabit(${habit.id_hab || habit.id})" class="delete-btn"><i class="fas fa-trash"></i></button>
+                <button onclick="editHabit(${habit.id_hab})" class="edit-btn"><i class="fas fa-edit"></i></button>
+                <button onclick="deleteHabit(${habit.id_hab})" class="delete-btn"><i class="fas fa-trash"></i></button>
             </div>
         `;
         habitsContainer.appendChild(habitCard);
@@ -469,21 +460,45 @@ function renderHabits() {
 async function saveHabit(habitData) {
     try {
         if (currentEditId) {
-            // Editar hábito existente - implementar cuando sea necesario
-            console.log('Editar hábito no implementado aún');
+            await actualizarHabito(currentEditId, habitData);
         } else {
-            // Crear nuevo hábito
             await insertarHabito(habitData.name, '08:00', 'medium', habitData.description);
-            await loadAllData();
-            
-            if (window.location.pathname.includes('dashboard.html')) {
-                renderDashboardPreviews();
-            }
+        }
+        
+        await loadAllData();
+        
+        if (window.location.pathname.includes('dashboard.html')) {
+            renderDashboardPreviews();
         }
     } catch (error) {
         console.error('Error guardando hábito:', error);
         alert('Error al guardar el hábito: ' + error.message);
     }
+}
+
+async function toggleHabit(id) {
+    try {
+        const success = await toggleHabitoCompletado(id);
+        if (success) {
+            await loadAllData();
+        }
+    } catch (error) {
+        console.error('Error toggling hábito:', error);
+    }
+}
+
+function updateHabitStats() {
+    const total = habitsData.length;
+    const completed = habitsData.filter(h => h.completado_hoy).length;
+    const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+    
+    const totalEl = document.getElementById('total-habits');
+    const completedEl = document.getElementById('completed-today');
+    const rateEl = document.getElementById('completion-rate');
+    
+    if (totalEl) totalEl.textContent = total;
+    if (completedEl) completedEl.textContent = completed;
+    if (rateEl) rateEl.textContent = rate + '%';
 }
 
 async function deleteHabit(id) {
@@ -495,7 +510,6 @@ async function deleteHabit(id) {
                 .eq('id_hab', id);
             
             if (error) throw error;
-            
             await loadAllData();
         } catch (error) {
             console.error('Error eliminando hábito:', error);
@@ -551,26 +565,25 @@ function renderEvents() {
 async function saveEvent(eventData) {
     try {
         if (currentEditId) {
-            // Editar evento existente - implementar cuando sea necesario
             console.log('Editar evento no implementado aún');
         } else {
-            // Crear nuevo evento
             await insertarEvento(
                 eventData.title,
                 eventData.description,
                 eventData.date,
                 eventData.location || '',
                 'medium',
-                1, // id_categoria por defecto
-                1, // id_recurrencia por defecto
+                1,
+                1,
                 eventData.time || '09:00',
-                eventData.time ? eventData.time : '10:00'
+                eventData.time ? addHour(eventData.time) : '10:00'
             );
-            await loadAllData();
-            
-            if (window.location.pathname.includes('dashboard.html')) {
-                renderDashboardPreviews();
-            }
+        }
+        
+        await loadAllData();
+        
+        if (window.location.pathname.includes('dashboard.html')) {
+            renderDashboardPreviews();
         }
     } catch (error) {
         console.error('Error guardando evento:', error);
@@ -578,25 +591,18 @@ async function saveEvent(eventData) {
     }
 }
 
+function addHour(timeString) {
+    const [hours, minutes] = timeString.split(':');
+    const date = new Date();
+    date.setHours(parseInt(hours) + 1, parseInt(minutes));
+    return date.toTimeString().slice(0, 5);
+}
+
 async function deleteEvent(id) {
     if (confirm('¿Estás seguro de que quieres eliminar este evento?')) {
         try {
-            // Primero eliminar de agenda
-            const { error: agendaError } = await supabase
-                .from('agenda')
-                .delete()
-                .eq('id_cal', id);
-            
-            if (agendaError) throw agendaError;
-            
-            // Luego eliminar de calendario
-            const { error: calError } = await supabase
-                .from('calendario')
-                .delete()
-                .eq('id_cal', id);
-            
-            if (calError) throw calError;
-            
+            await supabase.from('agenda').delete().eq('id_cal', id);
+            await supabase.from('calendario').delete().eq('id_cal', id);
             await loadAllData();
         } catch (error) {
             console.error('Error eliminando evento:', error);
@@ -659,10 +665,8 @@ function renderActivities() {
 async function saveActivity(activityData) {
     try {
         if (currentEditId) {
-            // Editar actividad existente - implementar cuando sea necesario
             console.log('Editar actividad no implementado aún');
         } else {
-            // Crear nueva actividad
             const success = await insertarActividad(
                 activityData.title,
                 activityData.description,
@@ -686,9 +690,15 @@ async function saveActivity(activityData) {
     }
 }
 
-function toggleActivity(id) {
-    // Implementar toggle de actividad
-    console.log('Toggle actividad:', id);
+async function toggleActivity(id) {
+    try {
+        const success = await toggleActividadCompletada(id);
+        if (success) {
+            await loadAllData();
+        }
+    } catch (error) {
+        console.error('Error toggling actividad:', error);
+    }
 }
 
 function updateActivityStats() {
@@ -705,25 +715,6 @@ function updateActivityStats() {
     if (pendingEl) pendingEl.textContent = pending;
 }
 
-function editActivity(id) {
-    const activity = activitiesData.find(a => a.id === id);
-    if (!activity) return;
-    
-    currentEditId = id;
-    const modal = document.getElementById('activity-modal');
-    const form = modal.querySelector('form');
-    
-    form.title.value = activity.titulo;
-    form.description.value = activity.descripcion;
-    form.date.value = activity.fecha;
-    form.time.value = activity.hora;
-    form.priority.value = activity.prioridad;
-    form.category.value = activity.categoria;
-    
-    modal.querySelector('.modal-header h3').textContent = 'Editar Actividad';
-    openModal('activity-modal');
-}
-
 async function deleteActivity(id) {
     if (confirm('¿Estás seguro de que quieres eliminar esta actividad?')) {
         try {
@@ -733,7 +724,6 @@ async function deleteActivity(id) {
                 .eq('id', id);
             
             if (error) throw error;
-            
             await loadAllData();
         } catch (error) {
             console.error('Error eliminando actividad:', error);
@@ -742,13 +732,13 @@ async function deleteActivity(id) {
     }
 }
 
-// ========== FUNCIONES DE CONFIGURACIÓN - MEJORADAS ==========
+// ========== FUNCIONES DE CONFIGURACIÓN ==========
 async function loadUserProfile() {
     try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Mostrar nombre de usuario del auth
+        // Mostrar información del usuario
         const usernameDisplays = document.querySelectorAll('.username');
         const usernameInputs = document.querySelectorAll('#username');
         const emailInputs = document.querySelectorAll('#email');
@@ -767,21 +757,37 @@ async function loadUserProfile() {
             if (input) input.value = user.email;
         });
 
-        // Cargar avatar desde localStorage
-        const savedAvatar = localStorage.getItem('mydaily-avatar');
-        if (savedAvatar) {
-            userAvatarGlobal = savedAvatar;
-            updateAvatarDisplay(savedAvatar);
-        }
-
-        // Cargar configuraciones guardadas
-        const savedTheme = localStorage.getItem('mydaily-theme');
-        if (savedTheme) {
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            const themeOptions = document.querySelectorAll('.theme-option');
-            themeOptions.forEach(o => {
-                o.classList.toggle('active', o.getAttribute('data-theme') === savedTheme);
-            });
+        // Cargar configuraciones del usuario desde la BD
+        const config = await obtenerConfiguracionUsuario();
+        if (config) {
+            userAvatarGlobal = config.avatar || 'user-circle';
+            updateAvatarDisplay(userAvatarGlobal);
+            
+            // Aplicar tema
+            if (config.tema) {
+                document.documentElement.setAttribute('data-theme', config.tema);
+                const themeOptions = document.querySelectorAll('.theme-option');
+                themeOptions.forEach(o => {
+                    o.classList.toggle('active', o.getAttribute('data-theme') === config.tema);
+                });
+            }
+        } else {
+            // Cargar desde localStorage como fallback
+            const savedAvatar = localStorage.getItem('mydaily-avatar');
+            const savedTheme = localStorage.getItem('mydaily-theme');
+            
+            if (savedAvatar) {
+                userAvatarGlobal = savedAvatar;
+                updateAvatarDisplay(savedAvatar);
+            }
+            
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                const themeOptions = document.querySelectorAll('.theme-option');
+                themeOptions.forEach(o => {
+                    o.classList.toggle('active', o.getAttribute('data-theme') === savedTheme);
+                });
+            }
         }
     } catch (error) {
         console.error('Error cargando perfil:', error);
@@ -794,7 +800,6 @@ function updateAvatarDisplay(avatarType) {
         if (avatar) avatar.className = `fas fa-${avatarType}`;
     });
     
-    // Actualizar también las opciones activas en configuración
     const avatarOptions = document.querySelectorAll('.avatar-option');
     avatarOptions.forEach(option => {
         option.classList.toggle('active', option.dataset.avatar === avatarType);
@@ -806,28 +811,41 @@ async function saveProfile() {
         const user = await getUser();
         const username = document.getElementById('username').value;
         const selectedAvatar = document.querySelector('.avatar-option.active')?.dataset.avatar || 'user-circle';
+        const selectedTheme = document.querySelector('.theme-option.active')?.dataset.theme || 'default';
         
         // Actualizar nombre en auth.users
-        const { error } = await supabase.auth.updateUser({
+        const { error: authError } = await supabase.auth.updateUser({
             data: { full_name: username }
         });
         
-        if (error) throw error;
+        if (authError) throw authError;
         
-        // Guardar avatar en localStorage
-        localStorage.setItem('mydaily-avatar', selectedAvatar);
-        userAvatarGlobal = selectedAvatar;
-        
-        // Actualizar displays en toda la aplicación
-        const usernameDisplays = document.querySelectorAll('.username');
-        usernameDisplays.forEach(display => {
-            if (display) display.textContent = username;
+        // Guardar configuraciones en la BD
+        const success = await guardarConfiguracionUsuario({
+            avatar: selectedAvatar,
+            tema: selectedTheme,
+            // Otros campos de configuración...
         });
         
-        // Actualizar avatar en toda la aplicación
-        updateAvatarDisplay(selectedAvatar);
-        
-        alert('Perfil guardado exitosamente');
+        if (success) {
+            // Actualizar globals
+            userAvatarGlobal = selectedAvatar;
+            
+            // Actualizar displays
+            const usernameDisplays = document.querySelectorAll('.username');
+            usernameDisplays.forEach(display => {
+                if (display) display.textContent = username;
+            });
+            
+            updateAvatarDisplay(selectedAvatar);
+            document.documentElement.setAttribute('data-theme', selectedTheme);
+            
+            // También guardar en localStorage como backup
+            localStorage.setItem('mydaily-avatar', selectedAvatar);
+            localStorage.setItem('mydaily-theme', selectedTheme);
+            
+            alert('Perfil guardado exitosamente');
+        }
     } catch (error) {
         console.error('Error guardando perfil:', error);
         alert('Error al guardar perfil: ' + error.message);
@@ -859,28 +877,20 @@ async function deleteAccount() {
     if (confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.')) {
         if (confirm('Confirma nuevamente: ¿Eliminar cuenta permanentemente?')) {
             try {
-                const user = await getUser();
+                const success = await eliminarTodosLosDatosUsuario();
                 
-                // Eliminar todos los datos del usuario
-                await Promise.all([
-                    supabase.from('notas').delete().eq('user_id', user.id),
-                    supabase.from('habitos').delete().eq('user_id', user.id),
-                    supabase.from('actividades').delete().eq('user_id', user.id),
-                    supabase.from('agenda').delete().in('id_cal', 
-                        eventsData.map(e => e.id_cal)
-                    ),
-                    supabase.from('calendario').delete().eq('user_id', user.id)
-                ]);
-                
-                // Limpiar datos locales
-                notesData = [];
-                habitsData = [];
-                eventsData = [];
-                activitiesData = [];
-                localStorage.clear();
-                
-                alert('Todos los datos han sido eliminados. Cerrando sesión...');
-                await logout();
+                if (success) {
+                    notesData = [];
+                    habitsData = [];
+                    eventsData = [];
+                    activitiesData = [];
+                    localStorage.clear();
+                    
+                    alert('Todos los datos han sido eliminados. Cerrando sesión...');
+                    await logout();
+                } else {
+                    alert('Error al eliminar los datos de la cuenta');
+                }
             } catch (error) {
                 console.error('Error eliminando datos:', error);
                 alert('Error al eliminar la cuenta: ' + error.message);
@@ -902,21 +912,33 @@ function sendFeedback() {
 }
 
 // Funciones adicionales necesarias
-function toggleHabit(id) {
-    console.log('Toggle hábito:', id);
-    // Implementar lógica de toggle
+function editNote(id) {
+    const note = notesData.find(n => n.id_notas === id);
+    if (!note) return;
+    
+    currentEditId = id;
+    const modal = document.getElementById('note-modal');
+    const form = modal.querySelector('form');
+    
+    form.title.value = note.nom;
+    form.content.value = note.cont;
+    form.mood.value = note.estado_animo;
+    form.favorite.checked = note.favorita;
+    
+    modal.querySelector('.modal-header h3').textContent = 'Editar Nota';
+    openModal('note-modal');
 }
 
 function editHabit(id) {
-    const habit = habitsData.find(h => (h.id_hab || h.id) === id);
+    const habit = habitsData.find(h => h.id_hab === id);
     if (!habit) return;
     
     currentEditId = id;
     const modal = document.getElementById('habit-modal');
     const form = modal.querySelector('form');
     
-    form.name.value = habit.nom || habit.name;
-    form.description.value = habit.descr || habit.description;
+    form.name.value = habit.nom;
+    form.description.value = habit.descr;
     form.frequency.value = 'daily';
     
     modal.querySelector('.modal-header h3').textContent = 'Editar Hábito';
@@ -943,18 +965,23 @@ function editEvent(id) {
     openModal('event-modal');
 }
 
-function updateHabitStats() {
-    const total = habitsData.length;
-    const completed = 0; // Implementar lógica de completados
-    const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+function editActivity(id) {
+    const activity = activitiesData.find(a => a.id === id);
+    if (!activity) return;
     
-    const totalEl = document.getElementById('total-habits');
-    const completedEl = document.getElementById('completed-today');
-    const rateEl = document.getElementById('completion-rate');
+    currentEditId = id;
+    const modal = document.getElementById('activity-modal');
+    const form = modal.querySelector('form');
     
-    if (totalEl) totalEl.textContent = total;
-    if (completedEl) completedEl.textContent = completed;
-    if (rateEl) rateEl.textContent = rate + '%';
+    form.title.value = activity.titulo;
+    form.description.value = activity.descripcion;
+    form.date.value = activity.fecha;
+    form.time.value = activity.hora;
+    form.priority.value = activity.prioridad;
+    form.category.value = activity.categoria;
+    
+    modal.querySelector('.modal-header h3').textContent = 'Editar Actividad';
+    openModal('activity-modal');
 }
 
 // Inicialización cuando el DOM esté listo
@@ -1071,7 +1098,7 @@ function setupFormHandlers() {
 }
 
 function setupFilters() {
-    // Filtro de eventos
+    // Filtros y búsquedas para cada sección
     const eventFilter = document.getElementById('event-filter');
     if (eventFilter) {
         eventFilter.addEventListener('change', function(e) {
@@ -1090,7 +1117,6 @@ function setupFilters() {
         });
     }
 
-    // Filtro de actividades
     const activityFilter = document.getElementById('activity-filter');
     if (activityFilter) {
         activityFilter.addEventListener('change', function(e) {
@@ -1109,7 +1135,6 @@ function setupFilters() {
         });
     }
 
-    // Búsqueda de notas
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
         searchInput.addEventListener('input', function(e) {
@@ -1129,7 +1154,6 @@ function setupFilters() {
         });
     }
 
-    // Filtro de notas
     const notesFilter = document.getElementById('notes-filter');
     if (notesFilter) {
         notesFilter.addEventListener('change', function(e) {
@@ -1147,15 +1171,12 @@ function setupFilters() {
     }
 }
 
-// ========== SELECTORES DE AVATAR Y TEMA ==========
 function setupAvatarAndThemeSelectors() {
     // Selección de avatares
     const avatarOptions = document.querySelectorAll('.avatar-option');
     avatarOptions.forEach(option => {
         option.addEventListener('click', function () {
-            // quitar clase activa a todos
             avatarOptions.forEach(o => o.classList.remove('active'));
-            // activar el clicado
             this.classList.add('active');
         });
     });
@@ -1164,26 +1185,11 @@ function setupAvatarAndThemeSelectors() {
     const themeOptions = document.querySelectorAll('.theme-option');
     themeOptions.forEach(option => {
         option.addEventListener('click', function () {
-            // quitar clase activa a todos
             themeOptions.forEach(o => o.classList.remove('active'));
-            // activar el clicado
             this.classList.add('active');
             const selectedTheme = this.getAttribute('data-theme');
 
-            // aplicar el tema al documento
             document.documentElement.setAttribute('data-theme', selectedTheme);
-
-            // guardar preferencia en localStorage
-            localStorage.setItem('mydaily-theme', selectedTheme);
         });
     });
-
-    // Restaurar tema guardado al cargar
-    const savedTheme = localStorage.getItem('mydaily-theme');
-    if (savedTheme) {
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        themeOptions.forEach(o => {
-            o.classList.toggle('active', o.getAttribute('data-theme') === savedTheme);
-        });
-    }
 }
