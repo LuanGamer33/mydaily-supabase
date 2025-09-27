@@ -9,6 +9,10 @@
     <link href="img/Carpincho de pie sobre un parche de hierba.png" rel="icon">
 </head>
 <body>
+    <div id="loading-indicator" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 3000; background: rgba(0,0,0,0.8); color: white; padding: 1rem; border-radius: 8px;">
+        <i class="fas fa-spinner fa-spin"></i> Cargando...
+    </div>
+
     <header class="header">
         <div class="header-content">
             <div class="logo-section">
@@ -27,7 +31,7 @@
                 <div class="user-avatar">
                     <i class="fas fa-user-circle"></i>
                 </div>
-                <span class="username">Usuario Demo</span>
+                <span class="username">Cargando...</span>
             </div>
 
             <!-- Navegación -->
@@ -64,7 +68,7 @@
                     <!-- Calendario -->
                     <div class="calendar-section">
                         <div class="section-header">
-                            <h3 id="current-month"></h3>
+                            <h3 id="current-month">Calendario</h3>
                         </div>
                         <div class="calendar-grid">
                             <div class="calendar-header">
@@ -86,9 +90,9 @@
                                 </button>
                             </div>
                             <div class="card-content">
-                                <div class="preview-item" onclick="window.location.href='notes.html'">Mi primera nota</div>
-                                <div class="preview-item" onclick="window.location.href='notes.html'">Ideas importantes</div>
-                                <div class="preview-item" onclick="window.location.href='notes.html'">Lista de compras</div>
+                                <div class="preview-item" style="color: var(--text-light); text-align: center;">
+                                    <i class="fas fa-spinner fa-spin"></i> Cargando notas...
+                                </div>
                             </div>
                         </div>
 
@@ -101,9 +105,9 @@
                                 </button>
                             </div>
                             <div class="card-content">
-                                <div class="preview-item" onclick="window.location.href='habits.html'">Ejercicio matutino</div>
-                                <div class="preview-item" onclick="window.location.href='habits.html'">Leer 30 minutos</div>
-                                <div class="preview-item" onclick="window.location.href='habits.html'">Meditar</div>
+                                <div class="preview-item" style="color: var(--text-light); text-align: center;">
+                                    <i class="fas fa-spinner fa-spin"></i> Cargando hábitos...
+                                </div>
                             </div>
                         </div>
 
@@ -116,9 +120,9 @@
                                 </button>
                             </div>
                             <div class="card-content">
-                                <div class="preview-item" onclick="window.location.href='activities.html'">Reunión de trabajo - 15/08</div>
-                                <div class="preview-item" onclick="window.location.href='activities.html'">Dentista - 20/08</div>
-                                <div class="preview-item" onclick="window.location.href='activities.html'">Cumpleaños María - 25/08</div>
+                                <div class="preview-item" style="color: var(--text-light); text-align: center;">
+                                    <i class="fas fa-spinner fa-spin"></i> Cargando actividades...
+                                </div>
                             </div>
                         </div>
 
@@ -131,9 +135,9 @@
                                 </button>
                             </div>
                             <div class="card-content">
-                                <div class="preview-item" onclick="window.location.href='events.html'">Conferencia Tech - 18/08</div>
-                                <div class="preview-item" onclick="window.location.href='events.html'">Concierto - 22/08</div>
-                                <div class="preview-item" onclick="window.location.href='events.html'">Viaje familiar - 30/08</div>
+                                <div class="preview-item" style="color: var(--text-light); text-align: center;">
+                                    <i class="fas fa-spinner fa-spin"></i> Cargando eventos...
+                                </div>
                             </div>
                         </div>
 
@@ -145,6 +149,31 @@
                             <div class="card-content inspiration-content">
                                 <p class="inspiration-text" id="inspiration-message">El éxito es la suma de pequeños esfuerzos repetidos día tras día.</p>
                                 <small class="inspiration-time" id="inspiration-time">Actualizado: 09:30 AM</small>
+                            </div>
+                        </div>
+
+                        <!-- Estadísticas Rápidas -->
+                        <div class="preview-card stats-card">
+                            <div class="card-header">
+                                <h4>ESTADÍSTICAS</h4>
+                            </div>
+                            <div class="card-content stats-content">
+                                <div class="stat-row">
+                                    <span class="stat-label">Notas totales:</span>
+                                    <span class="stat-value" id="total-notes-stat">0</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Hábitos activos:</span>
+                                    <span class="stat-value" id="total-habits-stat">0</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Eventos próximos:</span>
+                                    <span class="stat-value" id="total-events-stat">0</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Tareas pendientes:</span>
+                                    <span class="stat-value" id="pending-activities-stat">0</span>
+                                </div>
                             </div>
                         </div>
                     </div>
