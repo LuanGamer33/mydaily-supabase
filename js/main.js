@@ -7,43 +7,64 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     // Cargar perfil de usuario desde Supabase
-    loadUserProfile();
+    await loadUserProfile();
+    
+    // Cargar datos desde Supabase
+    await loadAllData();
 });
 
-// Datos globales para almacenar información
-let notesData = [
-    { id: 1, title: "Mi primera nota", content: "Esta es mi primera nota en MyDaily. Aquí puedo escribir todas mis ideas importantes y pensamientos del día.", date: "2025-08-15", favorite: false, image: "", mood: "sun"},
-    { id: 2, title: "Ideas importantes", content: "Recordar implementar las nuevas funciones en el proyecto. También investigar sobre las últimas tendencias en diseño UX.", date: "2025-08-16", favorite: true, image: "", mood: "cloud"},
-    { id: 3, title: "Lista de compras", content: "Leche, Pan integral, Frutas variadas, Verduras frescas, Pollo", date: "2025-08-17", favorite: false, image: "", mood: "rain"},
-    { id: 4, title: "Reflexiones del día", content: "Hoy fue un día productivo. Logré completar la mayoría de mis tareas y me siento satisfecho con el progreso.", date: "2025-08-18", favorite: false, image: "", mood: "sun"},
-    { id: 5, title: "Libros por leer", content: "Atomic Habits - James Clear, The Psychology of Money - Morgan Housel, Deep Work - Cal Newport", date: "2025-08-19", favorite: false, image: "", mood: "cloud"},
-    { id: 6, title: "Metas del mes", content: "Objetivos para agosto: Terminar el curso online, hacer ejercicio 5 veces por semana, leer 2 libros completos.", date: "2025-08-20", favorite: false, image: "", mood: "sun"}
-];
-
-let habitsData = [
-    { id: 1, name: "Ejercicio matutino", description: "30 minutos de ejercicio al levantarme", streak: 5, weekProgress: 5, completed: false },
-    { id: 2, name: "Leer 30 minutos", description: "Lectura diaria para el crecimiento personal", streak: 12, weekProgress: 7, completed: true },
-    { id: 3, name: "Meditar", description: "10 minutos de meditación para la paz mental", streak: 3, weekProgress: 3, completed: false }
-];
-
-let eventsData = [
-    { id: 1, title: "Conferencia Tech", description: "Conferencia sobre las últimas tendencias en tecnología", date: "2025-09-18", time: "09:00", location: "Centro de Convenciones", category: "tech" },
-    { id: 2, title: "Concierto de Música Clásica", description: "Una velada especial con la orquesta sinfónica", date: "2025-09-22", time: "20:00", location: "Teatro Nacional", category: "music" },
-    { id: 3, title: "Viaje Familiar", description: "Fin de semana de relajación en la playa", date: "2025-09-30", time: "", location: "Playa del Carmen", category: "personal" },
-    { id: 4, title: "Cumpleaños de Ana", description: "Celebración del cumpleaños de mi hermana", date: "2025-08-10", time: "18:00", location: "Casa de Ana", category: "personal" }
-];
-
-let activitiesData = [
-    { id: 1, title: "Reunión de trabajo", description: "Presentación del nuevo proyecto con el equipo", date: "2025-09-15", time: "10:00", priority: "high", category: "trabajo", completed: false },
-    { id: 2, title: "Comprar regalo para María", description: "Buscar un regalo especial para el cumpleaños", date: "2025-09-18", time: "16:00", priority: "medium", category: "personal", completed: true },
-    { id: 3, title: "Cita con el dentista", description: "Revisión dental semestral y limpieza", date: "2025-09-20", time: "14:30", priority: "medium", category: "salud", completed: false },
-    { id: 4, title: "Renovar licencia de conducir", description: "Tramitar la renovación antes del vencimiento", date: "2025-09-22", time: "09:00", priority: "low", category: "administrativa", completed: true },
-    { id: 5, title: "Preparar presentación", description: "Finalizar la presentación para el cliente del viernes", date: "2025-09-25", time: "", priority: "high", category: "trabajo", completed: false },
-    { id: 6, title: "Organizar viaje familiar", description: "Planificar alojamiento y actividades para el fin de semana", date: "2025-09-30", time: "18:00", priority: "low", category: "personal", completed: false }
-];
-
+// Variables globales para datos dinámicos
+let notesData = [];
+let habitsData = [];
+let eventsData = [];
+let activitiesData = [];
 let currentEditId = null;
 let currentEditType = null;
+
+// Cargar todos los datos desde Supabase
+async function loadAllData() {
+    try {
+        notesData = await listarNotas();
+        habitsData = await listarHabitos();
+        eventsData = await listarEventos();
+        activitiesData = await listarActividades();
+        
+        // Renderizar según la página actual
+        if (window.location.pathname.includes('notes.html')) {
+            renderNotes();
+        } else if (window.location.pathname.includes('habits.html')) {
+            renderHabits();
+        } else if (window.location.pathname.includes('events.html')) {
+            renderEvents();
+        } else if (window.location.pathname.includes('activities.html')) {
+            renderActivities();
+        }
+        
+        generateCalendar();
+    } catch (error) {
+        console.error('Error cargando datos:', error);
+    }
+}
+
+// Función para cerrar sesión
+async function logout() {
+    try {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+        
+        // Limpiar datos locales
+        notesData = [];
+        habitsData = [];
+        eventsData = [];
+        activitiesData = [];
+        localStorage.clear();
+        
+        // Redirigir al login
+        window.location.href = 'index.html';
+    } catch (error) {
+        alert('Error al cerrar sesión: ' + error.message);
+    }
+}
 
 // Generar calendario con fecha actual mejorado
 function generateCalendar() {
@@ -90,8 +111,8 @@ function generateCalendar() {
         // Verificar eventos y actividades para este día
         const currentDateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
         
-        const hasEvent = eventsData.some(e => e.date === currentDateStr);
-        const hasActivity = activitiesData.some(a => a.date === currentDateStr);
+        const hasEvent = eventsData.some(e => e.fecha === currentDateStr);
+        const hasActivity = activitiesData.some(a => a.fecha === currentDateStr);
         
         if (hasEvent || hasActivity) {
             dayElement.classList.add('has-event');
@@ -170,7 +191,7 @@ function formatDate(dateString) {
 }
 
 function getNextId(array) {
-    return array.length > 0 ? Math.max(...array.map(item => item.id)) + 1 : 1;
+    return array.length > 0 ? Math.max(...array.map(item => item.id || item.id_notas || item.id_hab || item.id_cal)) + 1 : 1;
 }
 
 // Función para manejar carga de imagen
@@ -198,98 +219,82 @@ function renderNotes() {
     
     notesContainer.innerHTML = '';
     
+    if (notesData.length === 0) {
+        notesContainer.innerHTML = '<p style="text-align: center; color: var(--text-light);">No tienes notas aún. ¡Crea tu primera nota!</p>';
+        return;
+    }
+    
     notesData.forEach(note => {
-        const moodIcons = {
-            sun: '<i class="fas fa-sun" style="color: #ffb74d;"></i>',
-            cloud: '<i class="fas fa-cloud" style="color: #90a4ae;"></i>',
-            rain: '<i class="fas fa-cloud-rain" style="color: #64b5f6;"></i>',
-            storm: '<i class="fas fa-bolt" style="color: #9575cd;"></i>'
-        };
-        
         const noteCard = document.createElement('div');
-        noteCard.className = `note-card ${note.favorite ? 'favorite' : ''}`;
+        noteCard.className = 'note-card';
         noteCard.innerHTML = `
             <div class="note-header">
-                <h4>${note.title}</h4>
+                <h4>${note.nom || note.title}</h4>
                 <div class="note-actions">
-                    <button class="favorite-btn ${note.favorite ? 'active' : ''}" onclick="toggleNoteFavorite(${note.id})">
-                        <i class="fas fa-star"></i>
-                    </button>
-                    <button onclick="editNote(${note.id})" class="edit-btn"><i class="fas fa-edit"></i></button>
-                    <button onclick="deleteNote(${note.id})" class="delete-btn"><i class="fas fa-trash"></i></button>
+                    <button onclick="editNote(${note.id_notas || note.id})" class="edit-btn"><i class="fas fa-edit"></i></button>
+                    <button onclick="deleteNote(${note.id_notas || note.id})" class="delete-btn"><i class="fas fa-trash"></i></button>
                 </div>
             </div>
             <div class="note-content">
-                <p>${note.content}</p>
-                ${note.image ? `<img src="${note.image}" alt="Note Image" class="note-image" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">` : ''}
+                <p>${note.cont || note.content}</p>
             </div>
             <div class="note-footer">
-                <span class="note-date"><i class="fas fa-calendar"></i> ${formatDate(note.date)}</span>
-                <span class="note-words"><i class="fas fa-file-word"></i> ${note.content.split(' ').length} palabras</span>
-                <span class="note-mood">${moodIcons[note.mood] || moodIcons.sun}</span>
+                <span class="note-date"><i class="fas fa-calendar"></i> ${new Date().toLocaleDateString('es-ES')}</span>
+                <span class="note-words"><i class="fas fa-file-word"></i> ${(note.cont || note.content).split(' ').length} palabras</span>
             </div>
         `;
         notesContainer.appendChild(noteCard);
     });
 }
 
-function saveNote(noteData) {
-    if (currentEditId) {
-        // Editar nota existente
-        const index = notesData.findIndex(note => note.id === currentEditId);
-        if (index !== -1) {
-            notesData[index] = { ...notesData[index], ...noteData };
+async function saveNote(noteData) {
+    try {
+        if (currentEditId) {
+            // Editar nota existente - implementar cuando sea necesario
+            console.log('Editar nota no implementado aún');
+        } else {
+            // Crear nueva nota
+            await insertarNota(noteData.title, noteData.content);
+            await loadAllData();
+            renderNotes();
         }
-    } else {
-        // Crear nueva nota
-        const newNote = {
-            id: getNextId(notesData),
-            ...noteData,
-            date: new Date().toISOString().split('T')[0]
-        };
-        notesData.push(newNote);
+    } catch (error) {
+        console.error('Error guardando nota:', error);
+        alert('Error al guardar la nota: ' + error.message);
     }
-    renderNotes();
 }
 
 function editNote(id) {
-    const note = notesData.find(n => n.id === id);
+    const note = notesData.find(n => (n.id_notas || n.id) === id);
     if (!note) return;
     
     currentEditId = id;
     const modal = document.getElementById('note-modal');
     const form = modal.querySelector('form');
     
-    form.title.value = note.title;
-    form.content.value = note.content;
-    form.favorite.checked = note.favorite;
-    form.mood.value = note.mood;
-    
-    // Mostrar imagen si existe
-    if (note.image) {
-        const preview = document.getElementById('image-preview');
-        if (preview) {
-            preview.src = note.image;
-            preview.style.display = 'block';
-        }
-    }
+    form.title.value = note.nom || note.title;
+    form.content.value = note.cont || note.content;
     
     modal.querySelector('.modal-header h3').textContent = 'Editar Nota';
     openModal('note-modal');
 }
 
-function deleteNote(id) {
+async function deleteNote(id) {
     if (confirm('¿Estás seguro de que quieres eliminar esta nota?')) {
-        notesData = notesData.filter(note => note.id !== id);
-        renderNotes();
-    }
-}
-
-function toggleNoteFavorite(id) {
-    const note = notesData.find(n => n.id === id);
-    if (note) {
-        note.favorite = !note.favorite;
-        renderNotes();
+        try {
+            const { error } = await supabase
+                .from('notas')
+                .delete()
+                .eq('id_notas', id);
+            
+            if (error) throw error;
+            
+            await loadAllData();
+            renderNotes();
+        } catch (error) {
+            console.error('Error eliminando nota:', error);
+            alert('Error al eliminar la nota: ' + error.message);
+        }
     }
 }
 
@@ -300,36 +305,40 @@ function renderHabits() {
     
     habitsContainer.innerHTML = '';
     
+    if (habitsData.length === 0) {
+        habitsContainer.innerHTML = '<p style="text-align: center; color: var(--text-light);">No tienes hábitos aún. ¡Crea tu primer hábito!</p>';
+        return;
+    }
+    
     habitsData.forEach(habit => {
         const habitCard = document.createElement('div');
-        habitCard.className = `item-card habit-card ${habit.completed ? 'completed' : ''}`;
-        const progressPercent = Math.round((habit.weekProgress / 7) * 100);
+        habitCard.className = 'item-card habit-card';
         
         habitCard.innerHTML = `
             <div class="habit-header">
-                <h4>${habit.name}</h4>
+                <h4>${habit.nom || habit.name}</h4>
                 <div class="habit-streak">
                     <i class="fas fa-fire"></i>
-                    <span>${habit.streak} días</span>
+                    <span>0 días</span>
                 </div>
             </div>
-            <p class="habit-description">${habit.description}</p>
+            <p class="habit-description">${habit.descr || habit.description}</p>
             <div class="habit-progress">
                 <div class="progress-bar">
-                    <div class="progress-fill" style="width: ${progressPercent}%"></div>
+                    <div class="progress-fill" style="width: 0%"></div>
                 </div>
-                <small>${habit.weekProgress}/7 días esta semana</small>
+                <small>0/7 días esta semana</small>
             </div>
             <div class="habit-status">
                 <label class="habit-checkbox">
-                    <input type="checkbox" ${habit.completed ? 'checked' : ''} onchange="toggleHabit(${habit.id})">
+                    <input type="checkbox" onchange="toggleHabit(${habit.id_hab || habit.id})">
                     <span class="checkmark"></span>
                     Completado hoy
                 </label>
             </div>
             <div class="item-actions">
-                <button onclick="editHabit(${habit.id})" class="edit-btn"><i class="fas fa-edit"></i></button>
-                <button onclick="deleteHabit(${habit.id})" class="delete-btn"><i class="fas fa-trash"></i></button>
+                <button onclick="editHabit(${habit.id_hab || habit.id})" class="edit-btn"><i class="fas fa-edit"></i></button>
+                <button onclick="deleteHabit(${habit.id_hab || habit.id})" class="delete-btn"><i class="fas fa-trash"></i></button>
             </div>
         `;
         habitsContainer.appendChild(habitCard);
@@ -337,45 +346,31 @@ function renderHabits() {
     updateHabitStats();
 }
 
-function saveHabit(habitData) {
-    if (currentEditId) {
-        // Editar hábito existente
-        const index = habitsData.findIndex(habit => habit.id === currentEditId);
-        if (index !== -1) {
-            habitsData[index] = { ...habitsData[index], ...habitData };
+async function saveHabit(habitData) {
+    try {
+        if (currentEditId) {
+            // Editar hábito existente - implementar cuando sea necesario
+            console.log('Editar hábito no implementado aún');
+        } else {
+            // Crear nuevo hábito
+            await insertarHabito(habitData.name, '08:00', 'medium', habitData.description);
+            await loadAllData();
+            renderHabits();
         }
-    } else {
-        // Crear nuevo hábito
-        const newHabit = {
-            id: getNextId(habitsData),
-            ...habitData,
-            streak: 0,
-            weekProgress: 0,
-            completed: false
-        };
-        habitsData.push(newHabit);
+    } catch (error) {
+        console.error('Error guardando hábito:', error);
+        alert('Error al guardar el hábito: ' + error.message);
     }
-    renderHabits();
 }
 
 function toggleHabit(id) {
-    const habit = habitsData.find(h => h.id === id);
-    if (habit) {
-        habit.completed = !habit.completed;
-        if (habit.completed) {
-            habit.streak++;
-            habit.weekProgress = Math.min(habit.weekProgress + 1, 7);
-        } else {
-            habit.streak = Math.max(habit.streak - 1, 0);
-            habit.weekProgress = Math.max(habit.weekProgress - 1, 0);
-        }
-        renderHabits();
-    }
+    // Implementar toggle de hábito
+    console.log('Toggle hábito:', id);
 }
 
 function updateHabitStats() {
     const total = habitsData.length;
-    const completed = habitsData.filter(h => h.completed).length;
+    const completed = 0; // Implementar lógica de completados
     const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
     
     const totalEl = document.getElementById('total-habits');
@@ -388,25 +383,37 @@ function updateHabitStats() {
 }
 
 function editHabit(id) {
-    const habit = habitsData.find(h => h.id === id);
+    const habit = habitsData.find(h => (h.id_hab || h.id) === id);
     if (!habit) return;
     
     currentEditId = id;
     const modal = document.getElementById('habit-modal');
     const form = modal.querySelector('form');
     
-    form.name.value = habit.name;
-    form.description.value = habit.description;
+    form.name.value = habit.nom || habit.name;
+    form.description.value = habit.descr || habit.description;
     form.frequency.value = 'daily';
     
     modal.querySelector('.modal-header h3').textContent = 'Editar Hábito';
     openModal('habit-modal');
 }
 
-function deleteHabit(id) {
+async function deleteHabit(id) {
     if (confirm('¿Estás seguro de que quieres eliminar este hábito?')) {
-        habitsData = habitsData.filter(habit => habit.id !== id);
-        renderHabits();
+        try {
+            const { error } = await supabase
+                .from('habitos')
+                .delete()
+                .eq('id_hab', id);
+            
+            if (error) throw error;
+            
+            await loadAllData();
+            renderHabits();
+        } catch (error) {
+            console.error('Error eliminando hábito:', error);
+            alert('Error al eliminar el hábito: ' + error.message);
+        }
     }
 }
 
@@ -417,25 +424,18 @@ function renderEvents() {
     
     eventsContainer.innerHTML = '';
     
-    // Ordenar eventos por fecha
-    const sortedEvents = [...eventsData].sort((a, b) => new Date(a.date) - new Date(b.date));
+    if (eventsData.length === 0) {
+        eventsContainer.innerHTML = '<p style="text-align: center; color: var(--text-light);">No tienes eventos aún. ¡Crea tu primer evento!</p>';
+        return;
+    }
     
-    sortedEvents.forEach(event => {
+    eventsData.forEach(event => {
         const eventItem = document.createElement('div');
-        const eventDate = new Date(event.date);
+        const eventDate = new Date(event.fecha);
         const today = new Date();
         const isPast = eventDate < today;
         
         eventItem.className = `event-item ${isPast ? 'past' : 'upcoming'}`;
-        
-        const categoryColors = {
-            tech: '#2196F3',
-            music: '#9C27B0',
-            personal: '#4CAF50',
-            trabajo: '#FF9800',
-            sport: '#F44336',
-            educacion: '#607D8B'
-        };
         
         eventItem.innerHTML = `
             <div class="event-date">
@@ -444,16 +444,16 @@ function renderEvents() {
                 <div class="date-year">${eventDate.getFullYear()}</div>
             </div>
             <div class="event-content">
-                <h4>${event.title}</h4>
-                <p class="event-description">${event.description}</p>
+                <h4>${event.nom}</h4>
+                <p class="event-description">${event.descr}</p>
                 <div class="event-meta">
-                    ${event.time ? `<span class="event-time"><i class="fas fa-clock"></i> ${event.time}</span>` : ''}
-                    ${event.location ? `<span class="event-location"><i class="fas fa-map-marker-alt"></i> ${event.location}</span>` : ''}
-                    <span class="event-category ${event.category}" style="background: ${categoryColors[event.category] || '#666'}">${event.category}</span>
+                    ${event.agenda && event.agenda[0] ? `<span class="event-time"><i class="fas fa-clock"></i> ${event.agenda[0].hora_i} - ${event.agenda[0].hora_f}</span>` : ''}
+                    ${event.lugar ? `<span class="event-location"><i class="fas fa-map-marker-alt"></i> ${event.lugar}</span>` : ''}
+                    <span class="event-category personal">Evento</span>
                 </div>
                 <div class="event-actions">
-                    <button onclick="editEvent(${event.id})" class="edit-btn"><i class="fas fa-edit"></i></button>
-                    <button onclick="deleteEvent(${event.id})" class="delete-btn"><i class="fas fa-trash"></i></button>
+                    <button onclick="editEvent(${event.id_cal})" class="edit-btn"><i class="fas fa-edit"></i></button>
+                    <button onclick="deleteEvent(${event.id_cal})" class="delete-btn"><i class="fas fa-trash"></i></button>
                 </div>
             </div>
         `;
@@ -461,49 +461,78 @@ function renderEvents() {
     });
 }
 
-function saveEvent(eventData) {
-    if (currentEditId) {
-        // Editar evento existente
-        const index = eventsData.findIndex(event => event.id === currentEditId);
-        if (index !== -1) {
-            eventsData[index] = { ...eventsData[index], ...eventData };
+async function saveEvent(eventData) {
+    try {
+        if (currentEditId) {
+            // Editar evento existente - implementar cuando sea necesario
+            console.log('Editar evento no implementado aún');
+        } else {
+            // Crear nuevo evento
+            await insertarEvento(
+                eventData.title,
+                eventData.description,
+                eventData.date,
+                eventData.location || '',
+                'medium',
+                1, // id_categoria por defecto
+                1, // id_recurrencia por defecto
+                eventData.time || '09:00',
+                eventData.time ? eventData.time : '10:00'
+            );
+            await loadAllData();
+            renderEvents();
         }
-    } else {
-        // Crear nuevo evento
-        const newEvent = {
-            id: getNextId(eventsData),
-            ...eventData
-        };
-        eventsData.push(newEvent);
+    } catch (error) {
+        console.error('Error guardando evento:', error);
+        alert('Error al guardar el evento: ' + error.message);
     }
-    renderEvents();
-    generateCalendar(); // Regenerar calendario para mostrar nuevos eventos
 }
 
 function editEvent(id) {
-    const event = eventsData.find(e => e.id === id);
+    const event = eventsData.find(e => e.id_cal === id);
     if (!event) return;
     
     currentEditId = id;
     const modal = document.getElementById('event-modal');
     const form = modal.querySelector('form');
     
-    form.title.value = event.title;
-    form.description.value = event.description;
-    form.date.value = event.date;
-    form.time.value = event.time;
-    form.location.value = event.location;
-    form.category.value = event.category;
+    form.title.value = event.nom;
+    form.description.value = event.descr;
+    form.date.value = event.fecha;
+    form.location.value = event.lugar;
+    if (event.agenda && event.agenda[0]) {
+        form.time.value = event.agenda[0].hora_i;
+    }
     
     modal.querySelector('.modal-header h3').textContent = 'Editar Evento';
     openModal('event-modal');
 }
 
-function deleteEvent(id) {
+async function deleteEvent(id) {
     if (confirm('¿Estás seguro de que quieres eliminar este evento?')) {
-        eventsData = eventsData.filter(event => event.id !== id);
-        renderEvents();
-        generateCalendar(); // Regenerar calendario
+        try {
+            // Primero eliminar de agenda
+            const { error: agendaError } = await supabase
+                .from('agenda')
+                .delete()
+                .eq('id_cal', id);
+            
+            if (agendaError) throw agendaError;
+            
+            // Luego eliminar de calendario
+            const { error: calError } = await supabase
+                .from('calendario')
+                .delete()
+                .eq('id_cal', id);
+            
+            if (calError) throw calError;
+            
+            await loadAllData();
+            renderEvents();
+        } catch (error) {
+            console.error('Error eliminando evento:', error);
+            alert('Error al eliminar el evento: ' + error.message);
+        }
     }
 }
 
@@ -514,9 +543,14 @@ function renderActivities() {
     
     activitiesContainer.innerHTML = '';
     
+    if (activitiesData.length === 0) {
+        activitiesContainer.innerHTML = '<p style="text-align: center; color: var(--text-light);">No tienes actividades aún. ¡Crea tu primera actividad!</p>';
+        return;
+    }
+    
     activitiesData.forEach(activity => {
         const activityCard = document.createElement('div');
-        activityCard.className = `activity-card ${activity.completed ? 'completed' : 'pending'}`;
+        activityCard.className = `activity-card ${activity.completada ? 'completed' : 'pending'}`;
         
         const priorityIcons = {
             high: 'fas fa-exclamation-circle',
@@ -524,30 +558,22 @@ function renderActivities() {
             low: 'fas fa-circle'
         };
         
-        const categoryColors = {
-            personal: '#4CAF50',
-            trabajo: '#2196F3',
-            salud: '#f44336',
-            administrativa: '#ff9800',
-            educacion: '#9C27B0'
-        };
-        
         activityCard.innerHTML = `
-            <div class="activity-priority ${activity.priority}">
-                <i class="${priorityIcons[activity.priority]}"></i>
+            <div class="activity-priority ${activity.prioridad || 'medium'}">
+                <i class="${priorityIcons[activity.prioridad] || priorityIcons.medium}"></i>
             </div>
             <div class="activity-content">
-                <h4>${activity.title}</h4>
-                <p class="activity-description">${activity.description}</p>
+                <h4>${activity.titulo}</h4>
+                <p class="activity-description">${activity.descripcion}</p>
                 <div class="activity-meta">
-                    <span class="activity-date"><i class="fas fa-calendar"></i> ${formatDate(activity.date)}</span>
-                    ${activity.time ? `<span class="activity-time"><i class="fas fa-clock"></i> ${activity.time}</span>` : ''}
-                    <span class="activity-category ${activity.category}" style="background: ${categoryColors[activity.category] || '#666'}">${activity.category}</span>
+                    <span class="activity-date"><i class="fas fa-calendar"></i> ${formatDate(activity.fecha)}</span>
+                    ${activity.hora ? `<span class="activity-time"><i class="fas fa-clock"></i> ${activity.hora}</span>` : ''}
+                    <span class="activity-category ${activity.categoria || 'personal'}">${activity.categoria || 'Personal'}</span>
                 </div>
             </div>
             <div class="activity-status">
                 <label class="activity-checkbox">
-                    <input type="checkbox" ${activity.completed ? 'checked' : ''} onchange="toggleActivity(${activity.id})">
+                    <input type="checkbox" ${activity.completada ? 'checked' : ''} onchange="toggleActivity(${activity.id})">
                     <span class="checkmark"></span>
                 </label>
             </div>
@@ -561,37 +587,41 @@ function renderActivities() {
     updateActivityStats();
 }
 
-function saveActivity(activityData) {
-    if (currentEditId) {
-        // Editar actividad existente
-        const index = activitiesData.findIndex(activity => activity.id === currentEditId);
-        if (index !== -1) {
-            activitiesData[index] = { ...activitiesData[index], ...activityData };
+async function saveActivity(activityData) {
+    try {
+        if (currentEditId) {
+            // Editar actividad existente - implementar cuando sea necesario
+            console.log('Editar actividad no implementado aún');
+        } else {
+            // Crear nueva actividad
+            const success = await insertarActividad(
+                activityData.title,
+                activityData.description,
+                activityData.date,
+                activityData.time,
+                activityData.priority,
+                activityData.category
+            );
+            
+            if (success) {
+                await loadAllData();
+                renderActivities();
+            }
         }
-    } else {
-        // Crear nueva actividad
-        const newActivity = {
-            id: getNextId(activitiesData),
-            ...activityData,
-            completed: false
-        };
-        activitiesData.push(newActivity);
+    } catch (error) {
+        console.error('Error guardando actividad:', error);
+        alert('Error al guardar la actividad: ' + error.message);
     }
-    renderActivities();
-    generateCalendar(); // Regenerar calendario para mostrar nuevas actividades
 }
 
 function toggleActivity(id) {
-    const activity = activitiesData.find(a => a.id === id);
-    if (activity) {
-        activity.completed = !activity.completed;
-        renderActivities();
-    }
+    // Implementar toggle de actividad
+    console.log('Toggle actividad:', id);
 }
 
 function updateActivityStats() {
     const total = activitiesData.length;
-    const completed = activitiesData.filter(a => a.completed).length;
+    const completed = activitiesData.filter(a => a.completada).length;
     const pending = total - completed;
     
     const totalEl = document.getElementById('total-activities');
@@ -611,79 +641,99 @@ function editActivity(id) {
     const modal = document.getElementById('activity-modal');
     const form = modal.querySelector('form');
     
-    form.title.value = activity.title;
-    form.description.value = activity.description;
-    form.date.value = activity.date;
-    form.time.value = activity.time;
-    form.priority.value = activity.priority;
-    form.category.value = activity.category;
+    form.title.value = activity.titulo;
+    form.description.value = activity.descripcion;
+    form.date.value = activity.fecha;
+    form.time.value = activity.hora;
+    form.priority.value = activity.prioridad;
+    form.category.value = activity.categoria;
     
     modal.querySelector('.modal-header h3').textContent = 'Editar Actividad';
     openModal('activity-modal');
 }
 
-function deleteActivity(id) {
+async function deleteActivity(id) {
     if (confirm('¿Estás seguro de que quieres eliminar esta actividad?')) {
-        activitiesData = activitiesData.filter(activity => activity.id !== id);
-        renderActivities();
-        generateCalendar(); // Regenerar calendario
+        try {
+            const { error } = await supabase
+                .from('actividades')
+                .delete()
+                .eq('id', id);
+            
+            if (error) throw error;
+            
+            await loadAllData();
+            renderActivities();
+        } catch (error) {
+            console.error('Error eliminando actividad:', error);
+            alert('Error al eliminar la actividad: ' + error.message);
+        }
     }
 }
 
 // ========== FUNCIONES DE CONFIGURACIÓN - MEJORADAS ==========
-function loadUserProfile() {
-    const savedProfile = JSON.parse(localStorage.getItem('mydaily-profile') || '{}');
-    
-    // Cargar nombre de usuario guardado
-    if (savedProfile.username) {
-        const usernameInputs = document.querySelectorAll('#username');
+async function loadUserProfile() {
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Mostrar nombre de usuario del auth
         const usernameDisplays = document.querySelectorAll('.username');
+        const usernameInputs = document.querySelectorAll('#username');
+        const emailInputs = document.querySelectorAll('#email');
         
-        usernameInputs.forEach(input => {
-            if (input) input.value = savedProfile.username;
-        });
+        const displayName = user.user_metadata?.full_name || user.email.split('@')[0];
         
         usernameDisplays.forEach(display => {
-            if (display) display.textContent = savedProfile.username;
-        });
-    }
-    
-    // Cargar avatar guardado
-    if (savedProfile.avatar) {
-        const userAvatars = document.querySelectorAll('.user-avatar i');
-        const avatarOptions = document.querySelectorAll('.avatar-option');
-        
-        userAvatars.forEach(icon => {
-            if (icon) icon.className = `fas fa-${savedProfile.avatar}`;
+            if (display) display.textContent = displayName;
         });
         
-        avatarOptions.forEach(option => {
-            option.classList.toggle('active', option.dataset.avatar === savedProfile.avatar);
+        usernameInputs.forEach(input => {
+            if (input) input.value = displayName;
         });
+        
+        emailInputs.forEach(input => {
+            if (input) input.value = user.email;
+        });
+
+        // Cargar configuraciones guardadas
+        const savedTheme = localStorage.getItem('mydaily-theme');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const themeOptions = document.querySelectorAll('.theme-option');
+            themeOptions.forEach(o => {
+                o.classList.toggle('active', o.getAttribute('data-theme') === savedTheme);
+            });
+        }
+    } catch (error) {
+        console.error('Error cargando perfil:', error);
     }
 }
 
 async function saveProfile() {
-    const user = await getUser();
-    const username = document.getElementById('username').value;
-    const avatar = document.querySelector('.avatar-option.active')?.dataset.avatar;
-    
-    // Guardar en Supabase en lugar de localStorage
-    const { error } = await supabase
-        .from('configuraciones_usuario')
-        .upsert([{
-            user_id: user.id,
-            avatar: avatar
-        }]);
-    
-    if (error) return alert('Error: ' + error.message);
-    
-    // Actualizar nombre en auth.users
-    await supabase.auth.updateUser({
-        data: { full_name: username }
-    });
-    
-    alert('Perfil guardado exitosamente');
+    try {
+        const user = await getUser();
+        const username = document.getElementById('username').value;
+        
+        // Actualizar nombre en auth.users
+        const { error } = await supabase.auth.updateUser({
+            data: { full_name: username }
+        });
+        
+        if (error) throw error;
+        
+        // Actualizar displays
+        const usernameDisplays = document.querySelectorAll('.username');
+        usernameDisplays.forEach(display => {
+            if (display) display.textContent = username;
+        });
+        
+        alert('Perfil guardado exitosamente');
+        await loadUserProfile();
+    } catch (error) {
+        console.error('Error guardando perfil:', error);
+        alert('Error al guardar perfil: ' + error.message);
+    }
 }
 
 function exportData() {
@@ -707,18 +757,36 @@ function exportData() {
     URL.revokeObjectURL(url);
 }
 
-function deleteAccount() {
+async function deleteAccount() {
     if (confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.')) {
         if (confirm('Confirma nuevamente: ¿Eliminar cuenta permanentemente?')) {
-            // Limpiar todos los datos
-            notesData = [];
-            habitsData = [];
-            eventsData = [];
-            activitiesData = [];
-            localStorage.removeItem('mydaily-profile');
-            localStorage.removeItem('mydaily-theme');
-            
-            alert('Cuenta eliminada. Todos los datos han sido borrados.');
+            try {
+                const user = await getUser();
+                
+                // Eliminar todos los datos del usuario
+                await Promise.all([
+                    supabase.from('notas').delete().eq('user_id', user.id),
+                    supabase.from('habitos').delete().eq('user_id', user.id),
+                    supabase.from('actividades').delete().eq('user_id', user.id),
+                    supabase.from('agenda').delete().in('id_cal', 
+                        eventsData.map(e => e.id_cal)
+                    ),
+                    supabase.from('calendario').delete().eq('user_id', user.id)
+                ]);
+                
+                // Limpiar datos locales
+                notesData = [];
+                habitsData = [];
+                eventsData = [];
+                activitiesData = [];
+                localStorage.clear();
+                
+                alert('Todos los datos han sido eliminados. Cerrando sesión...');
+                await logout();
+            } catch (error) {
+                console.error('Error eliminando datos:', error);
+                alert('Error al eliminar la cuenta: ' + error.message);
+            }
         }
     }
 }
@@ -758,7 +826,7 @@ document.addEventListener('DOMContentLoaded', function() {
     logoutBtns.forEach(btn => {
         btn.addEventListener('click', function() {
             if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-                alert('Sesión cerrada. En una aplicación real, se redirigiría a la página de login.');
+                logout();
             }
         });
     });
@@ -796,45 +864,17 @@ function setupFormHandlers() {
         noteForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(e.target);
-            const imageInput = formData.get('image');
             
             const noteData = {
                 title: formData.get('title'),
                 content: formData.get('content'),
                 favorite: formData.get('favorite') === 'on',
-                mood: formData.get('mood') || 'sun',
-                image: ''
+                mood: formData.get('mood') || 'sun'
             };
             
-            // Manejar imagen si se seleccionó
-            if (imageInput && imageInput.size > 0) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    noteData.image = event.target.result;
-                    saveNote(noteData);
-                };
-                reader.readAsDataURL(imageInput);
-            } else {
-                // Si estamos editando, mantener la imagen existente
-                if (currentEditId) {
-                    const existingNote = notesData.find(n => n.id === currentEditId);
-                    if (existingNote) {
-                        noteData.image = existingNote.image;
-                    }
-                }
-                saveNote(noteData);
-            }
-            
+            saveNote(noteData);
             closeModal('note-modal');
         });
-        
-        // Event listener para preview de imagen
-        const imageInput = noteForm.querySelector('input[type="file"]');
-        if (imageInput) {
-            imageInput.addEventListener('change', function() {
-                handleImageUpload(this, 'image-preview');
-            });
-        }
     }
     
     // Formulario de hábitos
@@ -979,6 +1019,13 @@ function setupAvatarAndThemeSelectors() {
             avatarOptions.forEach(o => o.classList.remove('active'));
             // activar el clicado
             this.classList.add('active');
+            
+            // Actualizar avatar en sidebar
+            const selectedAvatar = this.getAttribute('data-avatar');
+            const userAvatars = document.querySelectorAll('.user-avatar i');
+            userAvatars.forEach(avatar => {
+                if (avatar) avatar.className = `fas fa-${selectedAvatar}`;
+            });
         });
     });
 
