@@ -951,7 +951,16 @@ body {
 @media (max-width: 768px) {
     .sidebar {
         transform: translateX(-100%);
+        position: fixed;
+        top: 80px; /* debajo del header */
+        left: 0;
+        height: calc(100vh - 80px);
+        z-index: 2000;
         transition: transform 0.3s ease;
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
     }
     
     .sidebar.open {

@@ -99,6 +99,25 @@ async function loadAllData() {
     }
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+    const logo = document.querySelector(".logo");
+    const sidebar = document.querySelector(".sidebar");
+
+    if (logo && sidebar) {
+        logo.addEventListener("click", () => {
+            sidebar.classList.toggle("active");
+        });
+    }
+});
+
+document.addEventListener("click", (e) => {
+    if (sidebar.classList.contains("active") &&
+        !sidebar.contains(e.target) &&
+        !logo.contains(e.target)) {
+        sidebar.classList.remove("active");
+    }
+});
+
 // Renderizar previews del dashboard (solo los 3 más recientes)
 function renderDashboardPreviews() {
     // Notas preview

@@ -8,21 +8,86 @@ function initializeElements() {
     container = document.querySelector('.container');
     registerBtn = document.querySelector('.register-btn');
     loginBtn = document.querySelector('.login-btn');
-    
-    // Verificar que los elementos existen antes de agregar listeners
-    if (registerBtn && container) {
-        registerBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            container.classList.add('active');
-        });
+
+    // Safety: si no hay container o botones, salimos (evita errores)
+    if (!container) return;
+
+    // Funciones internas
+    const showRegister = () => {
+        container.classList.add('active');
+        syncAria();
+        scrollAndFocus('.form-box.register');
+    };
+    const showLogin = () => {
+        container.classList.remove('active');
+        syncAria();
+        scrollAndFocus('.form-box.login');
+    };
+
+    // Event listeners principales
+    if (registerBtn) registerBtn.addEventListener('click', (e) => { e.preventDefault(); showRegister(); });
+    if (loginBtn) loginBtn.addEventListener('click', (e) => { e.preventDefault(); showLogin(); });
+
+    // Forzamos el estado correcto en carga (si ya está .active o no)
+    document.addEventListener('DOMContentLoaded', () => {
+        syncAria();
+    });
+
+    // On resize: si volvemos a escritorio, limpiamos estilos auxiliares
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            // Limpieza: restaurar cualquier pointer-events o inline styles
+            document.querySelectorAll('.form-box').forEach(el => {
+                el.style.pointerEvents = '';
+                el.style.maxHeight = '';
+                el.style.padding = '';
+                el.style.opacity = '';
+            });
+        } else {
+            syncAria();
+        }
+    });
+
+    // Helper: poner focus y scrollear al formulario
+    function scrollAndFocus(selector) {
+        const el = document.querySelector(selector);
+        if (!el) return;
+        // scrollear al top del contenedor para evitar que header lo tape
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => {
+            // elegir el primer input/textarea/select/button visible
+            const first = el.querySelector('input:not([type="hidden"]), textarea, select, button');
+            if (first) first.focus({ preventScroll: true });
+        }, 350);
     }
-    
-    if (loginBtn && container) {
-        loginBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            container.classList.remove('active');
-        });
+
+    // Helper: sincronizar aria-hidden y tabindex (accesibilidad)
+    function syncAria() {
+        const loginBox = document.querySelector('.form-box.login');
+        const regBox = document.querySelector('.form-box.register');
+        const activeIsRegister = container.classList.contains('active');
+
+        if (loginBox) {
+            loginBox.setAttribute('aria-hidden', activeIsRegister ? 'true' : 'false');
+            loginBox.tabIndex = activeIsRegister ? -1 : 0;
+        }
+        if (regBox) {
+            regBox.setAttribute('aria-hidden', activeIsRegister ? 'false' : 'true');
+            regBox.tabIndex = activeIsRegister ? 0 : -1;
+        }
     }
+
+    // Small fallback: make sure social buttons always have click handlers (avoid duplicate inactive anchors)
+    document.querySelectorAll('.social-icons a').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Determine provider from class
+            const icon = link.querySelector('i');
+            const provider = icon && icon.classList.contains('bxl-google') ? 'google' : 'github';
+            // call app loginWith if present
+            if (typeof loginWith === 'function') loginWith(provider);
+        });
+    });
 }
 
 // Login social con Supabase - Mejorado para móvil
