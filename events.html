@@ -81,93 +81,9 @@
                 </div>
 
                 <div class="events-timeline">
-                    <!-- Evento 1 -->
-                    <div class="event-item upcoming">
-                        <div class="event-date">
-                            <div class="date-day">18</div>
-                            <div class="date-month">AGO</div>
-                            <div class="date-year">2025</div>
-                        </div>
-                        <div class="event-content">
-                            <h4>Conferencia Tech</h4>
-                            <p class="event-description">Conferencia sobre las últimas tendencias en tecnología y desarrollo web</p>
-                            <div class="event-meta">
-                                <span class="event-time"><i class="fas fa-clock"></i> 09:00 - 17:00</span>
-                                <span class="event-location"><i class="fas fa-map-marker-alt"></i> Centro de Convenciones</span>
-                                <span class="event-category tech">Tecnología</span>
-                            </div>
-                            <div class="event-actions">
-                                <button onclick="editEvent(1)" class="edit-btn"><i class="fas fa-edit"></i></button>
-                                <button onclick="deleteEvent(1)" class="delete-btn"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Evento 2 -->
-                    <div class="event-item upcoming">
-                        <div class="event-date">
-                            <div class="date-day">22</div>
-                            <div class="date-month">AGO</div>
-                            <div class="date-year">2025</div>
-                        </div>
-                        <div class="event-content">
-                            <h4>Concierto de Música Clásica</h4>
-                            <p class="event-description">Una velada especial con la orquesta sinfónica interpretando obras clásicas</p>
-                            <div class="event-meta">
-                                <span class="event-time"><i class="fas fa-clock"></i> 20:00 - 22:30</span>
-                                <span class="event-location"><i class="fas fa-map-marker-alt"></i> Teatro Nacional</span>
-                                <span class="event-category music">Música</span>
-                            </div>
-                            <div class="event-actions">
-                                <button onclick="editEvent(2)" class="edit-btn"><i class="fas fa-edit"></i></button>
-                                <button onclick="deleteEvent(2)" class="delete-btn"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Evento 3 -->
-                    <div class="event-item upcoming">
-                        <div class="event-date">
-                            <div class="date-day">30</div>
-                            <div class="date-month">AGO</div>
-                            <div class="date-year">2025</div>
-                        </div>
-                        <div class="event-content">
-                            <h4>Viaje Familiar</h4>
-                            <p class="event-description">Fin de semana de relajación en la playa con toda la familia</p>
-                            <div class="event-meta">
-                                <span class="event-time"><i class="fas fa-clock"></i> Todo el día</span>
-                                <span class="event-location"><i class="fas fa-map-marker-alt"></i> Playa del Carmen</span>
-                                <span class="event-category personal">Personal</span>
-                            </div>
-                            <div class="event-actions">
-                                <button onclick="editEvent(3)" class="edit-btn"><i class="fas fa-edit"></i></button>
-                                <button onclick="deleteEvent(3)" class="delete-btn"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Evento pasado -->
-                    <div class="event-item past">
-                        <div class="event-date">
-                            <div class="date-day">10</div>
-                            <div class="date-month">AGO</div>
-                            <div class="date-year">2025</div>
-                        </div>
-                        <div class="event-content">
-                            <h4>Cumpleaños de Ana</h4>
-                            <p class="event-description">Celebración del cumpleaños de mi hermana</p>
-                            <div class="event-meta">
-                                <span class="event-time"><i class="fas fa-clock"></i> 18:00 - 23:00</span>
-                                <span class="event-location"><i class="fas fa-map-marker-alt"></i> Casa de Ana</span>
-                                <span class="event-category personal">Personal</span>
-                            </div>
-                            <div class="event-actions">
-                                <button onclick="editEvent(4)" class="edit-btn"><i class="fas fa-edit"></i></button>
-                                <button onclick="deleteEvent(4)" class="delete-btn"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </div>
-                    </div>
+                    <ul id="events-list">
+                        <!-- Los eventos se cargarán aquí dinámicamente -->
+                    </ul>
                 </div>
             </div>
         </main>

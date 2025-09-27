@@ -28,7 +28,7 @@
                 <div class="user-avatar">
                     <i class="fas fa-user-circle"></i>
                 </div>
-                <span class="username">Usuario Demo</span>
+                <span class="username"></span>
             </div>
 
             <!-- Navegación -->
@@ -72,107 +72,22 @@
                     </button>
                     <div class="habit-stats">
                         <div class="stat-item">
-                            <span class="stat-number" id="total-habits">3</span>
+                            <span class="stat-number" id="total-habits">0</span>
                             <span class="stat-label">Total</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-number" id="completed-today">1</span>
+                            <span class="stat-number" id="completed-today">0</span>
                             <span class="stat-label">Completados</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-number" id="completion-rate">33%</span>
+                            <span class="stat-number" id="completion-rate">0%</span>
                             <span class="stat-label">Tasa</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="items-grid" id="habits-list">
-                    <!-- Hábito 1 -->
-                    <div class="item-card habit-card">
-                        <div class="habit-header">
-                            <h4>Ejercicio matutino</h4>
-                            <div class="habit-streak">
-                                <i class="fas fa-fire"></i>
-                                <span>5 días</span>
-                            </div>
-                        </div>
-                        <p class="habit-description">30 minutos de ejercicio al levantarme</p>
-                        <div class="habit-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 71%"></div>
-                            </div>
-                            <small>5/7 días esta semana</small>
-                        </div>
-                        <div class="habit-status">
-                            <label class="habit-checkbox">
-                                <input type="checkbox" onchange="toggleHabit(1)">
-                                <span class="checkmark"></span>
-                                Completado hoy
-                            </label>
-                        </div>
-                        <div class="item-actions">
-                            <button onclick="editHabit(1)" class="edit-btn"><i class="fas fa-edit"></i></button>
-                            <button onclick="deleteHabit(1)" class="delete-btn"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-
-                    <!-- Hábito 2 -->
-                    <div class="item-card habit-card completed">
-                        <div class="habit-header">
-                            <h4>Leer 30 minutos</h4>
-                            <div class="habit-streak">
-                                <i class="fas fa-fire"></i>
-                                <span>12 días</span>
-                            </div>
-                        </div>
-                        <p class="habit-description">Lectura diaria para el crecimiento personal</p>
-                        <div class="habit-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 100%"></div>
-                            </div>
-                            <small>7/7 días esta semana</small>
-                        </div>
-                        <div class="habit-status">
-                            <label class="habit-checkbox">
-                                <input type="checkbox" checked onchange="toggleHabit(2)">
-                                <span class="checkmark"></span>
-                                Completado hoy
-                            </label>
-                        </div>
-                        <div class="item-actions">
-                            <button onclick="editHabit(2)" class="edit-btn"><i class="fas fa-edit"></i></button>
-                            <button onclick="deleteHabit(2)" class="delete-btn"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-
-                    <!-- Hábito 3 -->
-                    <div class="item-card habit-card">
-                        <div class="habit-header">
-                            <h4>Meditar</h4>
-                            <div class="habit-streak">
-                                <i class="fas fa-fire"></i>
-                                <span>3 días</span>
-                            </div>
-                        </div>
-                        <p class="habit-description">10 minutos de meditación para la paz mental</p>
-                        <div class="habit-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 43%"></div>
-                            </div>
-                            <small>3/7 días esta semana</small>
-                        </div>
-                        <div class="habit-status">
-                            <label class="habit-checkbox">
-                                <input type="checkbox" onchange="toggleHabit(3)">
-                                <span class="checkmark"></span>
-                                Completado hoy
-                            </label>
-                        </div>
-                        <div class="item-actions">
-                            <button onclick="editHabit(3)" class="edit-btn"><i class="fas fa-edit"></i></button>
-                            <button onclick="deleteHabit(3)" class="delete-btn"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
+                    <!-- Los hábitos se cargarán aquí dinámicamente -->
                 </div>
             </div>
         </main>

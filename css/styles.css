@@ -335,6 +335,11 @@ form {
     background: rgba(255, 255, 255, 0.1);
 }
 
+.mobile-register-link,
+.mobile-login-link {
+    display: none;
+}
+
 /* Estados de carga y error */
 .loading {
     opacity: 0.7;
@@ -372,6 +377,7 @@ form {
     }
 
     .container {
+        max-width: 100%;
         height: auto !important;
         min-height: 100vh;
         overflow-y: auto;
@@ -395,6 +401,7 @@ form {
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
         transition: opacity 0.35s ease, max-height 0.35s ease, padding 0.35s ease;
+        transition: transform 0.3s ease-in-out;
     }
 
     /* Estado por defecto: mostrar LOGIN, "ocultar" REGISTER sin display:none */
@@ -422,6 +429,7 @@ form {
         max-height: 0;
         padding: 0 14px;
         overflow: hidden;
+        transform: translateX(-100%);
     }
     .container.active .form-box.register {
         opacity: 1;
@@ -430,12 +438,45 @@ form {
         max-height: 2000px;
         padding: 18px 14px;
         overflow-y: auto;
+        transform: translateX(0);
     }
 
     /* Evitar que el toggle grande se interponga */
     .toggle-box::before { display: none !important; }
-    .toggle-box { position: relative; height: auto; pointer-events: auto; }
-    .toggle-panel { position: relative; width: 100%; height: auto; padding: 12px 12px; text-align: center; }
+
+    .toggle-box { 
+        position: relative;
+        height: auto; 
+        pointer-events: auto;  
+        display: none;
+    }
+
+    .toggle-panel { position: relative; 
+        width: 100%; 
+        height: auto; padding: 12px 12px; 
+        text-align: center; 
+    }
+    
+    .mobile-register-link,
+    .mobile-login-link {
+        display: block;
+        margin-top: 20px;
+        padding: 15px;
+        text-align: center;
+        border-top: 1px solid #eee;
+    }
+
+    .mobile-register-link a,
+    .mobile-login-link a {
+        color: #5c6bc0;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .container h2 {
+        font-size: 24px;
+        margin: 0 0 30px 0;
+    }
 
     /* Inputs (evitar zoom en iOS y mejorar tap targets) */
     .input-box input,
@@ -448,10 +489,19 @@ form {
         min-height: 48px;
     }
 
-    .reg { flex-direction: column; gap: 10px; }
-    .reg .inb { width: 100%; }
+    .reg { 
+        flex-direction: column; 
+        gap: 10px; 
+    }
+    .reg .inb { 
+        width: 100%; 
+    }
 
-    .btn { min-height: 50px; font-size: 16px; margin: 18px 0; }
+    .btn { 
+        min-height: 50px; 
+        font-size: 16px; 
+        margin: 18px 0; 
+    }
 
     /* Social icons: siempre encima y clickeables */
     .social-icons {
@@ -463,6 +513,7 @@ form {
         z-index: 9999 !important;
         position: relative;
     }
+    
     .social-icons a {
         width: 48px; height: 48px; font-size: 22px;
         display: inline-flex; align-items: center; justify-content: center;
@@ -471,10 +522,12 @@ form {
 
     /* Ajuste para landscape con poca altura */
     @media screen and (max-height: 500px) and (orientation: landscape) {
-        .form-box { max-height: calc(100vh - 90px); padding: 12px 10px; }
+        .form-box { 
+            max-height: calc(100vh - 90px); 
+            padding: 12px 10px; 
+        }
     }
 }
-
 
 @media screen and (max-width: 480px) {
     body {
@@ -484,6 +537,10 @@ form {
     .container {
         min-height: calc(100vh - 20px);
         border-radius: 15px;
+    }
+
+    .container h2 {
+        font-size: 22px;
     }
     
     .form-box {
@@ -551,6 +608,38 @@ form {
         height: 40px;
         font-size: 12px;
     }
+    
+    /* Estados de focus para accesibilidad */
+    .btn:focus,
+    .social-btn:focus,
+    input:focus,
+    select:focus,
+    a:focus {
+        outline: 2px solid #5c6bc0;
+        outline-offset: 2px;
+    }
+
+    /* Loading state */
+    .btn.loading,
+    .social-btn.loading {
+        position: relative;
+        color: transparent;
+    }
+
+    .btn.loading::after,
+    .social-btn.loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 1s linear infinite;
+    }
 }
 
 /* Mejoras adicionales para accesibilidad */
@@ -595,5 +684,11 @@ form {
     .toggle-panel p {
         font-size: 0.8rem;
         margin-bottom: 10px;
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
     }
 }

@@ -1,7 +1,8 @@
-// js/script.js - Versión corregida para móvil y funcionalidad completa
+// js/script.js - Versión mejorada para móvil y autenticación social
 
 // Variables globales
 let container, registerBtn, loginBtn;
+let isMobile = window.innerWidth <= 768;
 
 // Función de inicialización segura
 function initializeElements() {
@@ -9,53 +10,80 @@ function initializeElements() {
     registerBtn = document.querySelector('.register-btn');
     loginBtn = document.querySelector('.login-btn');
 
-    // Safety: si no hay container o botones, salimos (evita errores)
+    // Safety: si no hay container, salimos (evita errores)
     if (!container) return;
 
-    // Funciones internas
+    // Funciones internas para cambiar entre formularios
     const showRegister = () => {
         container.classList.add('active');
         syncAria();
-        scrollAndFocus('.form-box.register');
+        if (isMobile) {
+            scrollAndFocus('.form-box.register');
+        }
     };
+
     const showLogin = () => {
         container.classList.remove('active');
         syncAria();
-        scrollAndFocus('.form-box.login');
+        if (isMobile) {
+            scrollAndFocus('.form-box.login');
+        }
     };
 
-    // Event listeners principales
-    if (registerBtn) registerBtn.addEventListener('click', (e) => { e.preventDefault(); showRegister(); });
-    if (loginBtn) loginBtn.addEventListener('click', (e) => { e.preventDefault(); showLogin(); });
-
-    // Forzamos el estado correcto en carga (si ya está .active o no)
-    document.addEventListener('DOMContentLoaded', () => {
-        syncAria();
+    // Event listeners principales para desktop
+    if (registerBtn) registerBtn.addEventListener('click', (e) => { 
+        e.preventDefault(); 
+        showRegister(); 
+    });
+    
+    if (loginBtn) loginBtn.addEventListener('click', (e) => { 
+        e.preventDefault(); 
+        showLogin(); 
     });
 
-    // On resize: si volvemos a escritorio, limpiamos estilos auxiliares
+    // Event listeners para móvil
+    document.addEventListener('click', (e) => {
+        if (e.target.matches('.register-link') || e.target.closest('.register-link')) {
+            e.preventDefault();
+            showRegister();
+        }
+        
+        if (e.target.matches('.login-link') || e.target.closest('.login-link')) {
+            e.preventDefault();
+            showLogin();
+        }
+    });
+
+    // Forzamos el estado correcto en carga
+    syncAria();
+
+    // On resize: detectar cambios de móvil a desktop
     window.addEventListener('resize', () => {
-        if (window.innerWidth > 768) {
-            // Limpieza: restaurar cualquier pointer-events o inline styles
-            document.querySelectorAll('.form-box').forEach(el => {
-                el.style.pointerEvents = '';
-                el.style.maxHeight = '';
-                el.style.padding = '';
-                el.style.opacity = '';
-            });
-        } else {
+        const wasMobile = isMobile;
+        isMobile = window.innerWidth <= 768;
+        
+        if (wasMobile !== isMobile) {
+            // Si cambiamos de móvil a desktop o viceversa
+            if (!isMobile) {
+                // En desktop, limpiar estilos móviles
+                document.querySelectorAll('.form-box').forEach(el => {
+                    el.style.transform = '';
+                });
+            }
             syncAria();
         }
     });
 
-    // Helper: poner focus y scrollear al formulario
+    // Helper: scrollear y poner focus
     function scrollAndFocus(selector) {
         const el = document.querySelector(selector);
         if (!el) return;
-        // scrollear al top del contenedor para evitar que header lo tape
-        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // Scrollear al elemento
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
         setTimeout(() => {
-            // elegir el primer input/textarea/select/button visible
+            // Poner focus en el primer input
             const first = el.querySelector('input:not([type="hidden"]), textarea, select, button');
             if (first) first.focus({ preventScroll: true });
         }, 350);
@@ -71,346 +99,266 @@ function initializeElements() {
             loginBox.setAttribute('aria-hidden', activeIsRegister ? 'true' : 'false');
             loginBox.tabIndex = activeIsRegister ? -1 : 0;
         }
+        
         if (regBox) {
             regBox.setAttribute('aria-hidden', activeIsRegister ? 'false' : 'true');
             regBox.tabIndex = activeIsRegister ? 0 : -1;
         }
     }
 
-    // Small fallback: make sure social buttons always have click handlers (avoid duplicate inactive anchors)
-    document.querySelectorAll('.social-icons a').forEach(link => {
-        link.addEventListener('click', (e) => {
+    // Event listeners para botones sociales
+    document.addEventListener('click', (e) => {
+        if (e.target.matches('.social-btn') || e.target.closest('.social-btn')) {
             e.preventDefault();
-            // Determine provider from class
-            const icon = link.querySelector('i');
-            const provider = icon && icon.classList.contains('bxl-google') ? 'google' : 'github';
-            // call app loginWith if present
-            if (typeof loginWith === 'function') loginWith(provider);
-        });
+            const btn = e.target.closest('.social-btn');
+            const provider = btn.dataset.provider;
+            if (provider) {
+                loginWith(provider, btn);
+            }
+        }
     });
 }
 
-// Login social con Supabase - Mejorado para móvil
-async function loginWith(providerName) {
+// Login social con Supabase - Mejorado para redirección directa
+async function loginWith(providerName, buttonElement = null) {
     try {
+        showMessage('Iniciando sesión...', 'info');
+        
+        if (buttonElement) {
+            buttonElement.classList.add('loading');
+        }
+
         console.log('Intentando login con:', providerName);
         
-        // Mostrar loading en el botón
-        const socialBtns = document.querySelectorAll('.social-icons a');
-        socialBtns.forEach(btn => {
-            btn.style.pointerEvents = 'none';
-            btn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i>';
-        });
+        // Configurar opciones de redirección
+        const redirectOptions = {
+            redirectTo: window.location.origin + '/index.html'
+        };
+
+        let authResponse;
         
-        const redirectUrl = window.location.origin + (window.location.pathname.includes('index.html') ? '/dashboard.html' : '/dashboard.html');
-        
-        let authResult;
-        if (providerName === 'google') {
-            authResult = await supabase.auth.signInWithOAuth({ 
-                provider: 'google',
-                options: { 
-                    redirectTo: redirectUrl,
-                    queryParams: {
-                        access_type: 'offline',
-                        prompt: 'consent',
-                    }
-                }
-            });
-        } else if (providerName === 'github') {
-            authResult = await supabase.auth.signInWithOAuth({ 
-                provider: 'github',
-                options: { 
-                    redirectTo: redirectUrl
-                }
-            });
+        switch (providerName) {
+            case 'google':
+                authResponse = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: redirectOptions
+                });
+                break;
+                
+            case 'github':
+                authResponse = await supabase.auth.signInWithOAuth({
+                    provider: 'github',
+                    options: redirectOptions
+                });
+                break;
+                
+            default:
+                throw new Error('Proveedor no soportado: ' + providerName);
         }
-        
-        if (authResult?.error) {
-            throw authResult.error;
+
+        if (authResponse.error) {
+            throw authResponse.error;
         }
-        
-        // En móvil, el OAuth redirige automáticamente
-        console.log('OAuth iniciado correctamente');
+
+        // Si todo va bien, el usuario será redirigido automáticamente
+        // No necesitamos hacer nada más aquí
         
     } catch (error) {
         console.error('Error en login social:', error);
-        alert('Error al iniciar sesión con ' + providerName + ': ' + error.message);
+        showMessage('Error al iniciar sesión: ' + error.message, 'error');
         
-        // Restaurar botones
-        const socialBtns = document.querySelectorAll('.social-icons a');
-        socialBtns.forEach((btn, index) => {
-            btn.style.pointerEvents = 'auto';
-            if (index === 0) btn.innerHTML = '<i class="bx bxl-google"></i>';
-            if (index === 1) btn.innerHTML = '<i class="bx bxl-github"></i>';
-        });
+        if (buttonElement) {
+            buttonElement.classList.remove('loading');
+        }
     }
 }
 
-// Función mejorada de validación
-function validateForm(formData, isRegistration = false) {
-    const email = formData.get('Correo')?.trim();
-    const password = formData.get('pass')?.trim();
+// Función para manejar el login tradicional
+async function handleLogin(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    const email = formData.get('Correo');
+    const password = formData.get('pass');
     
     if (!email || !password) {
-        throw new Error('Por favor completa todos los campos obligatorios');
+        showMessage('Por favor completa todos los campos', 'error');
+        return;
     }
-    
-    // Validar email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        throw new Error('Por favor ingresa un email válido');
-    }
-    
-    // Validar contraseña
-    if (password.length < 6) {
-        throw new Error('La contraseña debe tener al menos 6 caracteres');
-    }
-    
-    if (isRegistration) {
-        const confirmPassword = formData.get('conf_pass')?.trim();
-        const nombre = formData.get('nombre')?.trim();
-        const apellido = formData.get('apellido')?.trim();
-        const fechaNacimiento = formData.get('fn');
-        const genero = formData.get('genero');
-        const username = formData.get('username')?.trim();
-        
-        if (!confirmPassword || !nombre || !apellido || !fechaNacimiento || !genero || !username) {
-            throw new Error('Por favor completa todos los campos del registro');
-        }
-        
-        if (password !== confirmPassword) {
-            throw new Error('Las contraseñas no coinciden');
-        }
-        
-        if (username.length < 3) {
-            throw new Error('El nombre de usuario debe tener al menos 3 caracteres');
-        }
-    }
-    
-    return { email, password };
-}
-
-// Función para mostrar loading en botones
-function setButtonLoading(button, isLoading, originalText) {
-    if (isLoading) {
-        button.disabled = true;
-        button.innerHTML = `<i class="bx bx-loader-alt bx-spin"></i> ${originalText === 'Ingresar' ? 'Ingresando...' : 'Registrando...'}`;
-        button.style.opacity = '0.7';
-    } else {
-        button.disabled = false;
-        button.innerHTML = originalText;
-        button.style.opacity = '1';
-    }
-}
-
-// Inicialización principal
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log('DOM loaded, inicializando...');
-    
-    // Inicializar elementos
-    initializeElements();
     
     try {
-        // Verificar sesión existente
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        showMessage('Iniciando sesión...', 'info');
         
-        if (sessionError) {
-            console.error('Error verificando sesión:', sessionError);
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+        
+        if (error) {
+            throw error;
         }
         
-        if (session && session.user) {
-            console.log('Usuario ya logueado, redirigiendo...');
-            window.location.href = 'dashboard.html';
-            return;
-        }
-    } catch (error) {
-        console.error('Error verificando sesión:', error);
-    }
-
-    // Configurar formulario de login
-    const loginForm = document.querySelector('.form-box.login form');
-    if (loginForm) {
-        console.log('Configurando formulario de login...');
-        
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            console.log('Formulario de login enviado');
-            
-            const submitBtn = loginForm.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            
-            try {
-                const formData = new FormData(loginForm);
-                const { email, password } = validateForm(formData, false);
-                
-                setButtonLoading(submitBtn, true, originalText);
-                
-                console.log('Intentando login con email:', email);
-                
-                const { data, error } = await supabase.auth.signInWithPassword({ 
-                    email: email,
-                    password: password
-                });
-                
-                if (error) {
-                    console.error('Error de Supabase:', error);
-                    
-                    let errorMessage = 'Error al iniciar sesión: ';
-                    if (error.message.includes('Invalid login credentials')) {
-                        errorMessage += 'Credenciales incorrectas. Verifica tu email y contraseña.';
-                    } else if (error.message.includes('Email not confirmed')) {
-                        errorMessage += 'Debes confirmar tu email antes de iniciar sesión.';
-                    } else if (error.message.includes('Too many requests')) {
-                        errorMessage += 'Demasiados intentos. Espera unos minutos antes de intentar de nuevo.';
-                    } else {
-                        errorMessage += error.message;
-                    }
-                    
-                    throw new Error(errorMessage);
-                }
-                
-                console.log('Login exitoso:', data);
-                
-                // Limpiar formulario
-                loginForm.reset();
-                
-                // Redirigir después de un breve delay para que el usuario vea el éxito
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 500);
-                
-            } catch (error) {
-                console.error('Error en login:', error);
-                alert(error.message);
-                setButtonLoading(submitBtn, false, originalText);
-            }
-        });
-    } else {
-        console.error('No se encontró el formulario de login');
-    }
-
-    // Configurar formulario de registro
-    const regForm = document.querySelector('.form-box.register form');
-    if (regForm) {
-        console.log('Configurando formulario de registro...');
-        
-        regForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            console.log('Formulario de registro enviado');
-            
-            const submitBtn = regForm.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            
-            try {
-                const formData = new FormData(regForm);
-                const { email, password } = validateForm(formData, true);
-                
-                const nombre = formData.get('nombre').trim();
-                const apellido = formData.get('apellido').trim();
-                const fechaNacimiento = formData.get('fn');
-                const genero = formData.get('genero');
-                const username = formData.get('username').trim();
-                
-                setButtonLoading(submitBtn, true, originalText);
-                
-                console.log('Intentando registro con email:', email);
-                
-                const { data, error } = await supabase.auth.signUp({ 
-                    email: email,
-                    password: password,
-                    options: {
-                        data: {
-                            full_name: `${nombre} ${apellido}`,
-                            username: username,
-                            fecha_nacimiento: fechaNacimiento,
-                            genero: genero,
-                            nombre: nombre,
-                            apellido: apellido
-                        }
-                    }
-                });
-                
-                if (error) {
-                    console.error('Error de Supabase en registro:', error);
-                    
-                    let errorMessage = 'Error al registrar la cuenta: ';
-                    if (error.message.includes('User already registered')) {
-                        errorMessage += 'Este email ya está registrado. Intenta iniciar sesión.';
-                    } else if (error.message.includes('Password should be at least')) {
-                        errorMessage += 'La contraseña debe tener al menos 6 caracteres.';
-                    } else if (error.message.includes('Invalid email')) {
-                        errorMessage += 'El formato del email no es válido.';
-                    } else {
-                        errorMessage += error.message;
-                    }
-                    
-                    throw new Error(errorMessage);
-                }
-                
-                console.log('Registro exitoso:', data);
-                
-                // Limpiar formulario
-                regForm.reset();
-                
-                // Cambiar a la vista de login
-                if (container) {
-                    container.classList.remove('active');
-                }
-                
-                // Mostrar mensaje según el estado
-                if (data.user && !data.user.email_confirmed_at) {
-                    alert('¡Cuenta creada exitosamente!\n\nPor favor revisa tu correo electrónico y haz clic en el enlace de confirmación antes de iniciar sesión.');
-                } else {
-                    alert('¡Cuenta creada exitosamente! Ya puedes iniciar sesión.');
-                }
-                
-                setButtonLoading(submitBtn, false, originalText);
-                
-            } catch (error) {
-                console.error('Error en registro:', error);
-                alert(error.message);
-                setButtonLoading(submitBtn, false, originalText);
-            }
-        });
-    } else {
-        console.error('No se encontró el formulario de registro');
-    }
-
-    // Manejar cambios en el estado de autenticación
-    supabase.auth.onAuthStateChange((event, session) => {
-        console.log('Auth state changed:', event, session);
-        
-        if (event === 'SIGNED_IN' && session) {
-            console.log('Usuario logueado, redirigiendo a dashboard');
-            // Pequeño delay para asegurar que todo esté procesado
+        if (data.user) {
+            showMessage('¡Bienvenido!', 'success');
+            // Redirigir después de un breve retraso para mostrar el mensaje
             setTimeout(() => {
                 window.location.href = 'dashboard.html';
             }, 1000);
         }
         
-        if (event === 'SIGNED_OUT') {
-            console.log('Usuario deslogueado');
+    } catch (error) {
+        console.error('Error en login:', error);
+        showMessage('Error: ' + error.message, 'error');
+    }
+}
+
+// Función para manejar el registro
+async function handleRegister(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    const email = formData.get('Correo');
+    const password = formData.get('pass');
+    const confirmPassword = formData.get('conf_pass');
+    const nombre = formData.get('nombre');
+    const apellido = formData.get('apellido');
+    const username = formData.get('username');
+    const fechaNacimiento = formData.get('fn');
+    const genero = formData.get('genero');
+    
+    // Validaciones
+    if (!email || !password || !confirmPassword || !nombre || !apellido || !username || !fechaNacimiento || !genero) {
+        showMessage('Por favor completa todos los campos', 'error');
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        showMessage('Las contraseñas no coinciden', 'error');
+        return;
+    }
+    
+    if (password.length < 6) {
+        showMessage('La contraseña debe tener al menos 6 caracteres', 'error');
+        return;
+    }
+    
+    try {
+        showMessage('Registrando usuario...', 'info');
+        
+        const { data, error } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: {
+                    nombre: nombre,
+                    apellido: apellido,
+                    username: username,
+                    fecha_nacimiento: fechaNacimiento,
+                    genero: genero
+                }
+            }
+        });
+        
+        if (error) {
+            throw error;
+        }
+        
+        if (data.user) {
+            showMessage('¡Registro exitoso! Por favor verifica tu correo electrónico.', 'success');
+            // Limpiar el formulario
+            form.reset();
+            // Cambiar a login después de 2 segundos
+            setTimeout(() => {
+                container.classList.remove('active');
+                syncAria();
+            }, 2000);
+        }
+        
+    } catch (error) {
+        console.error('Error en registro:', error);
+        showMessage('Error: ' + error.message, 'error');
+    }
+}
+
+// Función para mostrar mensajes
+function showMessage(text, type = 'info') {
+    const messageEl = document.getElementById('message');
+    if (!messageEl) return;
+    
+    messageEl.textContent = text;
+    messageEl.className = `message ${type} show`;
+    
+    setTimeout(() => {
+        messageEl.classList.remove('show');
+    }, 3000);
+}
+
+// Función para verificar si el usuario ya está autenticado
+async function checkAuthStatus() {
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            // Si ya está autenticado, redirigir al dashboard
+            window.location.href = 'dashboard.html';
+        }
+    } catch (error) {
+        console.error('Error verificando autenticación:', error);
+    }
+}
+
+// Inicialización cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    initializeElements();
+    checkAuthStatus();
+    
+    // Agregar event listeners a los formularios
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+    
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
+    }
+    
+    // Prevenir el envío de formularios con Enter en campos de contraseña
+    document.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && e.target.type === 'password') {
+            const form = e.target.closest('form');
+            if (form) {
+                const submitBtn = form.querySelector('.btn[type="submit"]');
+                if (submitBtn) {
+                    e.preventDefault();
+                    submitBtn.click();
+                }
+            }
         }
     });
-    
-    // Agregar event listeners para botones sociales
-    const socialLinks = document.querySelectorAll('.social-icons a');
-    socialLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const provider = link.querySelector('i').classList.contains('bxl-google') ? 'google' : 'github';
-            loginWith(provider);
-        });
-    });
-    
-    console.log('Inicialización completada');
 });
 
-// Función para debug - remover en producción
-window.debugAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    console.log('Current session:', session);
+// Manejar el estado de autenticación cuando cambia
+supabase.auth.onAuthStateChange((event, session) => {
+    console.log('Auth state changed:', event, session);
     
-    const { data: { user } } = await supabase.auth.getUser();
-    console.log('Current user:', user);
-};
+    if (event === 'SIGNED_IN') {
+        showMessage('¡Bienvenido!', 'success');
+        setTimeout(() => {
+            window.location.href = 'dashboard.html';
+        }, 1000);
+    }
+    
+    if (event === 'SIGNED_OUT') {
+        // El usuario cerró sesión
+        console.log('Usuario cerró sesión');
+    }
+    
+    if (event === 'USER_UPDATED') {
+        // El usuario fue actualizado
+        console.log('Usuario actualizado');
+    }
+});

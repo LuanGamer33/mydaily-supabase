@@ -9,6 +9,20 @@ async function getUser() {
     return user;
 }
 
+// Función para cerrar sesión
+async function signOut() {
+    try {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+        
+        // Redirigir al login
+        window.location.href = 'index.html';
+    } catch (error) {
+        console.error('Error al cerrar sesión:', error);
+        alert('Error al cerrar sesión: ' + error.message);
+    }
+}
+
 // ========== FUNCIONES PARA NOTAS ==========
 async function insertarNota(titulo, contenido, imagen = '', estadoAnimo = 'sun', favorita = false) {
     const user = await getUser();
