@@ -100,6 +100,13 @@ form {
     font-size: 15px;
     color: #333;
     font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.complete input:focus {
+    background: #fff;
+    box-shadow: 0 0 0 2px cadetblue;
+    transform: translateY(-1px);
 }
 
 .reg .inb {
@@ -117,6 +124,14 @@ form {
     font-size: 15px;
     color: #333;
     font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.reg .inb input:focus,
+.reg .inb select:focus {
+    background: #fff;
+    box-shadow: 0 0 0 2px cadetblue;
+    transform: translateY(-1px);
 }
 
 .reg .inb select {
@@ -147,6 +162,13 @@ form {
     font-size: 15px;
     color: #333;
     font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.input-box input:focus {
+    background: #fff;
+    box-shadow: 0 0 0 2px cadetblue;
+    transform: translateY(-1px);
 }
 
 .input-box input::placeholder,
@@ -174,10 +196,12 @@ form {
     font-size: 14.5px;
     color: #333;
     text-decoration: none;
+    transition: color 0.3s ease;
 }
 
 .forgot-link a:hover {
     text-decoration: underline;
+    color: cadetblue;
 }
 
 .btn {
@@ -197,17 +221,49 @@ form {
     align-items: center;
     justify-content: center;
     padding: 12px;
+    position: relative;
+    overflow: hidden;
 }
 
-.btn:hover {
+.btn:hover:not(:disabled) {
     background: #5f9ea0;
     transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, .2);
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(0);
 }
 
 .btn:disabled {
     opacity: 0.7;
     cursor: not-allowed;
     transform: none;
+}
+
+.btn.loading {
+    color: transparent;
+    pointer-events: none;
+}
+
+.btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .container p {
@@ -236,12 +292,34 @@ form {
     text-decoration: none;
     transition: all 0.3s ease;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
 }
 
-.social-icons a:hover {
+.social-icons a:hover:not(.loading) {
     background: #f0f0f0;
     border-color: cadetblue;
     transform: translateY(-2px);
+}
+
+.social-icons a.loading {
+    color: transparent;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.social-icons a.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid #333;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
 }
 
 .toggle-box {
@@ -340,32 +418,85 @@ form {
     display: none;
 }
 
+/* Estilos mejorados para mensajes */
+.message {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: #fff;
+    color: #333;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 10000;
+    min-width: 300px;
+    max-width: 90vw;
+    text-align: center;
+    border-left: 4px solid #333;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    backdrop-filter: blur(10px);
+}
+
+.message.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.message.info {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    color: #1565c0;
+    border-left-color: #2196f3;
+    box-shadow: 0 10px 30px rgba(33, 150, 243, 0.2);
+}
+
+.message.success {
+    background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+    color: #2e7d32;
+    border-left-color: #4caf50;
+    box-shadow: 0 10px 30px rgba(76, 175, 80, 0.2);
+}
+
+.message.error {
+    background: linear-gradient(135deg, #ffebee, #ffcdd2);
+    color: #c62828;
+    border-left-color: #f44336;
+    box-shadow: 0 10px 30px rgba(244, 67, 54, 0.2);
+}
+
+/* Validaciones visuales para campos */
+.input-box.error input,
+.reg .inb.error input,
+.complete.error input,
+.reg .inb.error select {
+    border: 2px solid #f44336;
+    background: #ffebee;
+    animation: shake 0.5s ease-in-out;
+}
+
+.input-box.success input,
+.reg .inb.success input,
+.complete.success input,
+.reg .inb.success select {
+    border: 2px solid #4caf50;
+    background: #e8f5e8;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
 /* Estados de carga y error */
 .loading {
     opacity: 0.7;
     pointer-events: none;
-}
-
-.error-message {
-    background: #fee;
-    border: 1px solid #fcc;
-    color: #c33;
-    padding: 10px;
-    border-radius: 5px;
-    margin: 10px 0;
-    font-size: 14px;
-    text-align: center;
-}
-
-.success-message {
-    background: #efe;
-    border: 1px solid #cfc;
-    color: #3c3;
-    padding: 10px;
-    border-radius: 5px;
-    margin: 10px 0;
-    font-size: 14px;
-    text-align: center;
 }
 
 /* RESPONSIVE DESIGN */
@@ -397,7 +528,7 @@ form {
         height: auto !important;
         padding: 18px 14px !important;
         box-shadow: none;
-        max-height: 2000px;             /* grande por defecto */
+        max-height: 2000px;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
         transition: opacity 0.35s ease, max-height 0.35s ease, padding 0.35s ease;
@@ -414,10 +545,10 @@ form {
     }
     .form-box.register {
         opacity: 0;
-        pointer-events: none;      /* importante para que no bloquee clicks */
+        pointer-events: none;
         z-index: 1;
-        max-height: 0;             /* colapsa visualmente, pero existe en DOM */
-        padding: 0 14px;           /* reduce espacio cuando está oculto */
+        max-height: 0;
+        padding: 0 14px;
         overflow: hidden;
     }
 
@@ -451,9 +582,11 @@ form {
         display: none;
     }
 
-    .toggle-panel { position: relative; 
+    .toggle-panel { 
+        position: relative; 
         width: 100%; 
-        height: auto; padding: 12px 12px; 
+        height: auto; 
+        padding: 12px 12px; 
         text-align: center; 
     }
     
@@ -489,6 +622,10 @@ form {
         min-height: 48px;
     }
 
+    .input-box input {
+        padding: 14px 45px 14px 16px;
+    }
+
     .reg { 
         flex-direction: column; 
         gap: 10px; 
@@ -515,9 +652,22 @@ form {
     }
     
     .social-icons a {
-        width: 48px; height: 48px; font-size: 22px;
-        display: inline-flex; align-items: center; justify-content: center;
-        pointer-events: auto; border-radius: 8px;
+        width: 48px; 
+        height: 48px; 
+        font-size: 22px;
+        display: inline-flex; 
+        align-items: center; 
+        justify-content: center;
+        pointer-events: auto; 
+        border-radius: 8px;
+    }
+
+    .message {
+        top: 10px;
+        min-width: 280px;
+        max-width: calc(100vw - 20px);
+        font-size: 13px;
+        padding: 0.8rem 1rem;
     }
 
     /* Ajuste para landscape con poca altura */
@@ -619,26 +769,9 @@ form {
         outline-offset: 2px;
     }
 
-    /* Loading state */
-    .btn.loading,
-    .social-btn.loading {
-        position: relative;
-        color: transparent;
-    }
-
-    .btn.loading::after,
-    .social-btn.loading::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 20px;
-        height: 20px;
-        margin: -10px 0 0 -10px;
-        border: 2px solid #ffffff;
-        border-radius: 50%;
-        border-top-color: transparent;
-        animation: spin 1s linear infinite;
+    .message {
+        font-size: 12px;
+        padding: 0.7rem 0.9rem;
     }
 }
 
@@ -648,8 +781,10 @@ form {
     .form-box,
     .toggle-box::before,
     .toggle-panel,
-    .btn {
+    .btn,
+    .message {
         transition: none;
+        animation: none;
     }
 }
 
@@ -685,10 +820,9 @@ form {
         font-size: 0.8rem;
         margin-bottom: 10px;
     }
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
+    
+    .message {
+        top: 5px;
+        font-size: 12px;
     }
 }

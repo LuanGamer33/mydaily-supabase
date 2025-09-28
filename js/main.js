@@ -99,23 +99,25 @@ async function loadAllData() {
     }
 }
 
+// Función para manejar el logo click en mobile
 document.addEventListener("DOMContentLoaded", () => {
     const logo = document.querySelector(".logo");
     const sidebar = document.querySelector(".sidebar");
 
     if (logo && sidebar) {
         logo.addEventListener("click", () => {
-            sidebar.classList.toggle("active");
+            sidebar.classList.toggle("open");
         });
     }
-});
 
-document.addEventListener("click", (e) => {
-    if (sidebar.classList.contains("active") &&
-        !sidebar.contains(e.target) &&
-        !logo.contains(e.target)) {
-        sidebar.classList.remove("active");
-    }
+    // Cerrar sidebar al hacer click fuera
+    document.addEventListener("click", (e) => {
+        if (sidebar && sidebar.classList.contains("open") &&
+            !sidebar.contains(e.target) &&
+            !logo.contains(e.target)) {
+            sidebar.classList.remove("open");
+        }
+    });
 });
 
 // Renderizar previews del dashboard (solo los 3 más recientes)
@@ -303,15 +305,29 @@ function openModal(modalId) {
     }
 }
 
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
+function closeModal(modalId = null) {
+    // Si no se especifica modalId, cerrar cualquier modal abierto
+    const modal = modalId ? document.getElementById(modalId) : document.querySelector('.modal.show');
     if (modal) {
         modal.classList.remove('show');
         document.body.style.overflow = 'auto';
+        
+        // Limpiar formularios
+        const forms = modal.querySelectorAll('form');
+        forms.forEach(form => {
+            form.reset();
+            // Limpiar preview de imagen
+            const imagePreview = form.querySelector('#image-preview');
+            if (imagePreview) {
+                imagePreview.style.display = 'none';
+                imagePreview.src = '';
+            }
+        });
+        
+        // Reset variables globales
+        currentEditId = null;
+        currentEditType = null;
     }
-    
-    const forms = modal?.querySelectorAll('form');
-    forms?.forEach(form => form.reset());
 }
 
 function openNoteModal() { openModal('note-modal'); }
@@ -326,6 +342,16 @@ function formatDate(dateString) {
         day: 'numeric', 
         month: 'short', 
         year: 'numeric' 
+    });
+}
+
+// Función para convertir archivo a Base64
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
     });
 }
 
@@ -346,10 +372,10 @@ function renderNotes() {
         noteCard.className = `note-card ${note.favorita ? 'favorite' : ''}`;
         
         const moodEmojis = {
-            sun: '☀️',
-            cloud: '☁️',  
-            rain: '🌧️',
-            storm: '⛈️'
+            sun: '<i class="fa-solid fa-sun"></i>',
+            cloud: '<i class="fa-solid fa-cloud-sun"></i>',  
+            rain: '<i class="fa-solid fa-cloud-rain"></i>',
+            storm: '<i class="fa-solid fa-cloud-bolt"></i>'
         };
         
         noteCard.innerHTML = `
@@ -379,13 +405,31 @@ function renderNotes() {
 
 async function saveNote(noteData) {
     try {
+        // Procesar imagen si existe
+        let imageBase64 = '';
+        if (noteData.imageFile) {
+            imageBase64 = await fileToBase64(noteData.imageFile);
+        }
+        
         if (currentEditId) {
-            await actualizarNota(currentEditId, noteData);
+            const updateData = {
+                nom: noteData.title,
+                cont: noteData.content,
+                estado_animo: noteData.mood || 'sun',
+                favorita: noteData.favorite || false
+            };
+            
+            // Solo actualizar imagen si hay una nueva
+            if (imageBase64) {
+                updateData.imagen = imageBase64;
+            }
+            
+            await actualizarNota(currentEditId, updateData);
         } else {
             await insertarNota(
                 noteData.title, 
                 noteData.content,
-                noteData.image || '',
+                imageBase64,
                 noteData.mood || 'sun',
                 noteData.favorite || false
             );
@@ -479,7 +523,10 @@ function renderHabits() {
 async function saveHabit(habitData) {
     try {
         if (currentEditId) {
-            await actualizarHabito(currentEditId, habitData);
+            await actualizarHabito(currentEditId, {
+                nom: habitData.name,
+                descr: habitData.description
+            });
         } else {
             await insertarHabito(habitData.name, '08:00', 'medium', habitData.description);
         }
@@ -539,7 +586,7 @@ async function deleteHabit(id) {
 
 // ========== FUNCIONES PARA EVENTOS ==========
 function renderEvents() {
-    const eventsContainer = document.querySelector('.events-timeline');
+    const eventsContainer = document.querySelector('.events-timeline ul');
     if (!eventsContainer) return;
     
     eventsContainer.innerHTML = '';
@@ -550,7 +597,7 @@ function renderEvents() {
     }
     
     eventsData.forEach(event => {
-        const eventItem = document.createElement('div');
+        const eventItem = document.createElement('li');
         const eventDate = new Date(event.fecha);
         const today = new Date();
         const isPast = eventDate < today;
@@ -632,7 +679,7 @@ async function deleteEvent(id) {
 
 // ========== FUNCIONES PARA ACTIVIDADES ==========
 function renderActivities() {
-    const activitiesContainer = document.querySelector('.activities-container');
+    const activitiesContainer = document.querySelector('.activities-container ul');
     if (!activitiesContainer) return;
     
     activitiesContainer.innerHTML = '';
@@ -643,8 +690,8 @@ function renderActivities() {
     }
     
     activitiesData.forEach(activity => {
-        const activityCard = document.createElement('div');
-        activityCard.className = `activity-card ${activity.completada ? 'completed' : 'pending'}`;
+        const activityItem = document.createElement('li');
+        activityItem.className = `activity-card ${activity.completada ? 'completed' : 'pending'}`;
         
         const priorityIcons = {
             high: 'fas fa-exclamation-circle',
@@ -652,7 +699,7 @@ function renderActivities() {
             low: 'fas fa-circle'
         };
         
-        activityCard.innerHTML = `
+        activityItem.innerHTML = `
             <div class="activity-priority ${activity.prioridad || 'medium'}">
                 <i class="${priorityIcons[activity.prioridad] || priorityIcons.medium}"></i>
             </div>
@@ -676,7 +723,7 @@ function renderActivities() {
                 <button onclick="deleteActivity(${activity.id})" class="delete-btn"><i class="fas fa-trash"></i></button>
             </div>
         `;
-        activitiesContainer.appendChild(activityCard);
+        activitiesContainer.appendChild(activityItem);
     });
     updateActivityStats();
 }
@@ -843,7 +890,6 @@ async function saveProfile() {
         const success = await guardarConfiguracionUsuario({
             avatar: selectedAvatar,
             tema: selectedTheme,
-            // Otros campos de configuración...
         });
         
         if (success) {
@@ -943,6 +989,13 @@ function editNote(id) {
     form.content.value = note.cont;
     form.mood.value = note.estado_animo;
     form.favorite.checked = note.favorita;
+    
+    // Mostrar imagen si existe
+    const imagePreview = form.querySelector('#image-preview');
+    if (note.imagen && imagePreview) {
+        imagePreview.src = note.imagen;
+        imagePreview.style.display = 'block';
+    }
     
     modal.querySelector('.modal-header h3').textContent = 'Editar Nota';
     openModal('note-modal');
@@ -1045,6 +1098,27 @@ function setupFormHandlers() {
     // Formulario de notas
     const noteForm = document.getElementById('note-form');
     if (noteForm) {
+        // Preview de imagen
+        const imageInput = noteForm.querySelector('input[name="image"]');
+        const imagePreview = noteForm.querySelector('#image-preview');
+        
+        if (imageInput && imagePreview) {
+            imageInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    imagePreview.style.display = 'none';
+                    imagePreview.src = '';
+                }
+            });
+        }
+        
         noteForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(e.target);
@@ -1053,7 +1127,8 @@ function setupFormHandlers() {
                 title: formData.get('title'),
                 content: formData.get('content'),
                 favorite: formData.get('favorite') === 'on',
-                mood: formData.get('mood') || 'sun'
+                mood: formData.get('mood') || 'sun',
+                imageFile: formData.get('image')
             };
             
             saveNote(noteData);

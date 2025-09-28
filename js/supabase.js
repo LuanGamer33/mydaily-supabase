@@ -1,6 +1,5 @@
-// js/supabase.js
 const SUPABASE_URL = 'https://rhnmqipfrzmxjuybzhqu.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJobm1xaXBmcnpteGp1eWJ6aHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxNjAyNjAsImV4cCI6MjA3MzczNjI2MH0.xTIpvfQmqTuDte5BVE1DHEEcntyV1G6IScMatq_YHAE'; // la clave del paso 1
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJobm1xaXBmcnpteGp1eWJ6aHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxNjAyNjAsImV4cCI6MjA3MzczNjI2MH0.xTIpvfQmqTuDte5BVE1DHEEcntyV1G6IScMatq_YHAE';
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -417,7 +416,7 @@ async function obtenerConfiguracionUsuario() {
         .eq('user_id', user.id)
         .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+    if (error && error.code !== 'PGRST116') { // Ignorar error si no hay configuración
         console.error('Error cargando configuraciones:', error);
         return null;
     }

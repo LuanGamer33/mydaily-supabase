@@ -2,23 +2,23 @@
 <html lang="es">
 
 <head>
-    <meta charset=" UTF-8">
+    <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MyDaily - Entrar o registrarse</title>
     <link rel="icon" type="image/png" href="img/Carpincho de pie sobre un parche de hierba.png">
     <link rel="stylesheet" href="css/styles.css">
-    <link href='https://cdn.boxicons.com/fonts/basic/boxicons.min.css' rel='stylesheet' href="css/styles.css">
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet' href="css/styles.css">
+    <link href='https://cdn.boxicons.com/fonts/basic/boxicons.min.css' rel='stylesheet'>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
 
 <body>
     <div class="container">
         <div class="form-box login">
             <form id="login-form">
-                <h2>Iniciar Sesion</h2>
+                <h2>Iniciar Sesión</h2>
                 <div class="input-box">
-                    <input type="text" name="Correo" placeholder="Correo" required>
+                    <input type="email" name="Correo" placeholder="Correo electrónico" required>
                     <i class='bx bx-envelope'></i>
                 </div>
                 <div class="input-box">
@@ -26,7 +26,7 @@
                     <i class='bx bxs-lock'></i>
                 </div>
                 <div class="forgot-link">
-                    <a href="#">¿olvidaste tu contraseña?</a>
+                    <a href="#">¿Olvidaste tu contraseña?</a>
                 </div>
                 <button type="submit" class="btn">Ingresar</button>
                 <p>o ingresar con redes sociales</p>
@@ -42,20 +42,18 @@
 
         <div class="form-box register">
             <form id="register-form">
-                <h2>Registrar</h2>
+                <h2>Registrarse</h2>
                 <div class="reg">
                     <div class="inb">
-                        <input type="text" name="nombre" placeholder="Nombre" required>
+                        <input type="text" name="nombre" placeholder="Nombre" required minlength="2">
                     </div>
                     <div class="inb">
-                        <input type="text"
-                        name="apellido" placeholder="Apellido" required>
+                        <input type="text" name="apellido" placeholder="Apellido" required minlength="2">
                     </div>
                 </div>
                 <div class="reg">
                     <div class="inb">
-                        <input type="date"
-                        name="fn" required>
+                        <input type="date" name="fn" required max="">
                     </div>
                     <div class="inb">
                         <select name="genero" required>
@@ -63,21 +61,22 @@
                             <option value="Masculino">Masculino</option>
                             <option value="Femenino">Femenino</option>
                             <option value="Otro">Otro</option>
+                            <option value="Prefiero no decir">Prefiero no decir</option>
                         </select>
                     </div>
                 </div>
                 <div class="complete">
-                    <input type="text" name="Correo" placeholder="Correo" required>
+                    <input type="email" name="Correo" placeholder="Correo electrónico" required>
                 </div>
                 <div class="complete">
-                    <input type="text" name="username" placeholder="Nombre de Usuario" required>
+                    <input type="text" name="username" placeholder="Nombre de Usuario" required minlength="3">
                 </div>
                 <div class="reg">
                     <div class="inb">
-                        <input type="password" name="pass" placeholder="Contraseña" required>
+                        <input type="password" name="pass" placeholder="Contraseña" required minlength="6">
                     </div>
                     <div class="inb">
-                        <input type="password" name="conf_pass" placeholder="confirme Contraseña" required>
+                        <input type="password" name="conf_pass" placeholder="Confirme Contraseña" required minlength="6">
                     </div>
                 </div>
 
@@ -97,20 +96,23 @@
             <div class="toggle-panel toggle-left">
                 <h1>Gestor de tareas</h1>
                 <br>
-                <h2 class="h2">Bienvenido a MyDaily su gestor de tareas personal</h2>
+                <h2 class="h2">Bienvenido a MyDaily, tu gestor de tareas personal</h2>
                 <p>¿No tienes una cuenta?</p>
                 <button class="btn register-btn">Registrarse</button>
             </div>
             <div class="toggle-panel toggle-right">
-                <h2>Volver al Inicio!</h2>
+                <h2>¡Volver al Inicio!</h2>
                 <p>¿Ya tienes una cuenta?</p>
                 <button class="btn login-btn">Ingresar</button>
             </div>
         </div>
     </div>
-    <div id="message" class="message"></div>
+
+    <!-- Contenedor para mensajes -->
+    <div id="message" class="message" role="alert" aria-live="polite"></div>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>
     <script src="js/script.js"></script>
 </body>
+</html>
