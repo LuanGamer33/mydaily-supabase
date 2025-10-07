@@ -426,23 +426,53 @@ async function obtenerConfiguracionUsuario() {
 
 async function guardarConfiguracionUsuario(configuracion) {
     const user = await getUser();
-    if (!user) return alert('Usuario no autenticado');
+    if (!user) {
+        alert('Usuario no autenticado');
+        return false;
+    }
 
-    const configData = {
-        user_id: user.id,
-        ...configuracion
-    };
+    try {
+        // Primero verificar si existe un registro para este usuario
+        const { data: existing, error: fetchError } = await supabase
+            .from('configuraciones_usuario')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
 
-    const { error } = await supabase
-        .from('configuraciones_usuario')
-        .upsert([configData]);
+        if (fetchError && fetchError.code !== 'PGRST116') {
+            // PGRST116 = registro no encontrado, otros errores sí importan
+            throw fetchError;
+        }
 
-    if (error) {
+        let result;
+        if (existing) {
+            // Si existe, actualizar
+            result = await supabase
+                .from('configuraciones_usuario')
+                .update({
+                    avatar: configuracion.avatar,
+                    tema: configuracion.tema
+                })
+                .eq('user_id', user.id);
+        } else {
+            // Si no existe, insertar
+            result = await supabase
+                .from('configuraciones_usuario')
+                .insert([{
+                    user_id: user.id,
+                    avatar: configuracion.avatar,
+                    tema: configuracion.tema
+                }]);
+        }
+
+        if (result.error) throw result.error;
+        
+        return true;
+    } catch (error) {
+        console.error('Error detallado:', error);
         alert('Error al guardar configuración: ' + error.message);
         return false;
     }
-    
-    return true;
 }
 
 // ========== FUNCIONES DE UTILIDAD ==========

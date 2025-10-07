@@ -1,4 +1,29 @@
+// Frases motivacionales
+const motivationalQuotes = [
+    "El éxito es la suma de pequeños esfuerzos repetidos día tras día.",
+    "La constancia es la clave del éxito.",
+    "Cada día es una nueva oportunidad para mejorar.",
+    "No cuentes los días, haz que los días cuenten.",
+    "El progreso, no la perfección, es lo que importa.",
+    "Pequeños pasos cada día conducen a grandes cambios.",
+    "Tu único límite eres tú mismo.",
+    "Hoy es el día perfecto para comenzar.",
+    "La disciplina es el puente entre metas y logros.",
+    "Cada momento es una oportunidad para ser mejor.",
+    "El mejor momento para plantar un árbol fue hace 20 años. El segundo mejor momento es ahora.",
+    "No esperes a que sea fácil, espera a ser más fuerte.",
+    "La motivación te pone en marcha, el hábito te mantiene en movimiento.",
+    "Haz de cada día tu obra maestra.",
+    "El cambio comienza con una decisión.",
+    "La vida es corta, haz que cuente.",
+    "Enfócate en el progreso, no en la perfección.",
+    "Tus hábitos de hoy crean tu futuro de mañana.",
+    "Sé la energía que quieres atraer.",
+    "Un día a la vez, un paso a la vez."
+];
+
 document.addEventListener('DOMContentLoaded', async function() {
+    updateActiveMenu();
     // Verificar autenticación
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
@@ -6,15 +31,34 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
     }
     
+    // Inicializar sidebar toggle
+    initSidebarToggle();
+    
     // Cargar perfil de usuario desde Supabase
     await loadUserProfile();
     
     // Cargar datos desde Supabase
     await loadAllData();
     
+    // Inicializar motivación diaria
+    updateDailyMotivation();
+    
     // Configurar atajos de teclado
     setupKeyboardShortcuts();
 });
+
+function updateActiveMenu() {
+    const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
+    const navItems = document.querySelectorAll('.nav-item');
+    
+    navItems.forEach(item => {
+        item.classList.remove('active');
+        const href = item.getAttribute('href');
+        if (href === currentPage) {
+            item.classList.add('active');
+        }
+    });
+}
 
 // Variables globales para datos dinámicos
 let notesData = [];
@@ -24,6 +68,128 @@ let activitiesData = [];
 let currentEditId = null;
 let currentEditType = null;
 let userAvatarGlobal = 'user-circle';
+
+// Carruseles activos
+const carousels = {
+    notes: { currentIndex: 0, items: [] },
+    habits: { currentIndex: 0, items: [] },
+    activities: { currentIndex: 0, items: [] },
+    events: { currentIndex: 0, items: [] }
+};
+
+// Inicializar toggle del sidebar
+function initSidebarToggle() {
+    const sidebar = document.querySelector('.sidebar');
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'sidebar-toggle';
+    toggleBtn.innerHTML = '<i class="fas fa-bars"></i><span class="toggle-text">Contraer</span>';
+
+    // Verificar si el contenido del sidebar necesita scroll
+    function checkSidebarOverflow() {
+        if (!sidebar) return;
+        
+        const hasOverflow = sidebar.scrollHeight > sidebar.clientHeight;
+        toggleBtn.style.display = 'flex'; // Siempre mostrar el botón
+    }
+    
+    // Insertar el botón al inicio del sidebar
+    if (sidebar) {
+        sidebar.insertBefore(toggleBtn, sidebar.firstChild);
+        
+        toggleBtn.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+            const icon = toggleBtn.querySelector('i');
+            const text = toggleBtn.querySelector('.toggle-text');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                icon.className = 'fas fa-bars';
+                text.textContent = '';
+            } else {
+                icon.className = 'fas fa-bars';
+                text.textContent = 'Contraer';
+            }
+        });
+
+        // Verificar al cargar y al cambiar tamaño
+        checkSidebarOverflow();
+        window.addEventListener('resize', checkSidebarOverflow);
+    }
+}
+
+// Función para obtener/generar motivación diaria
+function getDailyMotivation() {
+    const user = supabase.auth.getUser();
+    const userId = user?.id || 'default';
+    const today = new Date().toDateString();
+    
+    // Clave única para almacenar en memoria
+    const storageKey = `motivation_${userId}_${today}`;
+    
+    // Intentar obtener de una variable global (en memoria)
+    if (!window.dailyMotivations) {
+        window.dailyMotivations = {};
+    }
+    
+    if (window.dailyMotivations[storageKey]) {
+        return window.dailyMotivations[storageKey];
+    }
+    
+    // Generar nueva motivación basada en fecha y usuario
+    const seed = today.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const userSeed = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const index = (seed + userSeed) % motivationalQuotes.length;
+    
+    const motivation = {
+        text: motivationalQuotes[index],
+        time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+    };
+    
+    // Guardar en memoria
+    window.dailyMotivations[storageKey] = motivation;
+    
+    return motivation;
+}
+
+// Actualizar motivación diaria en el DOM
+function updateDailyMotivation() {
+    const motivationContainer = document.querySelector('.daily-motivation');
+    if (!motivationContainer) return;
+    
+    const motivation = getDailyMotivation();
+    const textElement = motivationContainer.querySelector('.motivation-text');
+    const timeElement = motivationContainer.querySelector('.motivation-time');
+    
+    if (textElement) textElement.textContent = motivation.text;
+    if (timeElement) timeElement.textContent = `Actualizado: ${motivation.time}`;
+}
+
+// Función para inicializar carrusel
+function initCarousel(type, items) {
+    carousels[type].items = items;
+    carousels[type].currentIndex = 0;
+    updateCarousel(type);
+}
+
+// Actualizar vista del carrusel
+function updateCarousel(type) {
+    const carousel = carousels[type];
+    const carouselItems = document.querySelectorAll(`#${type}-carousel .carousel-item`);
+    const dots = document.querySelectorAll(`#${type}-carousel .carousel-dot`);
+    
+    carouselItems.forEach((item, index) => {
+        item.classList.toggle('active', index === carousel.currentIndex);
+    });
+    
+    dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === carousel.currentIndex);
+    });
+}
+
+// Navegar en el carrusel
+function navigateCarousel(type, index) {
+    carousels[type].currentIndex = index;
+    updateCarousel(type);
+}
 
 // Configurar atajos de teclado
 function setupKeyboardShortcuts() {
@@ -120,99 +286,141 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// Renderizar previews del dashboard (solo los 3 más recientes)
+// Renderizar previews del dashboard con carrusel
 function renderDashboardPreviews() {
-    // Notas preview
     const previewCards = document.querySelectorAll('.preview-card .card-content');
     
-    // Notas (primer card)
-    if (previewCards[0] && notesData.length > 0) {
-        previewCards[0].innerHTML = '';
-        const recentNotes = notesData.slice(0, 3);
-        recentNotes.forEach(note => {
-            const item = document.createElement('div');
-            item.className = 'preview-item';
-            item.innerHTML = `
-                ${note.favorita ? '<i class="fas fa-star" style="color: #ffd700; margin-right: 5px;"></i>' : ''}
-                ${note.nom}
+    // Notas preview con carrusel
+    if (previewCards[0]) {
+        renderCarouselPreview(previewCards[0], notesData, 'notes', 'notes.html', (note) => {
+            return `
+                ${note.favorita ? '<i class="fas fa-star" style="color: #ffd700;"></i>' : '<i class="far fa-sticky-note"></i>'}
+                <span>${note.nom}</span>
             `;
-            item.onclick = () => window.location.href = 'notes.html';
-            previewCards[0].appendChild(item);
         });
-    } else if (previewCards[0]) {
-        previewCards[0].innerHTML = '<div class="preview-item" style="color: var(--text-light);">No hay notas aún</div>';
     }
     
-    // Hábitos (segundo card)
-    if (previewCards[1] && habitsData.length > 0) {
-        previewCards[1].innerHTML = '';
-        const recentHabits = habitsData.slice(0, 3);
-        recentHabits.forEach(habit => {
-            const item = document.createElement('div');
-            item.className = 'preview-item';
-            item.innerHTML = `
-                ${habit.completado_hoy ? '<i class="fas fa-check-circle" style="color: #4caf50; margin-right: 5px;"></i>' : '<i class="far fa-circle" style="margin-right: 5px;"></i>'}
-                ${habit.nom}
+    // Hábitos preview con carrusel
+    if (previewCards[1]) {
+        renderCarouselPreview(previewCards[1], habitsData, 'habits', 'habits.html', (habit) => {
+            return `
+                ${habit.completado_hoy ? '<i class="fas fa-check-circle" style="color: #4caf50;"></i>' : '<i class="far fa-circle"></i>'}
+                <span>${habit.nom}</span>
                 <small style="margin-left: auto; color: var(--text-light);">${habit.racha} días</small>
             `;
-            item.onclick = () => window.location.href = 'habits.html';
-            previewCards[1].appendChild(item);
         });
-    } else if (previewCards[1]) {
-        previewCards[1].innerHTML = '<div class="preview-item" style="color: var(--text-light);">No hay hábitos aún</div>';
     }
     
-    // Actividades (tercer card)
-    if (previewCards[2] && activitiesData.length > 0) {
-        previewCards[2].innerHTML = '';
-        const recentActivities = activitiesData.slice(0, 3);
-        recentActivities.forEach(activity => {
-            const item = document.createElement('div');
-            item.className = 'preview-item';
+    // Actividades preview con carrusel
+    if (previewCards[2]) {
+        renderCarouselPreview(previewCards[2], activitiesData, 'activities', 'activities.html', (activity) => {
             const priorityIcon = activity.prioridad === 'high' ? '🔴' : activity.prioridad === 'medium' ? '🟡' : '🟢';
-            item.innerHTML = `
-                ${priorityIcon} ${activity.titulo}
+            return `
+                <span>${priorityIcon}</span>
+                <span>${activity.titulo}</span>
                 ${activity.completada ? '<i class="fas fa-check" style="color: #4caf50; margin-left: auto;"></i>' : ''}
             `;
-            item.onclick = () => window.location.href = 'activities.html';
-            previewCards[2].appendChild(item);
         });
-    } else if (previewCards[2]) {
-        previewCards[2].innerHTML = '<div class="preview-item" style="color: var(--text-light);">No hay actividades aún</div>';
     }
     
-    // Eventos (cuarto card)
-    if (previewCards[3] && eventsData.length > 0) {
-        previewCards[3].innerHTML = '';
-        const recentEvents = eventsData.slice(0, 3);
-        recentEvents.forEach(event => {
-            const item = document.createElement('div');
-            item.className = 'preview-item';
+    // Eventos preview con carrusel
+    if (previewCards[3]) {
+        renderCarouselPreview(previewCards[3], eventsData, 'events', 'events.html', (event) => {
             const eventDate = new Date(event.fecha);
             const isUpcoming = eventDate >= new Date();
-            item.innerHTML = `
-                ${isUpcoming ? '📅' : '📋'} ${event.nom}
+            return `
+                <span>${isUpcoming ? '📅' : '📋'}</span>
+                <span>${event.nom}</span>
                 <small style="margin-left: auto; color: var(--text-light);">${eventDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}</small>
             `;
-            item.onclick = () => window.location.href = 'events.html';
-            previewCards[3].appendChild(item);
         });
-    } else if (previewCards[3]) {
-        previewCards[3].innerHTML = '<div class="preview-item" style="color: var(--text-light);">No hay eventos aún</div>';
+    }
+}
+
+// Renderizar carrusel de preview
+function renderCarouselPreview(container, data, type, link, renderItem) {
+    const parentCard = container.closest('.preview-card');
+    container.innerHTML = '';
+    container.id = `${type}-carousel`;
+    
+        if (data.length === 0) {
+        if (parentCard) parentCard.classList.add('empty-state');
+        container.innerHTML = `<div class="preview-item" style="color: var(--text-light); justify-content: center;">No hay ${type} aún</div>`;
+        return;
+    }
+    
+    if (parentCard) parentCard.classList.remove('empty-state');
+    
+    const items = data.slice(0, 3);
+    
+    // Crear items del carrusel
+    items.forEach((item, index) => {
+        const carouselItem = document.createElement('div');
+        carouselItem.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+        
+        const previewItem = document.createElement('div');
+        previewItem.className = 'preview-item';
+        previewItem.innerHTML = renderItem(item);
+        previewItem.onclick = () => window.location.href = link;
+        
+        carouselItem.appendChild(previewItem);
+        container.appendChild(carouselItem);
+    });
+    
+    // Crear controles si hay más de 1 item
+    if (items.length > 1) {
+        const controls = document.createElement('div');
+        controls.className = 'carousel-controls';
+        
+        items.forEach((_, index) => {
+            const dot = document.createElement('button');
+            dot.className = `carousel-dot ${index === 0 ? 'active' : ''}`;
+            dot.onclick = () => navigateCarousel(type, index);
+            controls.appendChild(dot);
+        });
+        
+        container.appendChild(controls);
+        
+        // Auto-avanzar cada 3 segundos
+        setInterval(() => {
+            const currentIndex = carousels[type]?.currentIndex || 0;
+            const nextIndex = (currentIndex + 1) % items.length;
+            navigateCarousel(type, nextIndex);
+        }, 3000);
     }
 }
 
 // Actualizar estadísticas del dashboard
 function updateDashboardStats() {
-    const totalNotesEl = document.getElementById('total-notes-stat');
-    const totalHabitsEl = document.getElementById('total-habits-stat');
-    const totalEventsEl = document.getElementById('total-events-stat');
-    const pendingActivitiesEl = document.getElementById('pending-activities-stat');
+    const today = new Date().toDateString();
     
+    // Total de notas
+    const totalNotesEl = document.getElementById('total-notes-stat');
     if (totalNotesEl) totalNotesEl.textContent = notesData.length;
+    
+    // Hábitos activos
+    const totalHabitsEl = document.getElementById('total-habits-stat');
     if (totalHabitsEl) totalHabitsEl.textContent = habitsData.length;
-    if (totalEventsEl) totalEventsEl.textContent = eventsData.filter(e => new Date(e.fecha) >= new Date()).length;
-    if (pendingActivitiesEl) pendingActivitiesEl.textContent = activitiesData.filter(a => !a.completada).length;
+    
+    // Eventos próximos
+    const upcomingEvents = eventsData.filter(e => new Date(e.fecha) >= new Date()).length;
+    const totalEventsEl = document.getElementById('total-events-stat');
+    if (totalEventsEl) totalEventsEl.textContent = upcomingEvents;
+    
+    // Actividades pendientes
+    const pendingActivities = activitiesData.filter(a => !a.completada).length;
+    const pendingActivitiesEl = document.getElementById('pending-activities-stat');
+    if (pendingActivitiesEl) pendingActivitiesEl.textContent = pendingActivities;
+    
+    // Eventos de hoy
+    const todayEvents = eventsData.filter(e => new Date(e.fecha).toDateString() === today).length;
+    const todayEventsEl = document.getElementById('today-events-stat');
+    if (todayEventsEl) todayEventsEl.textContent = todayEvents;
+    
+    // Actividades de hoy
+    const todayActivities = activitiesData.filter(a => new Date(a.fecha).toDateString() === today && !a.completada).length;
+    const todayActivitiesEl = document.getElementById('today-activities-stat');
+    if (todayActivitiesEl) todayActivitiesEl.textContent = todayActivities;
 }
 
 // Función para cerrar sesión
@@ -225,7 +433,7 @@ async function logout() {
         habitsData = [];
         eventsData = [];
         activitiesData = [];
-        localStorage.clear();
+        if (window.dailyMotivations) window.dailyMotivations = {};
         
         window.location.href = 'index.html';
     } catch (error) {
@@ -306,17 +514,14 @@ function openModal(modalId) {
 }
 
 function closeModal(modalId = null) {
-    // Si no se especifica modalId, cerrar cualquier modal abierto
     const modal = modalId ? document.getElementById(modalId) : document.querySelector('.modal.show');
     if (modal) {
         modal.classList.remove('show');
         document.body.style.overflow = 'auto';
         
-        // Limpiar formularios
         const forms = modal.querySelectorAll('form');
         forms.forEach(form => {
             form.reset();
-            // Limpiar preview de imagen
             const imagePreview = form.querySelector('#image-preview');
             if (imagePreview) {
                 imagePreview.style.display = 'none';
@@ -324,7 +529,6 @@ function closeModal(modalId = null) {
             }
         });
         
-        // Reset variables globales
         currentEditId = null;
         currentEditType = null;
     }
@@ -345,7 +549,6 @@ function formatDate(dateString) {
     });
 }
 
-// Función para convertir archivo a Base64
 function fileToBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -405,7 +608,6 @@ function renderNotes() {
 
 async function saveNote(noteData) {
     try {
-        // Procesar imagen si existe
         let imageBase64 = '';
         if (noteData.imageFile) {
             imageBase64 = await fileToBase64(noteData.imageFile);
@@ -419,7 +621,6 @@ async function saveNote(noteData) {
                 favorita: noteData.favorite || false
             };
             
-            // Solo actualizar imagen si hay una nueva
             if (imageBase64) {
                 updateData.imagen = imageBase64;
             }
@@ -598,11 +799,9 @@ function renderEvents() {
     
     eventsData.forEach(event => {
         const eventItem = document.createElement('li');
-        const eventDate = new Date(event.fecha);
-        const today = new Date();
-        const isPast = eventDate < today;
+        eventItem.className = `event-item ${new Date(event.fecha) < new Date() ? 'past' : 'upcoming'}`;
         
-        eventItem.className = `event-item ${isPast ? 'past' : 'upcoming'}`;
+        const eventDate = new Date(event.fecha);
         
         eventItem.innerHTML = `
             <div class="event-date">
@@ -804,7 +1003,6 @@ async function loadUserProfile() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Mostrar información del usuario
         const usernameDisplays = document.querySelectorAll('.username');
         const usernameInputs = document.querySelectorAll('#username');
         const emailInputs = document.querySelectorAll('#email');
@@ -823,35 +1021,16 @@ async function loadUserProfile() {
             if (input) input.value = user.email;
         });
 
-        // Cargar configuraciones del usuario desde la BD
         const config = await obtenerConfiguracionUsuario();
         if (config) {
             userAvatarGlobal = config.avatar || 'user-circle';
             updateAvatarDisplay(userAvatarGlobal);
             
-            // Aplicar tema
             if (config.tema) {
                 document.documentElement.setAttribute('data-theme', config.tema);
                 const themeOptions = document.querySelectorAll('.theme-option');
                 themeOptions.forEach(o => {
                     o.classList.toggle('active', o.getAttribute('data-theme') === config.tema);
-                });
-            }
-        } else {
-            // Cargar desde localStorage como fallback
-            const savedAvatar = localStorage.getItem('mydaily-avatar');
-            const savedTheme = localStorage.getItem('mydaily-theme');
-            
-            if (savedAvatar) {
-                userAvatarGlobal = savedAvatar;
-                updateAvatarDisplay(savedAvatar);
-            }
-            
-            if (savedTheme) {
-                document.documentElement.setAttribute('data-theme', savedTheme);
-                const themeOptions = document.querySelectorAll('.theme-option');
-                themeOptions.forEach(o => {
-                    o.classList.toggle('active', o.getAttribute('data-theme') === savedTheme);
                 });
             }
         }
@@ -874,29 +1053,29 @@ function updateAvatarDisplay(avatarType) {
 
 async function saveProfile() {
     try {
+        const saveBtn = event.target;
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Guardando...';
+
         const user = await getUser();
         const username = document.getElementById('username').value;
         const selectedAvatar = document.querySelector('.avatar-option.active')?.dataset.avatar || 'user-circle';
         const selectedTheme = document.querySelector('.theme-option.active')?.dataset.theme || 'default';
         
-        // Actualizar nombre en auth.users
         const { error: authError } = await supabase.auth.updateUser({
             data: { full_name: username }
         });
         
         if (authError) throw authError;
         
-        // Guardar configuraciones en la BD
         const success = await guardarConfiguracionUsuario({
             avatar: selectedAvatar,
             tema: selectedTheme,
         });
         
         if (success) {
-            // Actualizar globals
             userAvatarGlobal = selectedAvatar;
             
-            // Actualizar displays
             const usernameDisplays = document.querySelectorAll('.username');
             usernameDisplays.forEach(display => {
                 if (display) display.textContent = username;
@@ -905,15 +1084,18 @@ async function saveProfile() {
             updateAvatarDisplay(selectedAvatar);
             document.documentElement.setAttribute('data-theme', selectedTheme);
             
-            // También guardar en localStorage como backup
-            localStorage.setItem('mydaily-avatar', selectedAvatar);
-            localStorage.setItem('mydaily-theme', selectedTheme);
-            
             alert('Perfil guardado exitosamente');
         }
     } catch (error) {
         console.error('Error guardando perfil:', error);
         alert('Error al guardar perfil: ' + error.message);
+    } finally {
+        // AÑADIR ESTE BLOQUE - Siempre rehabilitar el botón
+        const saveBtn = document.querySelector('.save-btn');
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Guardar Perfil';
+        }
     }
 }
 
@@ -949,7 +1131,7 @@ async function deleteAccount() {
                     habitsData = [];
                     eventsData = [];
                     activitiesData = [];
-                    localStorage.clear();
+                    if (window.dailyMotivations) window.dailyMotivations = {};
                     
                     alert('Todos los datos han sido eliminados. Cerrando sesión...');
                     await logout();
@@ -990,7 +1172,6 @@ function editNote(id) {
     form.mood.value = note.estado_animo;
     form.favorite.checked = note.favorita;
     
-    // Mostrar imagen si existe
     const imagePreview = form.querySelector('#image-preview');
     if (note.imagen && imagePreview) {
         imagePreview.src = note.imagen;
@@ -1098,7 +1279,6 @@ function setupFormHandlers() {
     // Formulario de notas
     const noteForm = document.getElementById('note-form');
     if (noteForm) {
-        // Preview de imagen
         const imageInput = noteForm.querySelector('input[name="image"]');
         const imagePreview = noteForm.querySelector('#image-preview');
         
@@ -1192,7 +1372,6 @@ function setupFormHandlers() {
 }
 
 function setupFilters() {
-    // Filtros y búsquedas para cada sección
     const eventFilter = document.getElementById('event-filter');
     if (eventFilter) {
         eventFilter.addEventListener('change', function(e) {
@@ -1266,7 +1445,6 @@ function setupFilters() {
 }
 
 function setupAvatarAndThemeSelectors() {
-    // Selección de avatares
     const avatarOptions = document.querySelectorAll('.avatar-option');
     avatarOptions.forEach(option => {
         option.addEventListener('click', function () {
@@ -1275,7 +1453,6 @@ function setupAvatarAndThemeSelectors() {
         });
     });
 
-    // Selección de temas
     const themeOptions = document.querySelectorAll('.theme-option');
     themeOptions.forEach(option => {
         option.addEventListener('click', function () {

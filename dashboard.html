@@ -37,48 +37,41 @@
             <!-- Navegación -->
             <nav class="nav-menu">
                 <ul>
-                    <li><a href="dashboard.html" class="nav-item active"><i class="fas fa-tachometer-alt"></i> Panel Principal</a></li>
-                    <li><a href="habits.html" class="nav-item"><i class="fas fa-check-circle"></i> Hábitos Diarios</a></li>
-                    <li><a href="events.html" class="nav-item"><i class="fas fa-calendar-alt"></i> Eventos</a></li>
-                    <li><a href="notes.html" class="nav-item"><i class="fas fa-sticky-note"></i> Notas</a></li>
-                    <li><a href="activities.html" class="nav-item"><i class="fas fa-tasks"></i> Actividades</a></li>
-                    <li><a href="settings.html" class="nav-item"><i class="fas fa-cog"></i> Configuraciones</a></li>
+                    <li><a href="dashboard.html" class="nav-item active" data-title="Panel Principal"><i class="fas fa-tachometer-alt"></i><span> Panel Principal</span></a></li>
+                    <li><a href="habits.html" class="nav-item " data-title="Habitos diarios"><i class="fas fa-check-circle"></i><span> Hábitos Diarios</span></a></li>
+                    <li><a href="events.html" class="nav-item" data-title="Eventos"><i class="fas fa-calendar-alt"></i><span> Eventos</span></a></li>
+                    <li><a href="notes.html" class="nav-item" data-title="Notas"><i class="fas fa-sticky-note"></i><span> Notas</span></a></li>
+                    <li><a href="activities.html" class="nav-item" data-title="Actividades"><i class="fas fa-tasks"></i><span> Actividades</span></a></li>
+                    <li><a href="settings.html" class="nav-item" data-title="Configuraciones"><i class="fas fa-cog"></i><span> Configuraciones</span></a></li>
                 </ul>
             </nav>
 
             <!-- Botón Cerrar Sesión -->
             <div class="logout-section">
-                <button class="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
+                <button class="logout-btn"><i class="fas fa-sign-out-alt"></i><span> Cerrar Sesión</span></button>
             </div>
         </aside>
 
         <!-- Contenido Principal -->
         <main class="main-content">
-            <!-- Decoración Superior -->
-            <div class="top-decoration">
-                <div class="user-shortcut">
-                    <i class="fas fa-user"></i>
-                    <span>Acceso rápido al perfil</span>
+            <!-- Motivación Diaria -->
+                <div class="daily-motivation">
+                    <div class="motivation-content">
+                        <div class="motivation-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div class="motivation-text-container">
+                            <p class="motivation-text" id="motivation-message">Frase del dia...</p>
+                            <small class="motivation-time" id="motivation-time">Fecha actualizada...</small>
+                        </div>
+                    </div>
+                    <!-- Logo en esquina inferior derecha -->
+                    <img src="img/capibara.png" alt="Logo" class="motivation-logo">
                 </div>
-            </div>
 
             <!-- Dashboard Content -->
             <div class="dashboard-section active">
                 <div class="dashboard-grid">
-                    <!-- Calendario -->
-                    <div class="calendar-section">
-                        <div class="section-header">
-                            <h3 id="current-month">Calendario</h3>
-                        </div>
-                        <div class="calendar-grid">
-                            <div class="calendar-header">
-                                <span>D</span><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span>
-                            </div>
-                            <div class="calendar-body" id="calendar-body">
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Secciones Preview -->
                     <div class="preview-sections">
                         <!-- Notas Preview -->
@@ -89,7 +82,7 @@
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
-                            <div class="card-content">
+                            <div class="carousel-container card-content" id="notes-carousel">
                                 <div class="preview-item" style="color: var(--text-light); text-align: center;">
                                     <i class="fas fa-spinner fa-spin"></i> Cargando notas...
                                 </div>
@@ -104,7 +97,7 @@
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
-                            <div class="card-content">
+                            <div class="carousel-container card-content" id="habits-carousel">
                                 <div class="preview-item" style="color: var(--text-light); text-align: center;">
                                     <i class="fas fa-spinner fa-spin"></i> Cargando hábitos...
                                 </div>
@@ -119,7 +112,7 @@
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
-                            <div class="card-content">
+                            <div class="carousel-container card-content" id="activities-carousel">
                                 <div class="preview-item" style="color: var(--text-light); text-align: center;">
                                     <i class="fas fa-spinner fa-spin"></i> Cargando actividades...
                                 </div>
@@ -134,14 +127,28 @@
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
-                            <div class="card-content">
+                            <div class="carousel-container card-content" id="events-carousel">
                                 <div class="preview-item" style="color: var(--text-light); text-align: center;">
                                     <i class="fas fa-spinner fa-spin"></i> Cargando eventos...
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Estadísticas Rápidas -->
+                    </div>
+                    <!-- Calendario -->
+                    <div class="calendar-section">
+                        <div class="section-header">
+                            <h3 id="current-month">Calendario</h3>
+                        </div>
+                        <div class="calendar-grid">
+                            <div class="calendar-header">
+                                <span>D</span><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span>
+                            </div>
+                            <div class="calendar-body" id="calendar-body">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Sidebar de Estadísticas -->
+                    <aside class="stats-sidebar">
                         <div class="preview-card stats-card">
                             <div class="card-header">
                                 <h4>ESTADÍSTICAS</h4>
@@ -160,23 +167,20 @@
                                     <span class="stat-value" id="total-events-stat">0</span>
                                 </div>
                                 <div class="stat-row">
-                                    <span class="stat-label">Tareas pendientes:</span>
+                                    <span class="stat-label">Actividades pendientes:</span>
                                     <span class="stat-value" id="pending-activities-stat">0</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Eventos de hoy:</span>
+                                    <span class="stat-value" id="today-events-stat">0</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Actividades de hoy:</span>
+                                    <span class="stat-value" id="today-activities-stat">0</span>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Inspiración Diaria -->
-                        <div class="preview-card inspiration-card">
-                            <div class="card-header">
-                                <h4>INSPIRACIÓN DIARIA</h4>
-                            </div>
-                            <div class="card-content inspiration-content">
-                                <p class="inspiration-text" id="inspiration-message">El éxito es la suma de pequeños esfuerzos repetidos día tras día.</p>
-                                <small class="inspiration-time" id="inspiration-time">Actualizado: 09:30 AM</small>
-                            </div>
-                        </div>
-                    </div>
+                    </aside>
                 </div>
             </div>
         </main>
@@ -201,15 +205,6 @@
                         <textarea name="content" rows="8" required placeholder="Escribe aquí el contenido de tu nota..."></textarea>
                     </div>
                     <div class="form-field">
-                        <label>
-                            <input type="checkbox" name="favorite"> Marcar como favorita
-                        </label>
-                    </div>
-                    <div class="modal-actions">
-                        <button type="button" onclick="closeModal('note-modal')">Cancelar</button>
-                        <button type="submit">Guardar Nota</button>
-                    </div>
-                    <div class="form-field">
                         <label>Imagen de la Nota</label>
                         <input type="file" name="image" accept="image/*">
                     </div>
@@ -221,6 +216,15 @@
                             <option value="rain"><i class="fas fa-cloud-rain"></i> Lluvioso</option>
                             <option value="storm"><i class="fas fa-bolt"></i> Tormenta</option>
                         </select>
+                    </div>
+                    <div class="form-field">
+                        <label>
+                            <input type="checkbox" name="favorite"> Marcar como favorita
+                        </label>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" onclick="closeModal('note-modal')">Cancelar</button>
+                        <button type="submit">Guardar Nota</button>
                     </div>
                 </form>
             </div>
