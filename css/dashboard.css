@@ -16,7 +16,7 @@
     --sidebar-collapsed-width: 80px;
 }
 
-/* Tema Azul */
+/* Temas adicionales */
 [data-theme="blue"] {
     --primary-color: #81b3d3;
     --secondary-color: #e3f2fd;
@@ -24,7 +24,6 @@
     --card-background: #e3f2fd;
 }
 
-/* Tema Verde */
 [data-theme="green"] {
     --primary-color: #a5d6a7;
     --secondary-color: #e8f5e8;
@@ -32,7 +31,6 @@
     --card-background: #e8f5e8;
 }
 
-/* Tema Púrpura */
 [data-theme="purple"] {
     --primary-color: #ce93d8;
     --secondary-color: #f3e5f5;
@@ -40,7 +38,6 @@
     --card-background: #f3e5f5;
 }
 
-/* Tema Oscuro */
 [data-theme="dark"] {
     --primary-color: #bb86fc;
     --secondary-color: #2d2d2d;
@@ -74,17 +71,7 @@ body {
     position: relative;
 }
 
-body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    pointer-events: none;
-}
-
+/* Header */
 .header {
     background: var(--secondary-color);
     color: var(--text-dark);
@@ -112,11 +99,6 @@ body::before {
     display: flex;
     align-items: center;
     gap: 10px;
-}
-
-.logo-icon {
-    font-size: 2rem;
-    color: var(--accent-color);
 }
 
 .logo {
@@ -218,19 +200,12 @@ body::before {
     padding: 0.75rem;
 }
 
-[data-theme="dark"] .user-info {
-    background: rgba(255, 255, 255, 0.1);
-}
-
 .user-avatar {
     font-size: 2.5rem;
     color: var(--white);
     flex-shrink: 0;
 }
 
-.sidebar.collapsed .user-avatar {
-    font-size: 2rem;
-}
 
 .username {
     color: var(--white);
@@ -248,16 +223,7 @@ body::before {
 /* Navegación */
 .nav-menu {
     flex: 1;
-    overflow-y:calc(100vh - 300px);
-}
-
-.nav-menu::-webkit-scrollbar {
-    width: 4px;
-}
-
-.nav-menu::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 2px;
+    overflow-y: calc(100vh - 300px);
 }
 
 .nav-menu ul {
@@ -364,13 +330,15 @@ body::before {
     padding: 2rem;
     background: transparent;
     transition: margin-left 0.3s ease;
+    width: calc(100% - var(--sidebar-width));
 }
 
 .sidebar.collapsed ~ .main-content {
     margin-left: var(--sidebar-collapsed-width);
+    width: calc(100% - var(--sidebar-collapsed-width));
 }
 
-/* Motivación Diaria (reemplaza top-decoration) */
+/* Motivación Diaria */
 .daily-motivation {
     background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
     color: white;
@@ -414,7 +382,6 @@ body::before {
     display: block;
 }
 
-/* Logo en esquina inferior derecha */
 .motivation-logo {
     position: absolute;
     bottom: 10px;
@@ -425,135 +392,16 @@ body::before {
     border-radius: 8px;
 }
 
-/* Secciones */
-.section {
+/* Dashboard Section */
+.dashboard-section {
     display: none;
 }
 
-.section.active,
 .dashboard-section.active {
     display: block;
 }
 
-.section h2 {
-    color: var(--text-dark);
-    margin-bottom: 1rem;
-    font-size: 2rem;
-}
-
-/* Dashboard Grid */
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: 1fr 320px;
-    grid-template-rows: auto 1fr;
-    gap: 1.2rem;
-    height: 75vh;
-    margin-top: 0;
-}
-
-/* Calendario */
-.calendar-section {
-    background: rgba(245, 230, 224, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: var(--border-radius);
-    padding: 1rem;
-    margin-bottom: auto;
-    box-shadow: 0 4px 20px var(--shadow);
-    transition: all 0.3s ease;
-    max-width: 100%;
-    grid-column: 2;
-    grid-row: 1;
-}
-
-.section-header h3 {
-    text-align: center;
-    color: var(--text-dark);
-    margin-bottom: 0.5rem;
-    font-size: 1rem;
-}
-
-.calendar-grid {
-    display: flex;
-    flex-direction: column;
-}
-
-.calendar-header {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
-    margin-bottom: 4px;
-}
-
-.calendar-header span {
-    text-align: center;
-    font-weight: bold;
-    color: var(--text-dark);
-    padding: 2px;
-    font-size: 0.9rem;
-}
-
-.calendar-body {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
-}
-
-.calendar-day {
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 1rem;
-    color: var(--text-dark);
-    position: relative;
-    padding: 1px;
-}
-
-.calendar-day.empty {
-    cursor: default;
-}
-
-.calendar-day:not(.empty):hover {
-    background: var(--primary-color);
-    color: white;
-}
-
-.calendar-day.current {
-    background: var(--accent-color) !important;
-    color: white !important;
-    font-weight: bold;
-}
-
-.calendar-day.has-event {
-    background: rgba(255, 152, 0, 0.1);
-    color: white;
-    border: 2px solid rgba(255, 152, 0, 0.3);
-}
-
-/* Indicador para días con eventos/actividades */
-.day-indicator {
-    position: absolute;
-    bottom: 1px;
-    right: 1px;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: #ff9800;
-}
-
-/* Secciones Preview */
-.preview-sections {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: repeat(2, 1fr);
-    gap: 1.5rem;
-    grid-column: 1;
-    grid-row: 1/3;
-}
-
+/* Preview Cards con Bootstrap */
 .preview-card {
     background: rgba(245, 230, 224, 0.95);
     backdrop-filter: blur(10px);
@@ -561,9 +409,9 @@ body::before {
     padding: 1.5rem;
     box-shadow: 0 4px 20px var(--shadow);
     transition: all 0.3s ease;
+    display: flex;
     flex-direction: column;
     min-height: 280px;
-    max-height: 330px;
 }
 
 .preview-card:hover {
@@ -573,46 +421,37 @@ body::before {
 
 .preview-card.empty-state {
     min-height: 200px;
-    max-height: 200px;
     justify-content: center;
     align-items: center;
 }
 
-.preview-card.empty-state .card-content {
-    text-align: center;
-    padding: 1.5rem;
-    font-size: 0.8rem;
+[data-theme="blue"] .preview-card,
+[data-theme="blue"] .calendar-section {
+    background: rgba(227, 242, 253, 0.95);
 }
 
-.preview-card,
-.calendar-section,
-.stats-card {
-    background: rgba(245, 230, 224, 0.95); /* Semi-transparente */
-    backdrop-filter: blur(10px); /* Efecto de desenfoque */
+[data-theme="green"] .preview-card,
+[data-theme="green"] .calendar-section {
+    background: rgba(232, 245, 232, 0.95);
 }
 
+[data-theme="purple"] .preview-card,
+[data-theme="purple"] .calendar-section {
+    background: rgba(243, 229, 245, 0.95);
+}
+
+[data-theme="dark"] .preview-card,
+[data-theme="dark"] .calendar-section {
+    background: rgba(30, 30, 30, 0.95);
+    border: 1px solid var(--border-color);
+}
+
+/* Card Header */
 .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.6rem;
-}
-
-[data-theme="dark"] .preview-card,
-[data-theme="dark"] .calendar-section,
-[data-theme="dark"] .stats-card {
-    background: rgba(30, 30, 30, 0.95);
-    backdrop-filter: blur(10px);
-}
-
-[data-theme="dark"] .stat-row,
-[data-theme="dark"] .preview-item {
-    background: rgba(50, 50, 50, 0.7);
-}
-
-[data-theme="dark"] .stat-row:hover,
-[data-theme="dark"] .preview-item:hover {
-    background: rgba(60, 60, 60, 0.9);
+    margin-bottom: 1rem;
 }
 
 .card-header h4 {
@@ -620,6 +459,7 @@ body::before {
     font-size: 0.9rem;
     font-weight: 600;
     letter-spacing: 0.5px;
+    margin: 0;
 }
 
 .add-btn {
@@ -630,6 +470,7 @@ body::before {
     width: 35px;
     height: 35px;
     cursor: pointer;
+    display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
@@ -661,6 +502,12 @@ body::before {
 
 .carousel-item.active {
     display: block;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .carousel-controls {
@@ -708,34 +555,125 @@ body::before {
     transform: translateX(5px);
 }
 
-/* Panel de Estadísticas */
+[data-theme="dark"] .preview-item {
+    background: rgba(50, 50, 50, 0.7);
+}
+
+/* Calendario */
+.calendar-section {
+    background: rgba(245, 230, 224, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.section-header h3 {
+    text-align: center;
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.calendar-grid {
+    display: flex;
+    flex-direction: column;
+}
+
+.calendar-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.calendar-header span {
+    text-align: center;
+    font-weight: bold;
+    color: var(--text-dark);
+    padding: 4px;
+    font-size: 0.9rem;
+}
+
+.calendar-body {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    position: relative;
+    padding: 4px;
+}
+
+.calendar-day.empty {
+    cursor: default;
+}
+
+.calendar-day:not(.empty):hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.calendar-day.current {
+    background: var(--accent-color) !important;
+    color: white !important;
+    font-weight: bold;
+}
+
+.calendar-day.has-event {
+    background: rgba(255, 152, 0, 0.1);
+    border: 2px solid rgba(255, 152, 0, 0.3);
+}
+
+.day-indicator {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #ff9800;
+}
+
+/* Estadísticas */
 .stats-sidebar {
     display: flex;
     flex-direction: column;
-    grid-column: 2;
-    grid-row: 2;
 }
 
-.stats-sidebar .stats-card {
-    min-height: 100%;
-    max-height: 100%;
-    padding: 0.75rem;
+.stats-card {
+    background: rgba(245, 230, 224, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px var(--shadow);
+    transition: all 0.3s ease;
 }
 
-.stats-card .card-content {
+.stats-content {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    overflow-y: auto;
+    gap: 0.75rem;
 }
 
 .stat-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 0.6rem;
+    padding: 0.75rem;
     background: rgba(255, 255, 255, 0.7);
-    border-radius: 6px;
+    border-radius: 8px;
     border: 1px solid var(--border-color);
     transition: all 0.2s ease;
 }
@@ -745,70 +683,28 @@ body::before {
     transform: translateX(-3px);
 }
 
+[data-theme="dark"] .stat-row {
+    background: rgba(50, 50, 50, 0.7);
+}
+
+[data-theme="dark"] .stat-row:hover {
+    background: rgba(60, 60, 60, 0.9);
+}
 
 .stat-label {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     color: var(--text-dark);
     font-weight: 500;
 }
 
 .stat-value {
     font-weight: bold;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     color: var(--accent-color);
 }
 
 [data-theme="dark"] .stat-value {
     color: var(--primary-color);
-}
-
-/* Estados de carga mejorados */
-.preview-item {
-    min-height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-}
-
-.preview-item .fa-spinner {
-    margin-right: 0.5rem;
-}
-
-/* Indicador de carga global */
-#loading-indicator {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 500;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-#loading-indicator .fa-spinner {
-    font-size: 1.2rem;
-}
-
-/* Estados vacíos mejorados */
-.empty-state {
-    text-align: center;
-    padding: 2rem;
-    color: var(--text-light);
-    font-style: italic;
-}
-
-.empty-state i {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    opacity: 0.5;
-}
-
-/* Animaciones suaves para cargas */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.carousel-item.active {
-    animation: fadeIn 0.5s ease-out;
 }
 
 /* Botones de acción */
@@ -831,26 +727,6 @@ body::before {
     transform: translateY(-2px);
 }
 
-/* Grids de items */
-.items-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
-}
-
-.item-card {
-    background: var(--card-background);
-    padding: 1.5rem;
-    border-radius: var(--border-radius);
-    box-shadow: 0 4px 20px var(--shadow);
-    transition: all 0.3s ease;
-}
-
-.item-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 30px var(--shadow);
-}
-
 /* Modales */
 .modal {
     display: none;
@@ -866,16 +742,10 @@ body::before {
     padding: 20px;
 }
 
-[data-theme="dark"] .modal {
-    background-color: rgba(0, 0, 0, 0.8);
-}
-
 .modal.show {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
-    box-sizing: border-box;
 }
 
 .modal-content {
@@ -888,8 +758,6 @@ body::before {
     overflow-y: auto;
     animation: modalShow 0.3s ease;
     border: 1px solid var(--border-color);
-    position: relative;
-    margin: auto;
 }
 
 @keyframes modalShow {
@@ -912,11 +780,12 @@ body::before {
     position: sticky;
     top: 0;
     background: var(--background);
-    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    z-index: 10;
 }
 
 .modal-header h3 {
     color: var(--text-dark);
+    margin: 0;
 }
 
 .close-btn {
@@ -943,8 +812,6 @@ body::before {
 
 .modal-body {
     padding: 2rem;
-    max-height: calc(90vh - 120px);
-    overflow-y: auto;
 }
 
 .form-field {
@@ -980,10 +847,10 @@ body::before {
     box-shadow: 0 0 0 3px rgba(212, 168, 154, 0.1);
 }
 
-[data-theme="dark"] .form-field input:focus,
-[data-theme="dark"] .form-field textarea:focus,
-[data-theme="dark"] .form-field select:focus {
-    box-shadow: 0 0 0 3px rgba(187, 134, 252, 0.2);
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
 }
 
 .modal-actions {
@@ -993,9 +860,6 @@ body::before {
     margin-top: 2rem;
     padding-top: 1rem;
     border-top: 1px solid var(--border-color);
-    position: sticky;
-    bottom: 0;
-    background: var(--background);
 }
 
 .modal-actions button {
@@ -1013,8 +877,7 @@ body::before {
     color: var(--text-dark);
 }
 
-.modal-actions button[type="submit"],
-.modal-actions button:not([type]) {
+.modal-actions button[type="submit"] {
     background: var(--primary-color);
     color: white;
 }
@@ -1024,164 +887,123 @@ body::before {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Responsive Design */
-@media (max-width: 1400px) {
-    .dashboard-grid {
-        grid-template-columns: 240px 1fr 260px;
-        gap: 1rem;
-    }
+/* Loading indicator */
+#loading-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+/* Responsive Design */
 @media (max-width: 1200px) {
-    .preview-sections {
-        grid-column: 1;
-        grid-row: 2;
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto auto;
-        gap: 1rem;
-    }
-
-    .calendar-section {
-        grid-column: 1;
-        grid-row: 1;
+    .daily-motivation {
         max-width: 100%;
     }
-    
-    .stats-sidebar {
-        grid-column: 1;
-        grid-row: 3;
-    }
 }
 
-@media (max-width: 1024px) {
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    
-    .preview-sections {
-        grid-template-columns: 1fr;
-    }
-
-    .modal-content {
-        width: 95%;
-        max-width: none;
-        margin: 10px;
-    }
-}
-
-@media (max-width: 768px) {
+@media (max-width: 992px) {
     .sidebar {
         transform: translateX(-100%);
         position: fixed;
         top: 80px;
         left: 0;
-        height: calc(100vh - 80px);
         z-index: 2000;
-        transition: transform 0.3s ease;
-        width: var(--sidebar-width);
     }
 
-    .sidebar.collapsed {
-        width: var(--sidebar-width);
-    }
-
-    .sidebar.active,
     .sidebar.open {
         transform: translateX(0);
     }
-    
+
     .main-content {
         margin-left: 0;
+        width: 100%;
         padding: 1rem;
     }
 
     .sidebar.collapsed ~ .main-content {
         margin-left: 0;
-    }
-    
-    .header {
-        padding: 1rem;
-    }
-    
-    .header-content {
-        justify-content: space-between;
-    }
-    
-    .logo-section h1 {
-        font-size: 1.5rem;
-    }
-
-    .modal {
-        padding: 10px;
-    }
-    
-    .modal-content {
         width: 100%;
-        max-height: 95vh;
-    }
-    
-    .modal-body {
-        padding: 1rem;
-    }
-    
-    .modal-actions {
-        flex-direction: column-reverse;
-        gap: 0.5rem;
-    }
-    
-    .modal-actions button {
-        width: 100%;
-    }
-
-    .stats-card {
-        grid-column: span 1;
-    }
-
-    .preview-sections {
-        grid-template-columns: 1fr;
-    }
-    
-    .dashboard-grid {
-        gap: 0.8rem;
     }
 }
 
-@media (max-width: 480px) {
-    .dashboard-grid {
-        gap: 1rem;
-        height: auto;
-    }
-    
-    .calendar-section {
+@media (max-width: 768px) {
+    .header {
         padding: 1rem;
-    }
-    
-    .preview-card {
-        padding: 1rem;
-    }
-    
-    .modal-header {
-        padding: 1rem;
-    }
-    
-    .form-field input,
-    .form-field textarea,
-    .form-field select {
-        padding: 0.6rem;
-        font-size: 16px;
     }
 
-    .motivation-content {
-        flex-direction: column;
-        text-align: center;
+    .header h1 {
+        font-size: 1.5rem;
+    }
+
+    .logo {
+        width: 50px;
+        height: 50px;
+    }
+
+    .daily-motivation {
+        padding: 1rem;
     }
 
     .motivation-text {
         font-size: 1rem;
+    }
+
+    .motivation-icon {
+        font-size: 2rem;
+    }
+
+    .preview-card {
+        min-height: 250px;
+        padding: 1rem;
+    }
+
+    .modal-content {
+        width: 95%;
+    }
+
+    .modal-body {
+        padding: 1rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .modal-actions button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        padding: 0.75rem;
+    }
+
+    .card-header h4 {
+        font-size: 0.8rem;
+    }
+
+    .add-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+    }
+
+    .calendar-day {
+        font-size: 0.85rem;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+    }
+
+    .stat-value {
+        font-size: 1.1rem;
     }
 }
