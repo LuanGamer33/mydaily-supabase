@@ -18,14 +18,14 @@ async function signOut() {
         window.location.href = 'index.html';
     } catch (error) {
         console.error('Error al cerrar sesión:', error);
-        alert('Error al cerrar sesión: ' + error.message);
+        showAlert('Error al cerrar sesión: ' + error.message, 'error');
     }
 }
 
 // ========== FUNCIONES PARA NOTAS ==========
 async function insertarNota(titulo, contenido, imagen = '', estadoAnimo = 'sun', favorita = false) {
     const user = await getUser();
-    if (!user) return alert('Usuario no autenticado');
+    if (!user) return showAlert('Usuario no autenticado', 'warning');
 
     const { error } = await supabase
         .from('notas')
@@ -38,19 +38,25 @@ async function insertarNota(titulo, contenido, imagen = '', estadoAnimo = 'sun',
             favorita: favorita
         }]);
 
-    if (error) return alert('Error al guardar nota: ' + error.message);
+    if (error) return showAlert('Error al guardar nota: ' + error.message, 'error');
     return true;
 }
 
-async function listarNotas() {
+async function listarNotas(limit = null) {
     const user = await getUser();
     if (!user) return [];
 
-    const { data, error } = await supabase
+    let query = supabase
         .from('notas')
         .select('id_notas, nom, cont, imagen, estado_animo, favorita, created_at')
         .eq('user_id', user.id)
         .order('id_notas', { ascending: false });
+    
+    if (limit) {
+        query = query.limit(limit);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
         console.error('Error cargando notas:', error);
@@ -62,7 +68,7 @@ async function listarNotas() {
 
 async function actualizarNota(id, datos) {
     const user = await getUser();
-    if (!user) return alert('Usuario no autenticado');
+    if (!user) return showAlert('Usuario no autenticado', 'warning');
 
     const { error } = await supabase
         .from('notas')
@@ -70,7 +76,7 @@ async function actualizarNota(id, datos) {
         .eq('id_notas', id)
         .eq('user_id', user.id);
 
-    if (error) return alert('Error al actualizar nota: ' + error.message);
+    if (error) return showAlert('Error al actualizar nota: ' + error.message, 'error');
     return true;
 }
 
@@ -85,7 +91,7 @@ async function eliminarNota(id) {
         .eq('user_id', user.id);
 
     if (error) {
-        alert('Error al eliminar nota: ' + error.message);
+        showAlert('Error al eliminar nota: ' + error.message, 'error');
         return false;
     }
     return true;
@@ -94,7 +100,7 @@ async function eliminarNota(id) {
 // ========== FUNCIONES PARA HÁBITOS ==========
 async function insertarHabito(nombre, hora, prioridad, descripcion) {
     const user = await getUser();
-    if (!user) return alert('Usuario no autenticado');
+    if (!user) return showAlert('Usuario no autenticado', 'warning');
 
     // Convertir prioridad de string a integer según tu esquema
     const prioridadNum = prioridad === 'high' ? 3 : prioridad === 'medium' ? 2 : 1;
@@ -112,19 +118,25 @@ async function insertarHabito(nombre, hora, prioridad, descripcion) {
             completado_hoy: false
         }]);
 
-    if (error) return alert('Error al guardar hábito: ' + error.message);
+    if (error) return showAlert('Error al guardar hábito: ' + error.message, 'error');
     return true;
 }
 
-async function listarHabitos() {
+async function listarHabitos(limit = null) {
     const user = await getUser();
     if (!user) return [];
 
-    const { data, error } = await supabase
+    let query = supabase
         .from('habitos')
         .select('id_hab, nom, hora, prior, descr, racha, progreso_semanal, completado_hoy, created_at')
         .eq('user_id', user.id)
         .order('id_hab', { ascending: false });
+    
+    if (limit) {
+        query = query.limit(limit);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
         console.error('Error cargando hábitos:', error);
@@ -136,7 +148,7 @@ async function listarHabitos() {
 
 async function actualizarHabito(id, datos) {
     const user = await getUser();
-    if (!user) return alert('Usuario no autenticado');
+    if (!user) return showAlert('Usuario no autenticado', 'warning');
 
     const { error } = await supabase
         .from('habitos')
@@ -144,7 +156,7 @@ async function actualizarHabito(id, datos) {
         .eq('id_hab', id)
         .eq('user_id', user.id);
 
-    if (error) return alert('Error al actualizar hábito: ' + error.message);
+    if (error) return showAlert('Error al actualizar hábito: ' + error.message, 'error');
     return true;
 }
 
@@ -198,7 +210,7 @@ async function toggleHabitoCompletado(id) {
 // ========== FUNCIONES PARA EVENTOS/CALENDARIO ==========
 async function insertarEvento(nombre, descripcion, fecha, lugar, prioridad, idCategoria, idRecurrencia, horaInicio, horaFin) {
     const user = await getUser();
-    if (!user) return alert('Usuario no autenticado');
+    if (!user) return showAlert('Usuario no autenticado', 'warning');
 
     // Convertir prioridad de string a integer
     const prioridadNum = prioridad === 'high' ? 3 : prioridad === 'medium' ? 2 : 1;
@@ -237,16 +249,16 @@ async function insertarEvento(nombre, descripcion, fecha, lugar, prioridad, idCa
         
         return true;
     } catch (error) {
-        alert('Error al guardar evento: ' + error.message);
+        showAlert('Error al guardar evento: ' + error.message, 'error');
         return false;
     }
 }
 
-async function listarEventos() {
+async function listarEventos(limit = null) {
     const user = await getUser();
     if (!user) return [];
 
-    const { data, error } = await supabase
+    let query = supabase
         .from('calendario')
         .select(`
             id_cal,
@@ -262,6 +274,12 @@ async function listarEventos() {
         `)
         .eq('user_id', user.id)
         .order('fecha', { ascending: true });
+    
+    if (limit) {
+        query = query.limit(limit);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
         console.error('Error cargando eventos:', error);
@@ -274,7 +292,7 @@ async function listarEventos() {
 // ========== FUNCIONES PARA ACTIVIDADES ==========
 async function insertarActividad(titulo, descripcion, fecha, hora, prioridad, categoria) {
     const user = await getUser();
-    if (!user) return alert('Usuario no autenticado');
+    if (!user) return showAlert('Usuario no autenticado', 'warning');
     
     try {
         const { error } = await supabase
@@ -293,20 +311,26 @@ async function insertarActividad(titulo, descripcion, fecha, hora, prioridad, ca
         if (error) throw error;
         return true;
     } catch (error) {
-        alert('Error al guardar actividad: ' + error.message);
+        showAlert('Error al guardar actividad: ' + error.message, 'error');
         return false;
     }
 }
 
-async function listarActividades() {
+async function listarActividades(limit = null) {
     const user = await getUser();
     if (!user) return [];
 
-    const { data, error } = await supabase
+    let query = supabase
         .from('actividades')
         .select('id, titulo, descripcion, fecha, hora, prioridad, categoria, completada, created_at')
         .eq('user_id', user.id)
         .order('fecha', { ascending: true });
+    
+    if (limit) {
+        query = query.limit(limit);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
         console.error('Error cargando actividades:', error);
@@ -352,7 +376,7 @@ async function toggleActividadCompletada(id) {
 // ========== FUNCIONES PARA LISTAS ==========
 async function insertarLista(nombre, contenido, prioridad, idCategoria, idRecurrencia) {
     const user = await getUser();
-    if (!user) return alert('Usuario no autenticado');
+    if (!user) return showAlert('Usuario no autenticado', 'warning');
 
     // Convertir prioridad de string a integer
     const prioridadNum = prioridad === 'high' ? 3 : prioridad === 'medium' ? 2 : 1;
@@ -368,7 +392,7 @@ async function insertarLista(nombre, contenido, prioridad, idCategoria, idRecurr
             user_id: user.id
         }]);
 
-    if (error) return alert('Error al guardar lista: ' + error.message);
+    if (error) return showAlert('Error al guardar lista: ' + error.message, 'error');
     return true;
 }
 
@@ -406,13 +430,24 @@ async function listarCategorias() {
 }
 
 // ========== FUNCIONES PARA CONFIGURACIONES DE USUARIO ==========
-async function obtenerConfiguracionUsuario() {
+// Caché de configuración en memoria
+let configCache = null;
+let configCacheTime = null;
+const CONFIG_CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+
+async function obtenerConfiguracionUsuario(forceRefresh = false) {
     const user = await getUser();
     if (!user) return null;
 
+    // Usar caché si está disponible y no ha expirado
+    const now = Date.now();
+    if (!forceRefresh && configCache && configCacheTime && (now - configCacheTime < CONFIG_CACHE_DURATION)) {
+        return configCache;
+    }
+
     const { data, error } = await supabase
         .from('configuraciones_usuario')
-        .select('*')
+        .select('avatar, tema, email_notifications, push_notifications, habit_reminders, event_reminders, keyboard_shortcuts, day_start, daily_goal')
         .eq('user_id', user.id)
         .single();
 
@@ -421,13 +456,17 @@ async function obtenerConfiguracionUsuario() {
         return null;
     }
 
+    // Guardar en caché
+    configCache = data;
+    configCacheTime = now;
+
     return data;
 }
 
 async function guardarConfiguracionUsuario(configuracion) {
     const user = await getUser();
     if (!user) {
-        alert('Usuario no autenticado');
+        showAlert('Usuario no autenticado', 'warning');
         return false;
     }
 
@@ -444,15 +483,24 @@ async function guardarConfiguracionUsuario(configuracion) {
             throw fetchError;
         }
 
+        const configData = {
+            avatar: configuracion.avatar,
+            tema: configuracion.tema,
+            email_notifications: configuracion.email_notifications ?? true,
+            push_notifications: configuracion.push_notifications ?? true,
+            habit_reminders: configuracion.habit_reminders ?? true,
+            event_reminders: configuracion.event_reminders ?? true,
+            keyboard_shortcuts: configuracion.keyboard_shortcuts ?? false,
+            day_start: configuracion.day_start || '06:00',
+            daily_goal: configuracion.daily_goal || 3
+        };
+
         let result;
         if (existing) {
             // Si existe, actualizar
             result = await supabase
                 .from('configuraciones_usuario')
-                .update({
-                    avatar: configuracion.avatar,
-                    tema: configuracion.tema
-                })
+                .update(configData)
                 .eq('user_id', user.id);
         } else {
             // Si no existe, insertar
@@ -460,17 +508,20 @@ async function guardarConfiguracionUsuario(configuracion) {
                 .from('configuraciones_usuario')
                 .insert([{
                     user_id: user.id,
-                    avatar: configuracion.avatar,
-                    tema: configuracion.tema
+                    ...configData
                 }]);
         }
 
         if (result.error) throw result.error;
         
+        // Invalidar caché después de guardar
+        configCache = null;
+        configCacheTime = null;
+        
         return true;
     } catch (error) {
         console.error('Error detallado:', error);
-        alert('Error al guardar configuración: ' + error.message);
+        showAlert('Error al guardar configuración: ' + error.message, 'error');
         return false;
     }
 }

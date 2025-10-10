@@ -34,11 +34,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Inicializar sidebar toggle
     initSidebarToggle();
     
-    // Cargar perfil de usuario desde Supabase
-    await loadUserProfile();
-    
-    // Cargar datos desde Supabase
-    await loadAllData();
+    // Cargar perfil y datos en paralelo para mejor rendimiento
+    await Promise.all([
+        loadUserProfile(),
+        loadAllData()
+    ]);
     
     // Inicializar motivación diaria
     updateDailyMotivation();
@@ -191,43 +191,17 @@ function navigateCarousel(type, index) {
     updateCarousel(type);
 }
 
-// Configurar atajos de teclado
-function setupKeyboardShortcuts() {
-    document.addEventListener('keydown', function(e) {
-        const isModalOpen = document.querySelector('.modal.show');
-        const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName);
-        
-        if (isModalOpen || isTyping) return;
-        
-        if (e.ctrlKey) {
-            switch(e.key.toLowerCase()) {
-                case 'n':
-                    e.preventDefault();
-                    openNoteModal();
-                    break;
-                case 'h':
-                    e.preventDefault();
-                    window.location.href = 'habits.html';
-                    break;
-                case 'e':
-                    e.preventDefault();
-                    window.location.href = 'events.html';
-                    break;
-                case 'd':
-                    e.preventDefault();
-                    window.location.href = 'dashboard.html';
-                    break;
-            }
-        }
-    });
-}
-
 // Cargar todos los datos desde Supabase
 async function loadAllData() {
+    const startTime = performance.now();
     try {
         const loadingIndicator = document.getElementById('loading-indicator');
-        if (loadingIndicator) loadingIndicator.style.display = 'block';
+        if (loadingIndicator) {
+            loadingIndicator.style.display = 'block';
+            loadingIndicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando datos...';
+        }
         
+        // Cargar datos en paralelo con Promise.all para mejor rendimiento
         const [notes, habits, events, activities] = await Promise.all([
             listarNotas(),
             listarHabitos(), 
@@ -256,12 +230,21 @@ async function loadAllData() {
         generateCalendar();
         updateDashboardStats();
         
+        const endTime = performance.now();
+        const loadTime = ((endTime - startTime) / 1000).toFixed(2);
+        console.log(`✅ Datos cargados en ${loadTime}s`);
+        
         if (loadingIndicator) loadingIndicator.style.display = 'none';
         
     } catch (error) {
-        console.error('Error cargando datos:', error);
+        console.error('❌ Error cargando datos:', error);
         const loadingIndicator = document.getElementById('loading-indicator');
-        if (loadingIndicator) loadingIndicator.style.display = 'none';
+        if (loadingIndicator) {
+            loadingIndicator.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error al cargar';
+            setTimeout(() => {
+                loadingIndicator.style.display = 'none';
+            }, 2000);
+        }
     }
 }
 
@@ -425,19 +408,31 @@ function updateDashboardStats() {
 
 // Función para cerrar sesión
 async function logout() {
-    try {
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
-        
-        notesData = [];
-        habitsData = [];
-        eventsData = [];
-        activitiesData = [];
-        if (window.dailyMotivations) window.dailyMotivations = {};
-        
-        window.location.href = 'index.html';
-    } catch (error) {
-        alert('Error al cerrar sesión: ' + error.message);
+    const confirmed = await showConfirm(
+        'Se cerrarán todas tus sesiones activas.',
+        {
+            title: '¿Cerrar sesión?',
+            confirmText: 'Sí, salir',
+            cancelText: 'Cancelar',
+            type: 'warning'
+        }
+    );
+    
+    if (confirmed) {
+        try {
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+            
+            notesData = [];
+            habitsData = [];
+            eventsData = [];
+            activitiesData = [];
+            if (window.dailyMotivations) window.dailyMotivations = {};
+            
+            window.location.href = 'index.html';
+        } catch (error) {
+            showAlert('Error al cerrar sesión: ' + error.message, 'error');
+        }
     }
 }
 
@@ -505,11 +500,15 @@ function generateCalendar() {
 // Funciones para modales
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
+    console.log('🔍 Intentando abrir modal:', modalId, '| Encontrado:', !!modal);
     if (modal) {
         modal.classList.add('show');
         currentEditId = null;
         currentEditType = null;
         document.body.style.overflow = 'hidden';
+        console.log('✅ Modal abierto:', modalId);
+    } else {
+        console.error('❌ Modal no encontrado:', modalId);
     }
 }
 
@@ -534,7 +533,107 @@ function closeModal(modalId = null) {
     }
 }
 
-function openNoteModal() { openModal('note-modal'); }
+function openNoteModal() { 
+    // Verificar si el modal ya existe
+    let modal = document.getElementById('note-modal');
+    
+    // Si no existe, crearlo dinámicamente
+    if (!modal) {
+        const modalHTML = `
+            <div class="modal" id="note-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Nueva Nota</h3>
+                        <button class="close-btn" onclick="closeModal('note-modal')">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="note-form">
+                            <div class="form-field">
+                                <label>Título de la Nota</label>
+                                <input type="text" name="title" required placeholder="Título de tu nota">
+                            </div>
+                            <div class="form-field">
+                                <label>Contenido</label>
+                                <textarea name="content" rows="8" required placeholder="Escribe aquí el contenido de tu nota..."></textarea>
+                            </div>
+                            <div class="form-field">
+                                <label>Imagen de la Nota</label>
+                                <input type="file" name="image" accept="image/*">
+                                <img id="image-preview" style="display: none; max-width: 100%; margin-top: 10px; border-radius: 8px;">
+                            </div>
+                            <div class="form-field">
+                                <label>Estado de Ánimo</label>
+                                <select name="mood">
+                                    <option value="sun">Soleado</option>
+                                    <option value="cloud">Nublado</option>
+                                    <option value="rain">Lluvioso</option>
+                                    <option value="storm">Tormenta</option>
+                                </select>
+                            </div>
+                            <div class="form-field">
+                                <label>
+                                    <input type="checkbox" name="favorite"> Marcar como favorita
+                                </label>
+                            </div>
+                            <div class="modal-actions">
+                                <button type="button" onclick="closeModal('note-modal')">Cancelar</button>
+                                <button type="submit">Guardar Nota</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Insertar el modal en el body
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // Configurar el event listener del formulario
+        const noteForm = document.getElementById('note-form');
+        if (noteForm && !noteForm.hasAttribute('data-listener-added')) {
+            noteForm.setAttribute('data-listener-added', 'true');
+            noteForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                
+                const noteData = {
+                    title: formData.get('title'),
+                    content: formData.get('content'),
+                    favorite: formData.get('favorite') === 'on',
+                    mood: formData.get('mood') || 'sun',
+                    imageFile: formData.get('image')
+                };
+                
+                saveNote(noteData);
+                closeModal('note-modal');
+            });
+            
+            // Event listener para preview de imagen
+            const imageInput = noteForm.querySelector('input[name="image"]');
+            const imagePreview = noteForm.querySelector('#image-preview');
+            
+            if (imageInput && imagePreview) {
+                imageInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            imagePreview.src = e.target.result;
+                            imagePreview.style.display = 'block';
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        imagePreview.style.display = 'none';
+                        imagePreview.src = '';
+                    }
+                });
+            }
+        }
+    }
+    
+    openModal('note-modal'); 
+}
+
 function openEventModal() { openModal('event-modal'); }
 function openActivityModal() { openModal('activity-modal'); }
 function openHabitModal() { openModal('habit-modal'); }
@@ -647,15 +746,28 @@ async function saveNote(noteData) {
     }
 }
 
+// Eliminar nota
 async function deleteNote(id) {
-    if (confirm('¿Estás seguro de que quieres eliminar esta nota?')) {
+    const confirmed = await showConfirm(
+        'Esta nota se eliminará permanentemente.',
+        {
+            title: '¿Eliminar nota?',
+            confirmText: 'Sí, eliminar',
+            cancelText: 'Cancelar',
+            type: 'danger'
+        }
+    );
+    
+    if (confirmed) {
         try {
             const success = await eliminarNota(id);
             if (success) {
+                showToast('Nota eliminada correctamente', 'success');
                 await loadAllData();
             }
         } catch (error) {
             console.error('Error eliminando nota:', error);
+            showAlert('No se pudo eliminar la nota', 'error');
         }
     }
 }
@@ -768,8 +880,19 @@ function updateHabitStats() {
     if (rateEl) rateEl.textContent = rate + '%';
 }
 
+// Eliminar hábito
 async function deleteHabit(id) {
-    if (confirm('¿Estás seguro de que quieres eliminar este hábito?')) {
+    const confirmed = await showConfirm(
+        'Perderás todo el progreso y racha de este hábito.',
+        {
+            title: '¿Eliminar hábito?',
+            confirmText: 'Sí, eliminar',
+            cancelText: 'Cancelar',
+            type: 'danger'
+        }
+    );
+    
+    if (confirmed) {
         try {
             const { error } = await supabase
                 .from('habitos')
@@ -777,10 +900,11 @@ async function deleteHabit(id) {
                 .eq('id_hab', id);
             
             if (error) throw error;
+            showToast('Hábito eliminado correctamente', 'success');
             await loadAllData();
         } catch (error) {
             console.error('Error eliminando hábito:', error);
-            alert('Error al eliminar el hábito: ' + error.message);
+            showAlert('No se pudo eliminar el hábito', 'error');
         }
     }
 }
@@ -863,15 +987,27 @@ function addHour(timeString) {
     return date.toTimeString().slice(0, 5);
 }
 
+// Eliminar evento
 async function deleteEvent(id) {
-    if (confirm('¿Estás seguro de que quieres eliminar este evento?')) {
+    const confirmed = await showConfirm(
+        'Este evento se eliminará permanentemente.',
+        {
+            title: '¿Eliminar evento?',
+            confirmText: 'Sí, eliminar',
+            cancelText: 'Cancelar',
+            type: 'danger'
+        }
+    );
+    
+    if (confirmed) {
         try {
             await supabase.from('agenda').delete().eq('id_cal', id);
             await supabase.from('calendario').delete().eq('id_cal', id);
+            showToast('Evento eliminado correctamente', 'success');
             await loadAllData();
         } catch (error) {
             console.error('Error eliminando evento:', error);
-            alert('Error al eliminar el evento: ' + error.message);
+            showAlert('No se pudo eliminar el evento', 'error');
         }
     }
 }
@@ -980,8 +1116,19 @@ function updateActivityStats() {
     if (pendingEl) pendingEl.textContent = pending;
 }
 
+// Eliminar actividad
 async function deleteActivity(id) {
-    if (confirm('¿Estás seguro de que quieres eliminar esta actividad?')) {
+    const confirmed = await showConfirm(
+        'Esta actividad se eliminará permanentemente.',
+        {
+            title: '¿Eliminar actividad?',
+            confirmText: 'Sí, eliminar',
+            cancelText: 'Cancelar',
+            type: 'danger'
+        }
+    );
+    
+    if (confirmed) {
         try {
             const { error } = await supabase
                 .from('actividades')
@@ -989,10 +1136,11 @@ async function deleteActivity(id) {
                 .eq('id', id);
             
             if (error) throw error;
+            showToast('Actividad eliminada correctamente', 'success');
             await loadAllData();
         } catch (error) {
             console.error('Error eliminando actividad:', error);
-            alert('Error al eliminar la actividad: ' + error.message);
+            showAlert('No se pudo eliminar la actividad', 'error');
         }
     }
 }
@@ -1033,6 +1181,14 @@ async function loadUserProfile() {
                     o.classList.toggle('active', o.getAttribute('data-theme') === config.tema);
                 });
             }
+            
+            // Inicializar configuración de atajos de teclado
+            window.keyboardShortcutsEnabled = config.keyboard_shortcuts ?? false;
+            console.log('⚙️ Atajos de teclado inicializados:', window.keyboardShortcutsEnabled);
+        } else {
+            // Si no hay configuración, desactivar atajos por defecto
+            window.keyboardShortcutsEnabled = false;
+            console.log('⚙️ Sin configuración, atajos desactivados');
         }
     } catch (error) {
         console.error('Error cargando perfil:', error);
@@ -1051,6 +1207,7 @@ function updateAvatarDisplay(avatarType) {
     });
 }
 
+// Guardar perfil
 async function saveProfile() {
     try {
         const saveBtn = event.target;
@@ -1084,13 +1241,12 @@ async function saveProfile() {
             updateAvatarDisplay(selectedAvatar);
             document.documentElement.setAttribute('data-theme', selectedTheme);
             
-            alert('Perfil guardado exitosamente');
+            showToast('Perfil guardado exitosamente', 'success');
         }
     } catch (error) {
         console.error('Error guardando perfil:', error);
-        alert('Error al guardar perfil: ' + error.message);
+        showAlert('Error al guardar perfil: ' + error.message, 'error');
     } finally {
-        // AÑADIR ESTE BLOQUE - Siempre rehabilitar el botón
         const saveBtn = document.querySelector('.save-btn');
         if (saveBtn) {
             saveBtn.disabled = false;
@@ -1120,42 +1276,57 @@ function exportData() {
     URL.revokeObjectURL(url);
 }
 
+// Eliminar cuenta
 async function deleteAccount() {
-    if (confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.')) {
-        if (confirm('Confirma nuevamente: ¿Eliminar cuenta permanentemente?')) {
+    const confirmed1 = await showConfirm(
+        'Se eliminarán todos tus datos: notas, hábitos, eventos y actividades. Esta acción no se puede deshacer.',
+        {
+            title: '¿Eliminar cuenta?',
+            confirmText: 'Continuar',
+            cancelText: 'Cancelar',
+            type: 'danger'
+        }
+    );
+    
+    if (confirmed1) {
+        const confirmed2 = await showConfirm(
+            'Escribe "ELIMINAR" para confirmar',
+            {
+                title: 'Confirmación final',
+                confirmText: 'Eliminar permanentemente',
+                cancelText: 'Cancelar',
+                type: 'danger'
+            }
+        );
+        
+        if (confirmed2) {
             try {
                 const success = await eliminarTodosLosDatosUsuario();
                 
                 if (success) {
-                    notesData = [];
-                    habitsData = [];
-                    eventsData = [];
-                    activitiesData = [];
-                    if (window.dailyMotivations) window.dailyMotivations = {};
-                    
-                    alert('Todos los datos han sido eliminados. Cerrando sesión...');
-                    await logout();
+                    showAlert('Todos los datos han sido eliminados. Cerrando sesión...', 'success');
+                    setTimeout(() => logout(), 2000);
                 } else {
-                    alert('Error al eliminar los datos de la cuenta');
+                    showAlert('Error al eliminar los datos de la cuenta', 'error');
                 }
             } catch (error) {
                 console.error('Error eliminando datos:', error);
-                alert('Error al eliminar la cuenta: ' + error.message);
+                showAlert('Error al eliminar la cuenta: ' + error.message, 'error');
             }
         }
     }
 }
 
 function showHelp() {
-    alert('Centro de ayuda: Aquí encontrarías tutoriales y guías de uso completas para MyDaily.');
+    alert('Centro de ayuda: Aquí encontraras tutoriales y guías de uso completas para MyDaily (Proyecto en desarrollo).');
 }
 
 function reportBug() {
-    alert('Formulario de reporte de problemas. En una aplicación real, se abriría un sistema de tickets de soporte.');
+    alert('Formulario de reporte de problemas. se abriría un sistema de tickets de soporte (Proyecto en desarrollo).');
 }
 
 function sendFeedback() {
-    alert('Formulario de feedback. En una aplicación real, se abriría un formulario para enviar sugerencias de mejora.');
+    alert('Formulario de feedback. se abriría un formulario para enviar sugerencias de mejora (Proyecto en desarrollo).');
 }
 
 // Funciones adicionales necesarias
@@ -1241,13 +1412,11 @@ function editActivity(id) {
 document.addEventListener('DOMContentLoaded', function() {
     // Event listeners para logout
     const logoutBtns = document.querySelectorAll('.logout-btn');
-    logoutBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-                logout();
-            }
-        });
+logoutBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+        logout();
     });
+});
     
     // Cerrar modales al hacer clic fuera
     const modals = document.querySelectorAll('.modal');
@@ -1464,3 +1633,203 @@ function setupAvatarAndThemeSelectors() {
         });
     });
 }
+
+// ========== FUNCIONES PARA NOTIFICACIONES ==========
+async function loadNotificationSettings() {
+    try {
+        const config = await obtenerConfiguracionUsuario();
+        if (config) {
+            // Cargar preferencias de notificaciones
+            const emailNotif = document.getElementById('email-notifications');
+            const pushNotif = document.getElementById('push-notifications');
+            const habitReminders = document.getElementById('habit-reminders');
+            const eventReminders = document.getElementById('event-reminders');
+            
+            if (emailNotif) emailNotif.checked = config.email_notifications ?? true;
+            if (pushNotif) pushNotif.checked = config.push_notifications ?? true;
+            if (habitReminders) habitReminders.checked = config.habit_reminders ?? true;
+            if (eventReminders) eventReminders.checked = config.event_reminders ?? true;
+        }
+    } catch (error) {
+        console.error('Error cargando notificaciones:', error);
+    }
+}
+
+async function saveNotificationSettings() {
+    try {
+        const emailNotif = document.getElementById('email-notifications');
+        const pushNotif = document.getElementById('push-notifications');
+        const habitReminders = document.getElementById('habit-reminders');
+        const eventReminders = document.getElementById('event-reminders');
+        
+        const config = await obtenerConfiguracionUsuario() || {};
+        
+        const success = await guardarConfiguracionUsuario({
+            ...config,
+            email_notifications: emailNotif?.checked ?? true,
+            push_notifications: pushNotif?.checked ?? true,
+            habit_reminders: habitReminders?.checked ?? true,
+            event_reminders: eventReminders?.checked ?? true
+        });
+        
+        if (success) {
+            showMessage('Preferencias de notificaciones guardadas', 'success');
+        }
+    } catch (error) {
+        console.error('Error guardando notificaciones:', error);
+        showMessage('Error al guardar preferencias', 'error');
+    }
+}
+
+// Event listeners para notificaciones
+document.addEventListener('DOMContentLoaded', function() {
+    // ... código existente ...
+    
+    // Cargar configuración de notificaciones al iniciar
+    if (window.location.pathname.includes('settings.html')) {
+        loadNotificationSettings();
+        
+        // Guardar cuando cambien los toggles
+        const notifToggles = [
+            'email-notifications',
+            'push-notifications',
+            'habit-reminders',
+            'event-reminders'
+        ];
+        
+        notifToggles.forEach(id => {
+            const toggle = document.getElementById(id);
+            if (toggle) {
+                toggle.addEventListener('change', saveNotificationSettings);
+            }
+        });
+    }
+});
+
+// ========== FUNCIONES PARA PRODUCTIVIDAD ==========
+async function loadProductivitySettings() {
+    try {
+        const config = await obtenerConfiguracionUsuario();
+        if (config) {
+            const keyboardShortcuts = document.getElementById('keyboard-shortcuts');
+            const dayStart = document.getElementById('day-start');
+            const dailyGoal = document.getElementById('daily-goal');
+            
+            if (keyboardShortcuts) keyboardShortcuts.checked = config.keyboard_shortcuts ?? false;
+            if (dayStart) dayStart.value = config.day_start || '06:00';
+            if (dailyGoal) dailyGoal.value = config.daily_goal || 3;
+            
+            // Activar/desactivar atajos según configuración
+            toggleKeyboardShortcuts(config.keyboard_shortcuts ?? false);
+        }
+    } catch (error) {
+        console.error('Error cargando configuración de productividad:', error);
+    }
+}
+
+async function saveProductivitySettings() {
+    try {
+        const keyboardShortcuts = document.getElementById('keyboard-shortcuts');
+        const dayStart = document.getElementById('day-start');
+        const dailyGoal = document.getElementById('daily-goal');
+        
+        const config = await obtenerConfiguracionUsuario() || {};
+        
+        const success = await guardarConfiguracionUsuario({
+            ...config,
+            keyboard_shortcuts: keyboardShortcuts?.checked ?? false,
+            day_start: dayStart?.value || '06:00',
+            daily_goal: parseInt(dailyGoal?.value) || 3
+        });
+        
+        if (success) {
+            toggleKeyboardShortcuts(keyboardShortcuts?.checked ?? false);
+            showMessage('Configuración de productividad guardada', 'success');
+        }
+    } catch (error) {
+        console.error('Error guardando productividad:', error);
+        showMessage('Error al guardar configuración', 'error');
+    }
+}
+
+function toggleKeyboardShortcuts(enabled) {
+    // Guardar en variable global
+    window.keyboardShortcutsEnabled = enabled;
+    console.log('🔄 Atajos de teclado cambiados a:', enabled);
+}
+
+// Modificar la función setupKeyboardShortcuts existente
+function setupKeyboardShortcuts() {
+    console.log('🎹 Configurando atajos de teclado...');
+    document.addEventListener('keydown', function(e) {
+        // Debug: mostrar estado de atajos
+        if (e.ctrlKey) {
+            console.log('Ctrl presionado con tecla:', e.key, '| Atajos habilitados:', window.keyboardShortcutsEnabled);
+        }
+        
+        // Solo funcionar si están habilitados
+        if (!window.keyboardShortcutsEnabled) return;
+        
+        const isModalOpen = document.querySelector('.modal.show');
+        const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName);
+        
+        if (isModalOpen || isTyping) return;
+        
+        if (e.ctrlKey) {
+            switch(e.key.toLowerCase()) {
+                case 'q':
+                    e.preventDefault();
+                    console.log('✅ Abriendo modal de nota');
+                    openNoteModal();
+                    break;
+                case 'h':
+                    e.preventDefault();
+                    console.log('✅ Navegando a hábitos');
+                    window.location.href = 'habits.html';
+                    break;
+                case 'e':
+                    e.preventDefault();
+                    console.log('✅ Navegando a eventos');
+                    window.location.href = 'events.html';
+                    break;
+                case 'd':
+                    e.preventDefault();
+                    console.log('✅ Navegando a dashboard');
+                    window.location.href = 'dashboard.html';
+                    break;
+            }
+        }
+    });
+}
+
+// Event listeners para productividad
+document.addEventListener('DOMContentLoaded', function() {
+    // ... código existente ...
+    
+    if (window.location.pathname.includes('settings.html')) {
+        loadProductivitySettings();
+        
+        // Event listeners
+        const keyboardShortcuts = document.getElementById('keyboard-shortcuts');
+        if (keyboardShortcuts) {
+            keyboardShortcuts.addEventListener('change', saveProductivitySettings);
+        }
+        
+        const dayStart = document.getElementById('day-start');
+        if (dayStart) {
+            dayStart.addEventListener('change', saveProductivitySettings);
+        }
+        
+        const dailyGoal = document.getElementById('daily-goal');
+        if (dailyGoal) {
+            dailyGoal.addEventListener('change', function() {
+                saveProductivitySettings().then(() => {
+                    showToast('Configuración de productividad guardada', 'success');
+                }).catch(error => {
+                    console.error('Error guardando productividad:', error);
+                    showToast('Error al guardar configuración', 'error');
+                });
+            });
+        }
+    }
+});
