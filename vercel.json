@@ -2,11 +2,11 @@
     "rewrites": [
         { "source": "/", "destination": "/index.html" },
         { "source": "/dashboard", "destination": "/dashboard.html" },
-        { "source": "/habits", "destination": "/habits.html" },
-        { "source": "/events", "destination": "/events.html" },
-        { "source": "/notes", "destination": "/notes.html" },
-        { "source": "/activities", "destination": "/activities.html" },
-        { "source": "/settings", "destination": "/settings.html" },
+        { "source": "/habitos", "destination": "/habits.html" },
+        { "source": "/eventos", "destination": "/events.html" },
+        { "source": "/notas", "destination": "/notes.html" },
+        { "source": "/actividades", "destination": "/activities.html" },
+        { "source": "/configuraciones", "destination": "/settings.html" },
         { "source": "/(.*)/.html", "destination": "/$1" }
     ],
     "trailingSlash": false,
