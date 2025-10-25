@@ -232,12 +232,12 @@ async function loadAllData() {
         
         const endTime = performance.now();
         const loadTime = ((endTime - startTime) / 1000).toFixed(2);
-        console.log(`✅ Datos cargados en ${loadTime}s`);
+        console.log(`<i class="fas fa-check"></i> Datos cargados en ${loadTime}s`);
         
         if (loadingIndicator) loadingIndicator.style.display = 'none';
         
     } catch (error) {
-        console.error('❌ Error cargando datos:', error);
+        console.error('<i class="fas fa-times"></i> Error cargando datos:', error);
         const loadingIndicator = document.getElementById('loading-indicator');
         if (loadingIndicator) {
             loadingIndicator.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error al cargar';
@@ -297,7 +297,7 @@ function renderDashboardPreviews() {
     // Actividades preview con carrusel
     if (previewCards[2]) {
         renderCarouselPreview(previewCards[2], activitiesData, 'activities', 'activities.html', (activity) => {
-            const priorityIcon = activity.prioridad === 'high' ? '🔴' : activity.prioridad === 'medium' ? '🟡' : '🟢';
+            const priorityIcon = activity.prioridad === 'high' ? '<i class="fas fa-circle" style="color: red;"></i>' : activity.prioridad === 'medium' ? '<i class="fas fa-circle" style="color: yellow;"></i>' : '<i class="fas fa-circle" style="color: green;"></i>';
             return `
                 <span>${priorityIcon}</span>
                 <span>${activity.titulo}</span>
@@ -312,7 +312,7 @@ function renderDashboardPreviews() {
             const eventDate = new Date(event.fecha);
             const isUpcoming = eventDate >= new Date();
             return `
-                <span>${isUpcoming ? '📅' : '📋'}</span>
+                <span>${isUpcoming ? '<i class="far fa-calendar-alt"></i>' : '<i class="far fa-clipboard"></i>'}</span>
                 <span>${event.nom}</span>
                 <small style="margin-left: auto; color: var(--text-light);">${eventDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}</small>
             `;
@@ -500,15 +500,15 @@ function generateCalendar() {
 // Funciones para modales
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
-    console.log('🔍 Intentando abrir modal:', modalId, '| Encontrado:', !!modal);
+    console.log('<i class="fas fa-search"></i> Intentando abrir modal:', modalId, '| Encontrado:', !!modal);
     if (modal) {
         modal.classList.add('show');
         currentEditId = null;
         currentEditType = null;
         document.body.style.overflow = 'hidden';
-        console.log('✅ Modal abierto:', modalId);
+        console.log('<i class="fas fa-check"></i> Modal abierto:', modalId);
     } else {
-        console.error('❌ Modal no encontrado:', modalId);
+        console.error('<i class="fas fa-times"></i> Modal no encontrado:', modalId);
     }
 }
 
@@ -1184,11 +1184,11 @@ async function loadUserProfile() {
             
             // Inicializar configuración de atajos de teclado
             window.keyboardShortcutsEnabled = config.keyboard_shortcuts ?? false;
-            console.log('⚙️ Atajos de teclado inicializados:', window.keyboardShortcutsEnabled);
+            console.log('<i class="fas fa-cog"></i> Atajos de teclado inicializados:', window.keyboardShortcutsEnabled);
         } else {
             // Si no hay configuración, desactivar atajos por defecto
             window.keyboardShortcutsEnabled = false;
-            console.log('⚙️ Sin configuración, atajos desactivados');
+            console.log('<i class="fas fa-cog"></i> Sin configuración, atajos desactivados');
         }
     } catch (error) {
         console.error('Error cargando perfil:', error);
@@ -1755,12 +1755,12 @@ async function saveProductivitySettings() {
 function toggleKeyboardShortcuts(enabled) {
     // Guardar en variable global
     window.keyboardShortcutsEnabled = enabled;
-    console.log('🔄 Atajos de teclado cambiados a:', enabled);
+    console.log('<i class="fas fa-sync-alt"></i> Atajos de teclado cambiados a:', enabled);
 }
 
 // Modificar la función setupKeyboardShortcuts existente
 function setupKeyboardShortcuts() {
-    console.log('🎹 Configurando atajos de teclado...');
+    console.log('<i class="fas fa-keyboard"></i> Configurando atajos de teclado...');
     document.addEventListener('keydown', function(e) {
         // Debug: mostrar estado de atajos
         if (e.ctrlKey) {
@@ -1779,22 +1779,22 @@ function setupKeyboardShortcuts() {
             switch(e.key.toLowerCase()) {
                 case 'q':
                     e.preventDefault();
-                    console.log('✅ Abriendo modal de nota');
+                    console.log('<i class="fas fa-check"></i> Abriendo modal de nota');
                     openNoteModal();
                     break;
                 case 'h':
                     e.preventDefault();
-                    console.log('✅ Navegando a hábitos');
+                    console.log('<i class="fas fa-check"></i> Navegando a hábitos');
                     window.location.href = 'habits.html';
                     break;
                 case 'e':
                     e.preventDefault();
-                    console.log('✅ Navegando a eventos');
+                    console.log('<i class="fas fa-check"></i> Navegando a eventos');
                     window.location.href = 'events.html';
                     break;
                 case 'd':
                     e.preventDefault();
-                    console.log('✅ Navegando a dashboard');
+                    console.log('<i class="fas fa-check"></i> Navegando a dashboard');
                     window.location.href = 'dashboard.html';
                     break;
             }
