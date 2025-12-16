@@ -63,6 +63,10 @@ export class AuthManager {
       this.user = session?.user || null;
   }
 
+  isAuthenticated() {
+      return !!this.session;
+  }
+
   // ... (lines 103-121 same) ...
 
   redirect(path) {

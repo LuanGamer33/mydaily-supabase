@@ -94,12 +94,46 @@ export class SettingsManager {
         });
     }
 
-    async saveProfile(formData) {
+    setupListeners() {
+        // Save Profile Button
+        const saveBtn = document.getElementById('save-profile-btn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.saveProfile();
+            });
+        }
+
+        // Avatar Options
+        const avatarOptions = document.querySelectorAll('.avatar-option');
+        avatarOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('active'));
+                option.classList.add('active');
+            });
+        });
+
+        // Theme Options
+        const themeOptions = document.querySelectorAll('.theme-option');
+        themeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active'));
+                option.classList.add('active');
+                // Optional: Preview theme immediately
+                const theme = option.dataset.theme;
+                document.documentElement.setAttribute('data-theme', theme);
+            });
+        });
+    }
+
+    async saveProfile() {
         try {
             const user = await getUser();
             if (!user) return;
 
-            const username = formData.username;
+            const usernameInput = document.getElementById('username');
+            const username = usernameInput ? usernameInput.value : user.email.split('@')[0];
+            
             const selectedAvatar = document.querySelector('.avatar-option.active')?.dataset.avatar || 'user-circle';
             const selectedTheme = document.querySelector('.theme-option.active')?.dataset.theme || 'default';
 

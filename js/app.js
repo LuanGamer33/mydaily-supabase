@@ -25,10 +25,17 @@ class App {
         
         // Setup Auth Listeners immediately (for login page)
         this.setupAuthUiListeners();
+        this.configureDateLimits();
 
         await this.auth.init();
         
         if (this.auth.isAuthenticated()) {
+            this.ui.showToast('Sesión detectada, redirigiendo...', 'success');
+            // Check if we are on index/login page and redirect to dashboard
+            const path = window.location.pathname;
+            if (path.includes('index.html') || path === '/' || path.endsWith('/')) {
+                setTimeout(() => window.location.href = 'dashboard.html', 1000);
+            }
             await this.loadDashboardData();
         } else {
             // Logic for public pages or redirect done by AuthManager
@@ -39,6 +46,7 @@ class App {
     }
 
     setupGlobalListeners() {
+        this.settings.setupListeners();
         // ... (existing global listeners)
     }
 
@@ -70,7 +78,7 @@ class App {
                 const userData = {
                     email: formData.get('Correo'),
                     password: formData.get('pass'),
-                    conf_pass: formData.get('conf_pass'),
+                    confirmPassword: formData.get('conf_pass'), // Changed key for internal consistency
                     nombre: formData.get('nombre'),
                     apellido: formData.get('apellido'),
                     username: formData.get('username'),
@@ -78,8 +86,9 @@ class App {
                     genero: formData.get('genero')
                 };
 
-                if (userData.password !== userData.conf_pass) {
-                    this.ui.showToast('Las contraseñas no coinciden', 'error');
+                const validationError = this.validateRegistrationData(userData);
+                if (validationError) {
+                    this.ui.showToast(validationError, 'error');
                     return;
                 }
 
@@ -129,23 +138,64 @@ class App {
         }
 
         // Social Logins
-        const googleUnlinks = document.querySelectorAll('a[onclick*="google"]');
-        googleUnlinks.forEach(link => {
-            link.removeAttribute('onclick');
+        // Social Logins
+        // Use class selectors as onclicks were removed from HTML
+        const googleLinks = document.querySelectorAll('.social-login-google');
+        googleLinks.forEach(link => {
+            // Remove old listeners to be safe, though cloning/replacing is better if we worry about duplicates. 
+            // Simple addEventListener is fine here as this runs once.
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.auth.loginWithProvider('google');
             });
         });
 
-        const githubLinks = document.querySelectorAll('a[onclick*="github"]');
+        const githubLinks = document.querySelectorAll('.social-login-github');
         githubLinks.forEach(link => {
-            link.removeAttribute('onclick');
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.auth.loginWithProvider('github');
             });
         });
+    }
+
+    configureDateLimits() {
+        const dateInput = document.querySelector('input[name="fn"]');
+        if (dateInput) {
+            const today = new Date();
+            const maxDate = new Date(today.getFullYear() - 12, today.getMonth(), today.getDate());
+            const minDate = new Date(today.getFullYear() - 120, today.getMonth(), today.getDate());
+            
+            dateInput.max = maxDate.toISOString().split('T')[0];
+            dateInput.min = minDate.toISOString().split('T')[0];
+        }
+    }
+
+    validateRegistrationData(data) {
+        const { email, password, confirmPassword, nombre, apellido, username, fechaNacimiento, genero } = data;
+        
+        if (!email || !password || !confirmPassword || !nombre || !apellido || !username || !fechaNacimiento || !genero) {
+            return 'Por favor completa todos los campos';
+        }
+        
+        // Simple email regex
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) return 'Por favor ingresa un correo electrónico válido';
+
+        if (password !== confirmPassword) return 'Las contraseñas no coinciden';
+        if (password.length < 6) return 'La contraseña debe tener al menos 6 caracteres';
+        
+        if (nombre.length < 2) return 'El nombre debe tener al menos 2 caracteres';
+        if (apellido.length < 2) return 'El apellido debe tener al menos 2 caracteres';
+        if (username.length < 3) return 'El nombre de usuario debe tener al menos 3 caracteres';
+
+        const birthDate = new Date(fechaNacimiento);
+        const today = new Date();
+        const age = today.getFullYear() - birthDate.getFullYear();
+        if (age < 12) return 'Debes tener al menos 12 años para registrarte';
+        if (age > 120) return 'Fecha de nacimiento no válida';
+
+        return null;
     }
 
     async loadDashboardData() {

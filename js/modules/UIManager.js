@@ -88,6 +88,67 @@ export class UIManager {
                 this.closeModal(e.target.id);
             }
         });
+
+        // Legacy/Hydration: Handle legacy 'onclick' buttons for opening modals
+        // Note: We use the text of the onclick to identify purpose because we can't select by 'onclick' safely if CSP blocks it, 
+        // but simple attribute selection works for hydration before user clicks.
+        
+        const modalMap = {
+            'Note': 'note-modal',
+            'Habit': 'habit-modal',
+            'Event': 'event-modal',
+            'Activity': 'activity-modal'
+        };
+
+        Object.keys(modalMap).forEach(key => {
+            const selector = `[onclick*="open${key}Modal"]`;
+            document.querySelectorAll(selector).forEach(el => {
+                el.removeAttribute('onclick'); // Remove legacy handler
+                el.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.openModal(modalMap[key]);
+                });
+            });
+        });
+
+        // General close
+        document.querySelectorAll('[onclick="closeModal()"], [onclick^="closeModal("]').forEach(el => {
+             // Extract ID if present like closeModal('id')
+             const onClickText = el.getAttribute('onclick');
+             let targetId = null;
+             if (onClickText && onClickText.includes("'")) {
+                 targetId = onClickText.split("'")[1];
+             }
+             
+             el.removeAttribute('onclick');
+             el.addEventListener('click', (e) => {
+                 e.preventDefault();
+                 if (targetId) {
+                     this.closeModal(targetId);
+                 } else {
+                     // Try to find parent modal
+                     const modal = el.closest('.modal');
+                     if (modal) {
+                         this.closeModal(modal.id);
+                     }
+                 }
+             });
+        });
+        
+        // Also handle 'Cancel' buttons inside forms mostly just close
+        document.querySelectorAll('button:not([type="submit"])').forEach(btn => {
+            if (btn.textContent.trim() === 'Cancelar') {
+                 // Check if it has a listener already? Hard to know. 
+                 // But usually they just close modal.
+                 btn.addEventListener('click', (e) => {
+                     const modal = btn.closest('.modal');
+                     if (modal) {
+                         e.preventDefault();
+                         this.closeModal(modal.id);
+                     }
+                 });
+            }
+        });
     }
 
     openModal(modalId) {
@@ -121,39 +182,36 @@ export class UIManager {
 
     // --- Notifications (Toast/Alerts) ---
     // Refactorizado de alerts.js / main.js
+    // Refactorizado para usar el estilo original de alerts.js (.message)
     showToast(message, type = 'info') {
-        // Crear elemento toast si no existe estructura global
-        // O usar librerías existentes. Aquí implementamos una simple.
-        let toastContainer = document.querySelector('.toast-container');
-        if (!toastContainer) {
-            toastContainer = document.createElement('div');
-            toastContainer.className = 'toast-container';
-            document.body.appendChild(toastContainer);
+        const messageEl = document.getElementById('message');
+        if (!messageEl) {
+            console.warn('Elemento #message no encontrado en el DOM');
+            return;
         }
 
-        const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
-        toast.textContent = message;
+        // Limpiar timeout anterior si existe
+        if (this.messageTimeout) {
+            clearTimeout(this.messageTimeout);
+        }
+
+        // Resetear clases y contenido
+        messageEl.className = 'message'; // Mantiene la clase base
+        messageEl.textContent = message;
         
-        // Icono según tipo
-        const icon = document.createElement('i');
-        icon.className = type === 'success' ? 'fas fa-check-circle' : 
-                         type === 'error' ? 'fas fa-times-circle' : 'fas fa-info-circle';
-        toast.prepend(icon);
+        // Agregar tipo y mostrar
+        // Mapear tipos si es necesario, aunque info/success/error coinciden
+        messageEl.classList.add(type, 'show');
 
-        toastContainer.appendChild(toast);
+        // Configurar auto-ocultado según el tipo (tiempos originales)
+        const duration = type === 'error' ? 6000 : (type === 'success' ? 4000 : 3000);
 
-        // Animación de entrada
-        requestAnimationFrame(() => toast.classList.add('show'));
-
-        // Auto eliminar
-        setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
+        this.messageTimeout = setTimeout(() => {
+            messageEl.classList.remove('show');
+        }, duration);
     }
     
-    // Alias para compatibilidad con código antiguo que use showAlert
+    // Alias para compatibilidad
     showAlert(message, type) {
         this.showToast(message, type);
     }
