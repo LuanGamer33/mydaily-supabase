@@ -7,6 +7,32 @@ export class HabitsManager {
         this.habits = [];
         this.container = document.getElementById('habits-list');
         this.currentEditId = null;
+        this.setupListeners();
+    }
+
+    setupListeners() {
+        const form = document.getElementById('habit-form');
+        if (form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(form);
+                const habitData = {
+                    name: formData.get('name'),
+                    description: formData.get('description'),
+                    frequency: formData.get('frequency'),
+                    // Default values handled in createHabit if not here
+                    priority: 'medium' // Default or add field to form
+                };
+
+                if (this.currentEditId) {
+                    await this.updateHabit(this.currentEditId, habitData);
+                } else {
+                    await this.createHabit(habitData);
+                }
+                
+                this.ui.closeModal('habit-modal');
+            });
+        }
     }
 
     async loadHabits() {
@@ -32,6 +58,10 @@ export class HabitsManager {
     }
 
     render() {
+        if (!this.container) {
+            this.container = document.getElementById('habits-list');
+        }
+    
         if (!this.container) return;
         this.container.innerHTML = '';
         
@@ -39,33 +69,34 @@ export class HabitsManager {
             this.container.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 2rem;">No tienes hábitos aún. ¡Crea tu primer hábito!</p>';
         } else {
             this.habits.forEach(habit => {
-                const habitCard = document.createElement('div');
-                habitCard.className = `item-card habit-card ${habit.completado_hoy ? 'completed' : ''}`;
+                const habitCard = document.createElement('li'); // Changed to li to match activities if using ul, or div. Activities uses li. container is ul?
+                // Checking HabitsManager constructor: container is getElementById('habits-list'). habits.html uses div id="habits-list" class="items-grid". Activities uses ul.
+                // If habits uses div grid, I should probably switch to ul list or style the div like a list.
+                // Let's use div but with "activity-card" class which likely has flex row style.
+                
+                habitCard.className = `activity-card habit-card ${habit.completado_hoy ? 'completed' : 'pending'}`;
                 const progressPercent = Math.round((habit.progreso_semanal / 7) * 100);
                 
+                // Mimic Activity Layout
                 habitCard.innerHTML = `
-                    <div class="habit-header">
+                    <div class="activity-priority medium" style="background: var(--accent-color);">
+                         <i class="fas fa-running" style="color: white;"></i>
+                    </div>
+                    <div class="activity-content">
                         <h4>${habit.nom}</h4>
-                        <div class="habit-streak">
-                            <i class="fas fa-fire"></i>
-                            <span>${habit.racha} días</span>
+                        <p class="activity-description">${habit.descr || 'Sin descripción'}</p>
+                        <div class="activity-meta">
+                            <span class="activity-date"><i class="fas fa-fire"></i> Racha: ${habit.racha} días</span>
+                            <span class="activity-time"><i class="fas fa-chart-line"></i> Progreso: ${habit.progreso_semanal}/7</span>
                         </div>
                     </div>
-                    <p class="habit-description">${habit.descr}</p>
-                    <div class="habit-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${progressPercent}%"></div>
-                        </div>
-                        <small>${habit.progreso_semanal}/7 días esta semana</small>
-                    </div>
-                    <div class="habit-status">
-                        <label class="habit-checkbox">
+                    <div class="activity-status">
+                        <label class="activity-checkbox">
                             <input type="checkbox" ${habit.completado_hoy ? 'checked' : ''} data-action="toggle">
                             <span class="checkmark"></span>
-                            Completado hoy
                         </label>
                     </div>
-                    <div class="item-actions">
+                    <div class="activity-actions">
                         <button data-action="edit" class="edit-btn"><i class="fas fa-edit"></i></button>
                         <button data-action="delete" class="delete-btn"><i class="fas fa-trash"></i></button>
                     </div>

@@ -47,7 +47,14 @@ class App {
 
     setupGlobalListeners() {
         this.settings.setupListeners();
-        // ... (existing global listeners)
+        
+        // Logout Button
+        const logoutBtn = document.querySelector('.logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                this.auth.logout();
+            });
+        }
     }
 
     setupAuthUiListeners() {
@@ -227,6 +234,8 @@ class App {
         } else if (path.includes('activities.html')) {
             await this.activities.loadActivities();
         } else if (path.includes('settings.html')) {
+            // Re-run setup listeners ensuring elements exist
+            this.settings.setupListeners();
             // Already loaded in loadDashboardData, but maybe refresh
         }
     }
@@ -276,18 +285,92 @@ class App {
     }
 
     renderDashboardPreviews(notes, habits, events, activities) {
-        // Simplified Logic: reusing Manager renders might be tricky if structure differs.
-        // For Dashboard, we usually want simplified lists.
-        // We can create specific render methods in Managers like `renderPreview(container)`
-        // Or keep logic here for now.
+        // Helper to render distinct items
+        const renderSection = (items, containerId, emptyMsg, renderItemFn) => {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (!items || items.length === 0) {
+                container.innerHTML = `<div class="preview-item empty-state" style="justify-content:center; color: var(--text-light);">${emptyMsg}</div>`;
+                return;
+            }
+
+            // Take top 3
+            items.slice(0, 3).forEach(item => {
+                const el = renderItemFn(item);
+                container.appendChild(el);
+            });
+        };
+
+        // Notes
+        renderSection(notes, 'notes-carousel', 'Sin notas recientes', (note) => {
+            const div = document.createElement('div');
+            div.className = 'preview-item';
+            div.innerHTML = `
+                <i class="fas fa-sticky-note" style="color: var(--accent-color)"></i>
+                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${note.nom}</span>
+            `;
+            div.onclick = () => window.location.href = 'notes.html';
+            return div;
+        });
+
+        // Habits
+        renderSection(habits, 'habits-carousel', 'Sin hábitos activos', (habit) => {
+            const div = document.createElement('div');
+            div.className = 'preview-item';
+            div.innerHTML = `
+                <i class="fas fa-check-circle" style="color: ${habit.completado_hoy ? 'green' : 'var(--text-light)'}"></i>
+                <span>${habit.nom}</span>
+            `;
+            div.onclick = () => window.location.href = 'habits.html';
+            return div;
+        });
+
+        // Events
+        // Filter upcoming - Ensure robust date comparison
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalize today
         
-        // To save complexity in this refactor, I'll rely on the Managers to just have data,
-        // and I will assume we need to implement specific carousel logic or list logic here
-        // similar to original main.js lines 272-374.
-        
-        // Due to "Strictly separate files", ideally `NotesManager` handles `renderPreview`.
-        // But for time's sake, I'll just leave a placeholder or basic implementation.
-        console.log('Rendering Dashboard Previews not fully ported yet for brevity in this step, but data is available.');
+        const upcomingEvents = (events || []).filter(e => {
+            if (!e.fecha) return false;
+            // Handle YYYY-MM-DD explicitly to prevent timezone shifts
+            const [y, m, d] = e.fecha.split('-').map(Number);
+            const eventDate = new Date(y, m - 1, d); // Month is 0-indexed
+            return eventDate >= today;
+        }).slice(0, 3);
+
+        renderSection(upcomingEvents, 'events-carousel', 'Sin eventos próximos', (event) => {
+            const div = document.createElement('div');
+            div.className = 'preview-item';
+            // Simple display date
+            const [y, m, d] = event.fecha.split('-');
+            const displayDate = `${d}/${m}`;
+            
+            div.innerHTML = `
+                <i class="fas fa-calendar-day" style="color: var(--primary-color)"></i>
+                <div style="display:flex; flex-direction:column; line-height:1.2; overflow:hidden;">
+                    <span style="font-weight:bold;">${event.nom}</span>
+                    <span style="font-size:0.75em; color:var(--text-light);">${displayDate}</span>
+                </div>
+            `;
+            div.onclick = () => window.location.href = 'events.html';
+            return div;
+        });
+
+        // Activities
+        // Filter pending
+        const pendingActivities = activities.filter(a => !a.completada).slice(0, 3);
+        renderSection(pendingActivities, 'activities-carousel', 'Sin actividades pendientes', (activity) => {
+            const div = document.createElement('div');
+            div.className = 'preview-item';
+            div.innerHTML = `
+                <i class="fas fa-tasks" style="color: ${activity.prioridad === 'high' ? 'red' : 'var(--accent-color)'}"></i>
+                <span>${activity.titulo}</span>
+            `;
+            div.onclick = () => window.location.href = 'activities.html';
+            return div;
+        });
     }
 
     generateCalendar(events, activities) {
@@ -354,4 +437,11 @@ class App {
 document.addEventListener('DOMContentLoaded', () => {
     window.app = new App();
     window.app.init();
+});
+
+// Prevent bfcache issues (Back button showing cached authenticated page)
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        window.location.reload();
+    }
 });

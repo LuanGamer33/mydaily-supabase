@@ -16,6 +16,28 @@ export class AuthManager {
 
     // Configurar listener para cambios de auth
     supabase.auth.onAuthStateChange(this.handleAuthStateChange.bind(this));
+    
+    // Strict check for protected pages
+    if (!session && !this.isPublicRoute()) {
+        window.location.replace('index.html');
+    }
+  }
+  
+  isPublicRoute() {
+      const path = window.location.pathname;
+      return path.includes('index.html') || path === '/' || path.endsWith('/');
+  }
+
+  async logout() {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      // Handle redirect via state change or manual replace if needed immediately
+      // The state change listener will catch SIGNED_OUT, but we can force it too
+    } catch (error) {
+      console.error("Logout error:", error);
+      this.friendlyErrorMessage(error);
+    }
   }
 
   handleAuthStateChange(event, session) {
@@ -26,11 +48,59 @@ export class AuthManager {
     if (event === "SIGNED_IN") {
       this.redirect("dashboard.html");
     } else if (event === "SIGNED_OUT") {
-      this.redirect("index.html");
+      // Use replace to prevent back button from returning to protected page
+      window.location.replace("index.html");
     }
   }
 
-  // ... (lines 38-89 same) ...
+  async login(email, password) {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      if (data.session) {
+        this.setSession(data.session);
+      }
+
+      return { user: data.user, session: data.session, error: null };
+    } catch (error) {
+      console.error("Login error:", error);
+      return { user: null, session: null, error: this.friendlyErrorMessage(error) };
+    }
+  }
+
+  async register(userData) {
+    try {
+      const { email, password, ...meta } = userData;
+      
+      // Construct redirect URL dynamically
+      const redirectUrl = new URL('dashboard.html', window.location.href).href;
+
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: meta, // Save additional data like name, username in metadata
+          emailRedirectTo: redirectUrl,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.session) {
+        this.setSession(data.session);
+      }
+
+      return { user: data.user, session: data.session, error: null };
+    } catch (error) {
+      console.error("Register error:", error);
+      return { user: null, session: null, error: this.friendlyErrorMessage(error) };
+    }
+  }
 
   async loginWithProvider(provider) {
     try {

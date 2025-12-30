@@ -17,6 +17,22 @@ DROP TABLE IF EXISTS public.recurrencia CASCADE; -- Tabla vieja
 DROP TABLE IF EXISTS public.tarea CASCADE; -- Tabla vieja
 DROP TABLE IF EXISTS public.usuarios CASCADE;
 
+-- 0. AUTH SCHEMA
+CREATE SCHEMA IF NOT EXISTS auth;
+CREATE TABLE IF NOT EXISTS auth.users (
+  id uuid NOT NULL PRIMARY KEY,
+  email text UNIQUE,
+  encrypted_password text,
+  email_confirmed_at timestamp without time zone DEFAULT now(),
+  created_at timestamp without time zone DEFAULT now(),
+  updated_at timestamp without time zone DEFAULT now(),
+  raw_app_meta_data jsonb,
+  raw_user_meta_data jsonb,
+  is_super_admin boolean,
+  confirmed_at timestamp without time zone
+);
+
+
 -- 1. TABLA USUARIOS (Nueva)
 -- Centraliza la información del perfil público y configuraciones principales.
 -- Relación 1:1 con auth.users de Supabase.
@@ -104,7 +120,6 @@ CREATE TABLE public.calendario (
   lugar character varying,
   prior integer NOT NULL DEFAULT 1,
   id_cat integer REFERENCES public.categorias(id_cat),
-  id_recur integer, -- Referencia a tabla recurrencia si existe, o simplificar
   user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at timestamp without time zone DEFAULT now(),
   updated_at timestamp without time zone DEFAULT now(),
@@ -129,15 +144,10 @@ CREATE TABLE public.actividades (
   fecha date,
   hora time without time zone,
   prioridad character varying, -- 'low', 'medium', 'high'
-  categoria character varying,
+  id_cat integer REFERENCES public.categorias(id_cat),
   completada boolean DEFAULT false,
   user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at timestamp without time zone DEFAULT now(),
   updated_at timestamp without time zone DEFAULT now(),
   CONSTRAINT actividades_pkey PRIMARY KEY (id)
 );
-
--- NOTA SOBRE TABLAS ELIMINADAS/CONSOLIDADAS:
--- 1. 'evento': Parecía redundante con 'calendario', se ha unificado lógica en 'calendario'.
--- 2. 'recurrencia': Se mantiene referencia en calendario pero se puede crear tabla si es compleja.
--- 3. 'tarea' y 'listas': Parecían duplicadas con 'actividades', se priorizó 'actividades' que es la usada en la APP.

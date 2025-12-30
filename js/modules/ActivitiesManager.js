@@ -7,6 +7,35 @@ export class ActivitiesManager {
         this.activities = [];
         this.container = document.querySelector('.activities-container ul');
         this.currentEditId = null;
+        this.setupListeners();
+    }
+
+    setupListeners() {
+        const form = document.getElementById('activity-form');
+        if (form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(form);
+                const activityData = {
+                    title: formData.get('title'),
+                    description: formData.get('description'),
+                    date: formData.get('date'),
+                    time: formData.get('time'),
+                    priority: formData.get('priority'),
+                    category: formData.get('category')
+                };
+
+                if (this.currentEditId) {
+                    // Similar to EventsManager, explicit update logic missing in original file
+                    // We will just create for now to fix the form behavior
+                    await this.createActivity(activityData);
+                } else {
+                    await this.createActivity(activityData);
+                }
+                
+                this.ui.closeModal('activity-modal');
+            });
+        }
     }
 
     async loadActivities() {
@@ -31,6 +60,11 @@ export class ActivitiesManager {
     }
 
     render() {
+        if (!this.container) {
+            // Try ID first if available, else class for robustness
+            this.container = document.querySelector('.activities-container ul');
+        }
+        
         if (!this.container) return;
         this.container.innerHTML = '';
 

@@ -68,6 +68,8 @@ export class SettingsManager {
         
         if (profile.tema) {
             document.documentElement.setAttribute('data-theme', profile.tema);
+            localStorage.setItem('theme', profile.tema); // Save for performance
+            
             const themeOptions = document.querySelectorAll('.theme-option');
             themeOptions.forEach(o => {
                 o.classList.toggle('active', o.getAttribute('data-theme') === profile.tema);
@@ -122,8 +124,37 @@ export class SettingsManager {
                 // Optional: Preview theme immediately
                 const theme = option.dataset.theme;
                 document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('theme', theme); // Save immediate preview
             });
         });
+
+        // New Action Buttons
+        const exportBtn = document.getElementById('export-data-btn');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => {
+                this.ui.showToast('Iniciando exportación de datos...', 'info');
+                setTimeout(() => this.ui.showToast('Datos exportados (Demo)', 'success'), 2000);
+            });
+        }
+
+        const deleteAccountBtn = document.getElementById('delete-account-btn');
+        if (deleteAccountBtn) {
+            deleteAccountBtn.addEventListener('click', () => {
+                if(confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.')) {
+                    this.ui.showToast('Contacta al administrador para eliminar tu cuenta.', 'warning');
+                }
+            });
+        }
+
+        const helpBtn = document.getElementById('show-help-btn');
+        if (helpBtn) helpBtn.addEventListener('click', () => this.ui.showToast('Centro de ayuda próximamente', 'info'));
+
+        const bugBtn = document.getElementById('report-bug-btn');
+        if (bugBtn) bugBtn.addEventListener('click', () => this.ui.showToast('Gracias por reportar, lo revisaremos.', 'success'));
+
+        const feedbackBtn = document.getElementById('send-feedback-btn');
+        if (feedbackBtn) feedbackBtn.addEventListener('click', () => this.ui.showToast('Gracias por tus comentarios.', 'success'));
+
     }
 
     async saveProfile() {

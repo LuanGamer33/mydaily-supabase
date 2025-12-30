@@ -382,15 +382,7 @@ body {
 .motivation-icon {
     font-size: 2.5rem;
     opacity: 0.9;
-    background-color: transparent !important; /* Ensure unexpected backgrounds are removed */
 }
-
-/* Specifically for lightbulb icon which might have inherited styles */
-.daily-motivation .fas.fa-lightbulb {
-    color: white;
-    background: none;
-}
-
 
 .motivation-text-container {
     flex: 1;
@@ -560,18 +552,7 @@ body {
     background: var(--accent-color);
     width: 24px;
     border-radius: 4px;
-    transition: width 0.3s, background 0.3s; /* Smooth transition */
 }
-
-/* Carousel Button Fixes if they exist */
-.carousel-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.2rem;
-    color: var(--text-light); /* Fallback color */
-}
-
 
 .preview-item {
     padding: 8px 10px;

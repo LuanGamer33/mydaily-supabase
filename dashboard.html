@@ -23,6 +23,14 @@
       href="img/Carpincho de pie sobre un parche de hierba.png"
       rel="icon"
     />
+    <script>
+      (function () {
+        const theme = localStorage.getItem("theme");
+        if (theme) {
+          document.documentElement.setAttribute("data-theme", theme);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div
