@@ -563,11 +563,36 @@
             </div>
             <div class="form-field">
               <label>Frecuencia</label>
-              <select name="frequency">
+              <select name="frequency" id="habit-frequency">
                 <option value="daily">Diario</option>
                 <option value="weekly">Semanal</option>
                 <option value="custom">Personalizado</option>
               </select>
+            </div>
+
+            <!-- Campos dinámicos de frecuencia -->
+            <div class="form-field" id="frequency-days" style="display: none">
+              <label>Días de la semana</label>
+              <div class="week-days-selector">
+                <label><input type="checkbox" name="days" value="1" /> L</label>
+                <label><input type="checkbox" name="days" value="2" /> M</label>
+                <label><input type="checkbox" name="days" value="3" /> M</label>
+                <label><input type="checkbox" name="days" value="4" /> J</label>
+                <label><input type="checkbox" name="days" value="5" /> V</label>
+                <label><input type="checkbox" name="days" value="6" /> S</label>
+                <label><input type="checkbox" name="days" value="0" /> D</label>
+              </div>
+            </div>
+
+            <div class="form-field" id="frequency-custom" style="display: none">
+              <label>Repetir cada (días)</label>
+              <input
+                type="number"
+                name="custom_interval"
+                min="1"
+                max="365"
+                placeholder="Ej: 3 (Cada 3 días)"
+              />
             </div>
             <div class="modal-actions">
               <button type="button" onclick="closeModal('habit-modal')">
@@ -588,9 +613,6 @@
     ></script>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script 
-      type="module" 
-      src="js/app.js"
-    ></script>
+    <script type="module" src="js/app.js"></script>
   </body>
 </html>

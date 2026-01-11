@@ -27,25 +27,28 @@ class App {
         this.setupAuthUiListeners();
         this.configureDateLimits();
 
+        // ESPERAR a que la inicialización de auth termine
         await this.auth.init();
         
         if (this.auth.isAuthenticated()) {
-            this.ui.showToast('Sesión detectada, redirigiendo...', 'success');
-            // Check if we are on index/login page and redirect to dashboard
+            this.ui.showToast('Sesión detectada', 'success');
+            
             const path = window.location.pathname;
             if (path.includes('index.html') || path === '/' || path.endsWith('/')) {
-                // REDIRECCION INMEDIATA SIN ESPERAS
+                // Si estamos en login y hay sesión -> Dashboard
                  window.location.href = 'dashboard.html';
             } else {
-                 // Si ya estamos en dashboard u otra interna, cargamos datos
-                 await this.loadDashboardData();
+                 // Si estamos en interna -> Cargar la página actual CORRECTAMENTE con usuario
+                 // NO cargar dashboardData ciegamente, renderCurrentPage lo manejará
+                 await this.renderCurrentPage();
             }
         } else {
             // Logic for public pages or redirect done by AuthManager
         }
 
         this.setupGlobalListeners();
-        this.renderCurrentPage();
+        // renderCurrentPage check removed from here to avoid double render or render before auth
+        // Only render if we didn't redirect
     }
 
     setupGlobalListeners() {
@@ -217,17 +220,24 @@ class App {
         await this.settings.loadUserProfile(currentUser);
 
         // Update Daily Motivation
-        const motivation = getDailyMotivation(currentUser.id);
-        const motivationContainer = document.querySelector('.daily-motivation');
-        if (motivationContainer) {
-            motivationContainer.querySelector('.motivation-text').textContent = motivation.text;
-            motivationContainer.querySelector('.motivation-time').textContent = `Actualizado: ${motivation.time}`;
-        }
+        // Update Daily Motivation
+        // Usar 'default' si no hay ID, para mostrar algo siempre
+        const motivation = getDailyMotivation(currentUser ? currentUser.id : 'default');
+        const motivationText = document.getElementById('motivation-message');
+        const motivationTime = document.getElementById('motivation-time');
+        
+        if (motivationText) motivationText.textContent = motivation.text;
+        if (motivationTime) motivationTime.textContent = `Actualizado: ${motivation.time}`;
     }
 
     async renderCurrentPage() {
         const path = window.location.pathname;
         const currentUser = this.auth.user;
+
+        // CARGA GLOBAL DE PERFIL (Para sidebar y tema en todas las páginas)
+        if (currentUser) {
+            await this.settings.loadUserProfile(currentUser);
+        }
 
         if (path.includes('index.html') || path === '/' || path.endsWith('/')) {
             // Login page handled by AuthManager mostly, but we can clear things here

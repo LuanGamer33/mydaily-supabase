@@ -221,10 +221,11 @@
     display: flex;
     background: var(--card-background);
     border-radius: var(--border-radius);
-    padding: 1.5rem;
+    padding: 1rem; /* Compact size */
     box-shadow: 0 4px 20px var(--shadow);
     transition: all 0.3s ease;
     border-left: 5px solid var(--primary-color);
+    align-items: center; /* Align center vertically */
 }
 
 .event-item:hover {
@@ -239,25 +240,25 @@
 
 .event-date {
     text-align: center;
-    margin-right: 2rem;
-    min-width: 80px;
+    margin-right: 1.5rem; /* Reduced margin */
+    min-width: 60px; /* Reduced width */
 }
 
 .date-day {
-    font-size: 2.5rem;
+    font-size: 1.8rem; /* Smaller size */
     font-weight: bold;
     color: var(--primary-color);
     line-height: 1;
 }
 
 .date-month {
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: bold;
     color: var(--accent-color);
 }
 
 .date-year {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: var(--text-light);
 }
 
@@ -266,15 +267,16 @@
 }
 
 .event-content h4 {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem; /* Tighter spacing */
     color: var(--text-dark);
-    font-size: 1.3rem;
+    font-size: 1.1rem; /* Slightly smaller */
 }
 
 .event-description {
     color: var(--text-light);
-    margin-bottom: 1rem;
-    line-height: 1.5;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+    font-size: 0.9rem;
 }
 
 .event-meta {

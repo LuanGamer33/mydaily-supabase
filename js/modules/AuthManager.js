@@ -46,7 +46,11 @@ export class AuthManager {
     this.user = session?.user || null;
 
     if (event === "SIGNED_IN") {
-      this.redirect("dashboard.html");
+      // SOLO redirigir si estamos en páginas públicas (login/landing)
+      // Si el usuario recarga 'habits.html', NO queremos enviarlo al dashboard
+      if (this.isPublicRoute()) {
+           this.redirect("dashboard.html");
+      }
     } else if (event === "SIGNED_OUT") {
       // Usar replace para evitar que el botón atrás regrese a la página protegida
       window.location.replace("index.html");

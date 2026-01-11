@@ -581,18 +581,18 @@ body {
 }
 
 .preview-item {
-  padding: 8px 10px;
+  padding: 6px 8px; /* Reduced padding */
   background: rgba(255, 255, 255, 0.7);
   border: 1px solid var(--border-color);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 0.85rem;
+  font-size: 0.8rem; /* Slightly smaller font */
   color: var(--text-dark);
   display: flex;
   align-items: center;
   gap: 6px;
-  min-height: 44px;
+  min-height: 36px; /* Reduced height */
 }
 
 .preview-item:hover {
@@ -802,9 +802,105 @@ body {
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
-  animation: modalShow 0.3s ease;
+  position: relative;
   border: 1px solid var(--border-color);
+  animation: modalSlideUp 0.3s ease-out;
 }
+
+/* Week Days Selector */
+.week-days-selector {
+    display: flex;
+    justify-content: space-between;
+    gap: 5px;
+}
+
+.week-days-selector label {
+    flex: 1;
+    position: relative;
+    cursor: pointer;
+}
+
+.week-days-selector input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.week-days-selector span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    background: rgba(255,255,255,0.5);
+    border: 1px solid var(--border-color);
+    border-radius: 50%; /* Circular style */
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--text-light);
+    transition: all 0.2s;
+}
+
+.week-days-selector input:checked + span {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+    transform: scale(1.1);
+}
+
+/* Standardize all dashboard previews to the larger size */
+.preview-item {
+    min-height: 48px;
+    font-size: 0.85rem;
+    padding: 8px 10px;
+}
+
+/* Remove specific overrides since we want them all same */
+#events-carousel .preview-item,
+#habits-carousel .preview-item {
+    min-height: 48px;
+    font-size: 0.85rem;
+}
+
+
+/* Compact Event Card for events.html (to match habits) */
+.event-card,
+.event-item {
+    padding: 1rem;
+    min-height: auto;
+    display: flex; /* Ensure it behaves like a card if it was list-item */
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    background: var(--card-background); /* Ensure bg matches */
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 10px var(--shadow);
+    margin-bottom: 1rem;
+}
+
+.event-item .event-content {
+    flex: 1;
+    gap: 0.25rem;
+}
+
+.event-item h4 {
+    font-size: 1rem;
+    margin-bottom: 0.2rem;
+}
+
+.event-item p {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.event-item .event-date {
+    /* Adjust date box size if needed */
+    padding: 0.5rem;
+    min-width: 60px;
+}
+
+
+
 
 @keyframes modalShow {
   from {

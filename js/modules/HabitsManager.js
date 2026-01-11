@@ -13,15 +13,57 @@ export class HabitsManager {
     setupListeners() {
         const form = document.getElementById('habit-form');
         if (form) {
+            // Manejo de frecuencia
+            const freqSelect = form.querySelector('#habit-frequency');
+            const daysDiv = form.querySelector('#frequency-days');
+            const customDiv = form.querySelector('#frequency-custom');
+
+            if (freqSelect) {
+                // Función para actualizar visibilidad
+                const updateVisibility = () => {
+                    const val = freqSelect.value;
+                    if (daysDiv) daysDiv.style.display = (val === 'weekly') ? 'block' : 'none';
+                    if (customDiv) customDiv.style.display = (val === 'custom') ? 'block' : 'none';
+                    
+                    const monthlyDiv = form.querySelector('#frequency-monthly');
+                    const yearlyDiv = form.querySelector('#frequency-yearly');
+                    
+                    if (monthlyDiv) monthlyDiv.style.display = (val === 'monthly') ? 'block' : 'none';
+                    if (yearlyDiv) yearlyDiv.style.display = (val === 'yearly') ? 'block' : 'none';
+                };
+
+                // Listener y actualización inicial
+                freqSelect.addEventListener('change', updateVisibility);
+                updateVisibility(); // Correr al iniciar para asegurar estado correcto
+            }
+
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const formData = new FormData(form);
+                
+                // Construir objeto de configuración de frecuencia
+                const frequencyType = formData.get('frequency');
+                const config = { type: frequencyType };
+                
+                if (frequencyType === 'weekly') {
+                    // Obtener días seleccionados (checkboxes con mismo nombre 'days')
+                    const selectedDays = [...form.querySelectorAll('input[name="days"]:checked')].map(cb => parseInt(cb.value));
+                    config.days = selectedDays;
+                } else if (frequencyType === 'monthly') {
+                    config.day = parseInt(formData.get('month_day'));
+                } else if (frequencyType === 'yearly') {
+                    config.month = parseInt(formData.get('year_month'));
+                    config.day = parseInt(formData.get('year_day'));
+                } else if (frequencyType === 'custom') {
+                    config.interval = parseInt(formData.get('custom_interval'));
+                }
+
                 const habitData = {
                     name: formData.get('name'),
                     description: formData.get('description'),
-                    frequency: formData.get('frequency'),
-                    // Valores por defecto manejados en createHabit si no están aquí
-                    priority: 'medium' // Por defecto o agregar campo al formulario
+                    frequency: frequencyType,
+                    frequency_config: config, // Nuevo campo
+                    priority: 'medium'
                 };
 
                 if (this.currentEditId) {
@@ -43,7 +85,7 @@ export class HabitsManager {
 
             const { data, error } = await supabase
                 .from('habitos')
-                .select('id_hab, nom, hora, prior, descr, racha, progreso_semanal, completado_hoy, created_at')
+                .select('id_hab, nom, hora, prior, descr, racha, progreso_semanal, completado_hoy, created_at, frecuencia_config') // Incluir nuevo campo
                 .eq('user_id', currentUser.id)
                 .order('id_hab', { ascending: false });
 
@@ -58,23 +100,38 @@ export class HabitsManager {
         }
     }
 
-    render() {
+    async render() {
         if (!this.container) {
             this.container = document.getElementById('habits-list');
         }
-    
-        if (!this.container) return;
+        
+        if (!this.container) {
+             // Si no encuentro el container, puede que estemos en otra página. 
+             // Loguear solo si estamos en habits.html
+             if (window.location.pathname.includes('habits.html')) {
+                 console.error("Error: Container #habits-list not found in habits.html");
+             }
+             return;
+        }
+
         this.container.innerHTML = '';
         
         if (this.habits.length === 0) {
-            this.container.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 2rem;">No tienes hábitos aún. ¡Crea tu primer hábito!</p>';
-        } else {
-            this.habits.forEach(habit => {
+            this.container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-seedling"></i>
+                    <p>No tienes hábitos activos. ¡Crea uno nuevo!</p>
+                </div>
+            `;
+            return;
+        }    
+        this.habits.forEach(habit => {
                 // Cambiado a li para coincidir con actividades si se usa ul, o div. Actividades usa li. ¿el contenedor es ul?
                 // Revisando constructor de HabitsManager: container es getElementById('habits-list'). habits.html usa div id="habits-list" class="items-grid". Actividades usa ul.
                 // Si hábitos usa div grid, probablemente debería cambiar a ul lista o estilar el div como lista.
                 // Usemos div pero con clase "activity-card" que probablemente tiene estilo flex row.
                 
+                const habitCard = document.createElement('div'); // Define habitCard here
                 habitCard.className = `activity-card habit-card ${habit.completado_hoy ? 'completed' : 'pending'}`;
                 const progressPercent = Math.round((habit.progreso_semanal / 7) * 100);
                 
@@ -110,7 +167,6 @@ export class HabitsManager {
 
                 this.container.appendChild(habitCard);
             });
-        }
         
         this.updateStats();
     }
@@ -140,7 +196,7 @@ export class HabitsManager {
             // Mapeo de valores por defecto
             const prioridadNum = habitData.priority === 'high' ? 3 : habitData.priority === 'medium' ? 2 : 1;
 
-            const { error } = await supabase
+            const { data, error } = await supabase
                 .from('habitos')
                 .insert([{
                     nom: habitData.name,
@@ -150,15 +206,31 @@ export class HabitsManager {
                     user_id: user.id,
                     racha: 0,
                     progreso_semanal: 0,
-                    completado_hoy: false
-                }]);
+                    completado_hoy: false,
+                    frecuencia_config: habitData.frequency_config // Guardar configuración
+                }])
+                .select(); // IMPORTANTE: Select para devolver datos insertados y verificar
 
-            if (error) throw error;
+            if (error) {
+                console.error("Supabase create error:", error);
+                throw error;
+            }
+            
+            if (!data || data.length === 0) {
+                 console.warn("No data returned from insert. RLS policy might be blocking select.");
+                 // Aunque RLS bloquee select, si no hubo error, se insertó.
+            }
+
             this.ui.showToast('Hábito creado', 'success');
-            await this.loadHabits();
+            await this.loadHabits(user); // Pasar usuario explícitamente para evitar recarga
         } catch (error) {
             console.error('Error creating habit:', error);
-            this.ui.showToast('Error al crear hábito: ' + error.message, 'error');
+            // Mensaje amigable si falla por columna faltante
+            if (error.message && error.message.includes('frecuencia_config')) {
+                 this.ui.showToast('Error: Base de datos desactualizada. Ejecuta la migración SQL.', 'error');
+            } else {
+                 this.ui.showToast('Error al crear hábito: ' + error.message, 'error');
+            }
         }
     }
 
@@ -170,6 +242,7 @@ export class HabitsManager {
                 .update({
                     nom: habitData.name,
                     descr: habitData.description,
+                    frecuencia_config: habitData.frequency_config
                     // Agregar otros campos si son editables
                 })
                 .eq('id_hab', id)

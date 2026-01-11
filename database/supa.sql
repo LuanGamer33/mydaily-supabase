@@ -948,4 +948,13 @@ ALTER TABLE IF EXISTS storage.vector_indexes
     ON UPDATE NO ACTION
     ON DELETE NO ACTION;
 
+-- Add a JSONB column to store flexible frequency details
+ALTER TABLE public.habitos 
+ADD COLUMN IF NOT EXISTS frecuencia_config JSONB DEFAULT '{}'::jsonb;
+-- Example of what will be stored:
+-- Weekly: {"type": "weekly", "days": [1, 3, 5]}
+-- Monthly: {"type": "monthly", "day": 15}
+-- Yearly: {"type": "yearly", "month": 2, "day": 14}
+-- Custom: {"type": "custom", "interval": 3}
+
 END;

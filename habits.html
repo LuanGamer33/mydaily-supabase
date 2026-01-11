@@ -113,11 +113,61 @@
                     </div>
                     <div class="form-field">
                         <label>Frecuencia</label>
-                        <select name="frequency">
+                        <select name="frequency" id="habit-frequency">
                             <option value="daily">Diario</option>
                             <option value="weekly">Semanal</option>
-                            <option value="custom">Personalizado</option>
+                            <option value="monthly">Mensual</option>
+                            <option value="yearly">Anual</option>
+                            <option value="custom">Personalizado (Intervalo)</option>
                         </select>
+                    </div>
+                    
+                    <!-- Semanal -->
+                    <div class="form-field frequency-option" id="frequency-weekly" style="display: none;">
+                        <label>Días de la semana</label>
+                        <div class="week-days-selector">
+                            <label><input type="checkbox" name="days" value="1"> <span>L</span></label>
+                            <label><input type="checkbox" name="days" value="2"> <span>M</span></label>
+                            <label><input type="checkbox" name="days" value="3"> <span>M</span></label>
+                            <label><input type="checkbox" name="days" value="4"> <span>J</span></label>
+                            <label><input type="checkbox" name="days" value="5"> <span>V</span></label>
+                            <label><input type="checkbox" name="days" value="6"> <span>S</span></label>
+                            <label><input type="checkbox" name="days" value="0"> <span>D</span></label>
+                        </div>
+                    </div>
+
+                    <!-- Mensual -->
+                    <div class="form-field frequency-option" id="frequency-monthly" style="display: none;">
+                        <label>Día del mes</label>
+                        <input type="number" name="month_day" min="1" max="31" placeholder="Ej: 15">
+                    </div>
+
+                    <!-- Anual -->
+                    <div class="form-field frequency-option" id="frequency-yearly" style="display: none;">
+                        <label>Fecha anual</label>
+                        <div style="display: flex; gap: 10px;">
+                            <select name="year_month" style="flex: 1;">
+                                <option value="0">Enero</option>
+                                <option value="1">Febrero</option>
+                                <option value="2">Marzo</option>
+                                <option value="3">Abril</option>
+                                <option value="4">Mayo</option>
+                                <option value="5">Junio</option>
+                                <option value="6">Julio</option>
+                                <option value="7">Agosto</option>
+                                <option value="8">Septiembre</option>
+                                <option value="9">Octubre</option>
+                                <option value="10">Noviembre</option>
+                                <option value="11">Diciembre</option>
+                            </select>
+                            <input type="number" name="year_day" min="1" max="31" placeholder="Día" style="width: 80px;">
+                        </div>
+                    </div>
+
+                    <!-- Custom Interval -->
+                    <div class="form-field frequency-option" id="frequency-custom" style="display: none;">
+                        <label>Repetir cada (días)</label>
+                        <input type="number" name="custom_interval" min="1" max="365" placeholder="Ej: 3 (Cada 3 días)">
                     </div>
                     <div class="modal-actions">
                         <button type="button" onclick="closeModal()">Cancelar</button>
