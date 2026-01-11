@@ -5,7 +5,7 @@ export class EventsManager {
     constructor(uiManager) {
         this.ui = uiManager;
         this.events = [];
-        this.container = document.getElementById('events-list'); // More robust selector
+        this.container = document.getElementById('events-list'); // Selector más robusto
         this.currentEditId = null;
         this.setupListeners();
     }
@@ -23,56 +23,29 @@ export class EventsManager {
                     time: formData.get('time'),
                     location: formData.get('location'),
                     category: formData.get('category'),
-                    priority: 'medium' // Add to form or default
+                    priority: 'medium' // Agregar al formulario o por defecto
                 };
                 
-                // Note: The previous logic didn't have updateEvent, only createEvent.
-                // If I want to support edit, I need updateEvent method or handle it.
-                // Current `prepareEdit` sets `this.currentEditId`.
-                // But `createEvent` doesn't check it. 
-                // I will add a check here similar to HabitManager.
-                // But EventsManager doesn't have updateEvent implemented in the view_file output I saw earlier.
-                // It only had deleteEvent and createEvent.
-                // I should probably implement updateEvent or just stick to create for now if update is missing.
-                // Looking at the code I read: `createEvent` is there. `prepareEdit` is there.
-                // But `updateEvent` is NOT there.
-                // So if I save an edit, it will create a NEW event currently unless I add update logic.
-                // I will implement a basic `updateEvent` or just fallback to create for now, 
-                // but user asked to fix forms.
-                // For now I will assume create usage, and if reuse `createEvent` for update without id check, it duplicates.
-                // I will add a TODO or basic check.
+                // Nota: La lógica anterior no tenía updateEvent, solo createEvent.
+                // Si quiero soportar edición, necesito el método updateEvent o manejarlo.
+                // Actualmente `prepareEdit` establece `this.currentEditId` pero `createEvent` no lo verifica.
+                // EventsManager no tiene updateEvent implementado en este momento.
+                // Se asumirá el uso de createEvent por ahora, aunque esto pueda crear duplicados al editar.
+                // Se debería implementar updateEvent o una verificación aquí.
                 
                if (this.currentEditId) {
-                   // console.warn('Update not fully implemented in backend yet, strictly speaking');
-                   // I'll assume create for now to match existing functionality, 
-                   // or better, I'll add a simple update branch if easy, but sticking to existing methods is safer for "fix forms" scope.
-                   // Actually, I should probably just call createEvent which is what was likely intended or add updateEvent.
-                   // Since I can't easily add updateEvent without potentially changing many things, 
-                   // I will check `this.currentEditId`. If set, I'll try to find an update method or just recreating.
-                   // Let's just standardise on create for now as the goal is fixing the FORM submission mechanism.
-                   // But wait, `prepareEdit` sets `currentEditId`.
-                   // If I don't handle it, editing an event creates a duplicate.
-                   // I will add a naive `updateEvent` method if it's missing or just handle it in listener.
-                   // Actually, I will implement a basic update logic in the listener or a new method.
-                   // Better: I'll add `updateEvent` method to the class too!
-                   // But `replace_file_content` is a single block. 
-                   // I'll stick to `createEvent` call for now, and maybe later add update. 
-                   // Actually, if I look at HabitsManager, I added `updateHabit`.
-                   // I should add `updateEvent` to EventsManager for completeness.
-                   // I will add it in a separate call or just include it in this block if possible.
-                   // I can only replace one block. 
-                   // I will just add setupListeners now and handle logic inside it.
+                   // Se detecta intento de edición.
+                   // Asumiremos la creación por ahora para mantener la funcionalidad existente,
+                   // ya que agregar updateEvent requeriría cambios más extensos.
+                   // Se estandariza en createEvent temporalmente.
+                   // `prepareEdit` establece `currentEditId`, si no lo manejamos, crea duplicados.
+                   // Intentaremos manejarlo en el futuro implementando updateEvent.
                    
                    if (this.currentEditId) {
-                       // Since updateEvent is missing, I can't call it. 
-                        // I will add it using `multi_replace` or subsequent call.
-                        // For this step, I will only call createEvent and ignore editId effectively (or create duplicate).
-                        // This matches current broken state behavior but fixes the reload.
-                        // However, to be "good", I should probably fix the update too.
-                        // I'll modify the loop to call `updateEvent` if it existed.
-                        // Let's implement `updateEvent` in the NEXT tool call or same if I used multi_replace.
-                        // I am using replace_file_content.
-                        // I'll handle create only first.
+                       // Como updateEvent falta, no podemos llamarlo.
+                       // Usaremos createEvent e ignoraremos editId por ahora (comportamiento de duplicado conocido).
+                       // Esto coincide con el estado actual pero arregla la recarga.
+                       // Se sugiere implementar updateEvent.
                         await this.createEvent(eventData);
                    } else {
                         await this.createEvent(eventData);
@@ -118,7 +91,7 @@ export class EventsManager {
     }
 
     render() {
-        // Re-query container if missing (handling dynamic updates or init timing)
+        // Re-consultar contenedor si falta (manejando actualizaciones dinámicas o tiempos de inicio)
         if (!this.container) {
             this.container = document.getElementById('events-list');
         }
@@ -136,8 +109,8 @@ export class EventsManager {
             eventItem.className = `event-item ${new Date(event.fecha) < new Date() ? 'past' : 'upcoming'}`;
             
             const eventDate = new Date(event.fecha);
-            // Fix timezone offset for display if needed, but keeping simple for now
-            // Adding a few hours to ensure day matches local if midnight issue
+            // Corregir desfase de zona horaria para visualización si es necesario, pero manteniéndolo simple por ahora
+            // Agregando unas horas para asegurar que el día coincida con local si hay problema de medianoche
             const displayDate = new Date(eventDate.getUTCFullYear(), eventDate.getUTCMonth(), eventDate.getUTCDate());
 
             eventItem.innerHTML = `
@@ -178,7 +151,7 @@ export class EventsManager {
 
             const prioridadNum = eventData.priority === 'high' ? 3 : eventData.priority === 'medium' ? 2 : 1;
 
-            // 1. Insert into calendar
+            // 1. Insertar en calendario
             const { data: calData, error: calError } = await supabase
                 .from('calendario')
                 .insert([{
@@ -187,7 +160,7 @@ export class EventsManager {
                     fecha: eventData.date,
                     lugar: eventData.location || '',
                     prior: prioridadNum,
-                    id_cat: null, // Avoid FK error if categories empty
+                    id_cat: null, // Evitar error FK si categorías vacías
                     user_id: user.id
                 }])
                 .select('id_cal')
@@ -195,10 +168,10 @@ export class EventsManager {
 
             if (calError) throw calError;
 
-            // 2. Insert into agenda if time provided
+            // 2. Insertar en agenda si se proporciona hora
             if (eventData.time) {
                 const startTime = eventData.time;
-                const endTime = this.addHour(startTime); // Helper to add 1h
+                const endTime = this.addHour(startTime); // Ayudante para agregar 1h
                 const { error: agError } = await supabase
                     .from('agenda')
                     .insert([{
@@ -222,7 +195,7 @@ export class EventsManager {
         if (!confirm('Este evento se eliminará permanentemente. ¿Continuar?')) return;
 
         try {
-            // Agenda should cascade delete usually, but manual delete is safer if constraints aren't set up
+            // La agenda debería eliminar en cascada usualmente, pero eliminación manual es más segura si las restricciones no están configuradas
             await supabase.from('agenda').delete().eq('id_cal', id);
             const { error } = await supabase.from('calendario').delete().eq('id_cal', id);
 
@@ -251,7 +224,7 @@ export class EventsManager {
             }
         }
         
-        // This is a placeholder as edit logic was not fully implemented in original
+        // Esto es un marcador de posición ya que la lógica de edición no estaba completamente implementada en el original
         this.ui.openModal('event-modal');
     }
 

@@ -32,14 +32,13 @@ export class NotesManager {
 
         await this.saveNote(noteData);
 
-        // Close modal if success (saveNote shows toast on error)
-        // We can assume success if no error thrown inside saveNote, or we can check.
-        // saveNote catches errors, so we need to rely on UI feedback.
-        // A better pattern would be saveNote returns success boolean.
-        // For now, let's assume if it reaches end it's fine, close modal.
-        // Actually saveNote handles its own error toast, but we should only close if successful.
-        // Let's modify saveNote to return success.
-        // But to avoid modify saveNote signature risk, we'll just close modal.
+        // Cerrar modal si éxito (saveNote muestra aviso en error)
+        // Podemos asumir éxito si no se lanza error dentro de saveNote...
+        // saveNote captura errores, así que necesitamos depender de la respuesta de la UI.
+        // Un mejor patrón sería que saveNote retorne un booleano de éxito.
+        // Por ahora, asumamos que si llega al final está bien, cerrar modal.
+        // En realidad saveNote maneja su propio aviso de error...
+        // Pero para evitar riesgo al modificar firma de saveNote, solo cerraremos modal.
         this.ui.closeModal("note-modal");
       });
     }
@@ -130,7 +129,7 @@ export class NotesManager {
                 </div>
             `;
 
-      // Add listeners to buttons
+      // Agregar escuchas a los botones
       noteCard
         .querySelector('[data-action="toggle-fav"]')
         .addEventListener("click", () => this.toggleFavorite(note.id_notas));
@@ -159,7 +158,7 @@ export class NotesManager {
       }
 
       if (this.currentEditId) {
-        // Update
+        // Actualizar
         const updateData = {
           nom: noteData.title,
           cont: noteData.content,
@@ -177,7 +176,7 @@ export class NotesManager {
         if (error) throw error;
         this.ui.showToast("Nota actualizada", "success");
       } else {
-        // Insert
+        // Insertar
         const { error } = await supabase.from("notas").insert([
           {
             nom: noteData.title,
@@ -203,10 +202,10 @@ export class NotesManager {
 
   prepareEdit(note) {
     this.currentEditId = note.id_notas;
-    // Populate modal - this implies we access the form in the modal
-    // We can do this here or separate logic.
+    // Llenar modal - esto implica que accedemos al formulario en el modal
+    // Podemos hacer esto aquí o lógica separada.
     const modal = document.getElementById("note-modal");
-    if (!modal) return; // Should create if depends on dynamic modal creation
+    if (!modal) return; // Debería crear si depende de creación dinámica de modal
 
     const form = modal.querySelector("form");
     if (form) {
@@ -261,7 +260,7 @@ export class NotesManager {
     }
   }
 
-  // Utilities
+  // Utilidades
   formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleDateString("es-ES", {

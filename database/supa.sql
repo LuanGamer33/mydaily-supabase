@@ -14,7 +14,7 @@ ALTER TABLE IF EXISTS auth.audit_log_entries
     ENABLE ROW LEVEL SECURITY;
 
 COMMENT ON TABLE auth.audit_log_entries
-    IS 'Auth: Audit trail for user actions.';
+    IS 'Auth: Registro de auditoría para acciones de usuario.';
 
 CREATE TABLE IF NOT EXISTS auth.flow_state
 (
@@ -37,7 +37,7 @@ ALTER TABLE IF EXISTS auth.flow_state
     ENABLE ROW LEVEL SECURITY;
 
 COMMENT ON TABLE auth.flow_state
-    IS 'stores metadata for pkce logins';
+    IS 'almacena metadatos para inicios de sesión pkce';
 
 CREATE TABLE IF NOT EXISTS auth.identities
 (
@@ -58,10 +58,10 @@ ALTER TABLE IF EXISTS auth.identities
     ENABLE ROW LEVEL SECURITY;
 
 COMMENT ON TABLE auth.identities
-    IS 'Auth: Stores identities associated to a user.';
+    IS 'Auth: Almacena identidades asociadas a un usuario.';
 
 COMMENT ON COLUMN auth.identities.email
-    IS 'Auth: Email is a generated column that references the optional email property in the identity_data';
+    IS 'Auth: Email es una columna generada que referencia la propiedad opcional email en identity_data';
 
 CREATE TABLE IF NOT EXISTS auth.instances
 (
@@ -77,7 +77,7 @@ ALTER TABLE IF EXISTS auth.instances
     ENABLE ROW LEVEL SECURITY;
 
 COMMENT ON TABLE auth.instances
-    IS 'Auth: Manages users across multiple sites.';
+    IS 'Auth: Gestiona usuarios a través de múltiples sitios.';
 
 CREATE TABLE IF NOT EXISTS auth.mfa_amr_claims
 (
@@ -94,7 +94,7 @@ ALTER TABLE IF EXISTS auth.mfa_amr_claims
     ENABLE ROW LEVEL SECURITY;
 
 COMMENT ON TABLE auth.mfa_amr_claims
-    IS 'auth: stores authenticator method reference claims for multi factor authentication';
+    IS 'auth: almacena reclamos de referencia de método de autenticador para autenticación multifactor';
 
 CREATE TABLE IF NOT EXISTS auth.mfa_challenges
 (
@@ -112,7 +112,7 @@ ALTER TABLE IF EXISTS auth.mfa_challenges
     ENABLE ROW LEVEL SECURITY;
 
 COMMENT ON TABLE auth.mfa_challenges
-    IS 'auth: stores metadata about challenge requests made';
+    IS 'auth: almacena metadatos sobre solicitudes de desafíos realizadas';
 
 CREATE TABLE IF NOT EXISTS auth.mfa_factors
 (
@@ -137,10 +137,10 @@ ALTER TABLE IF EXISTS auth.mfa_factors
     ENABLE ROW LEVEL SECURITY;
 
 COMMENT ON TABLE auth.mfa_factors
-    IS 'auth: stores metadata about factors';
+    IS 'auth: almacena metadatos sobre factores';
 
 COMMENT ON COLUMN auth.mfa_factors.last_webauthn_challenge_data
-    IS 'Stores the latest WebAuthn challenge data including attestation/assertion for customer verification';
+    IS 'Almacena los últimos datos de desafío WebAuthn incluyendo atestación/afirmación para verificación del cliente';
 
 CREATE TABLE IF NOT EXISTS auth.oauth_authorizations
 (
@@ -176,7 +176,7 @@ CREATE TABLE IF NOT EXISTS auth.oauth_client_states
 );
 
 COMMENT ON TABLE auth.oauth_client_states
-    IS 'Stores OAuth states for third-party provider authentication flows where Supabase acts as the OAuth client.';
+    IS 'Almacena estados OAuth para flujos de autenticación de proveedores terceros donde Supabase actúa como el cliente OAuth.';
 
 CREATE TABLE IF NOT EXISTS auth.oauth_clients
 (
@@ -241,7 +241,7 @@ ALTER TABLE IF EXISTS auth.refresh_tokens
     ENABLE ROW LEVEL SECURITY;
 
 COMMENT ON TABLE auth.refresh_tokens
-    IS 'Auth: Store of tokens used to refresh JWT tokens once they expire.';
+    IS 'Auth: Almacén de tokens usados para refrescar tokens JWT una vez que expiran.';
 
 CREATE TABLE IF NOT EXISTS auth.saml_providers
 (
@@ -262,7 +262,7 @@ ALTER TABLE IF EXISTS auth.saml_providers
     ENABLE ROW LEVEL SECURITY;
 
 COMMENT ON TABLE auth.saml_providers
-    IS 'Auth: Manages SAML Identity Provider connections.';
+    IS 'Auth: Gestiona conexiones de Proveedores de Identidad SAML.';
 
 CREATE TABLE IF NOT EXISTS auth.saml_relay_states
 (
@@ -281,7 +281,7 @@ ALTER TABLE IF EXISTS auth.saml_relay_states
     ENABLE ROW LEVEL SECURITY;
 
 COMMENT ON TABLE auth.saml_relay_states
-    IS 'Auth: Contains SAML Relay State information for each Service Provider initiated login.';
+    IS 'Auth: Contiene información de Estado de Retransmisión SAML para cada inicio de sesión iniciado por el Proveedor de Servicios.';
 
 CREATE TABLE IF NOT EXISTS auth.schema_migrations
 (
@@ -293,7 +293,7 @@ ALTER TABLE IF EXISTS auth.schema_migrations
     ENABLE ROW LEVEL SECURITY;
 
 COMMENT ON TABLE auth.schema_migrations
-    IS 'Auth: Manages updates to the auth system.';
+    IS 'Auth: Gestiona actualizaciones al sistema de auth.';
 
 CREATE TABLE IF NOT EXISTS auth.sessions
 (
@@ -319,16 +319,16 @@ ALTER TABLE IF EXISTS auth.sessions
     ENABLE ROW LEVEL SECURITY;
 
 COMMENT ON TABLE auth.sessions
-    IS 'Auth: Stores session data associated to a user.';
+    IS 'Auth: Almacena datos de sesión asociados a un usuario.';
 
 COMMENT ON COLUMN auth.sessions.not_after
-    IS 'Auth: Not after is a nullable column that contains a timestamp after which the session should be regarded as expired.';
+    IS 'Auth: Not after es una columna anulable que contiene una marca de tiempo después de la cual la sesión debe considerarse expirada.';
 
 COMMENT ON COLUMN auth.sessions.refresh_token_hmac_key
-    IS 'Holds a HMAC-SHA256 key used to sign refresh tokens for this session.';
+    IS 'Mantiene una clave HMAC-SHA256 usada para firmar tokens de refresco para esta sesión.';
 
 COMMENT ON COLUMN auth.sessions.refresh_token_counter
-    IS 'Holds the ID (counter) of the last issued refresh token.';
+    IS 'Mantiene el ID (contador) del último token de refresco emitido.';
 
 CREATE TABLE IF NOT EXISTS auth.sso_domains
 (
@@ -344,7 +344,7 @@ ALTER TABLE IF EXISTS auth.sso_domains
     ENABLE ROW LEVEL SECURITY;
 
 COMMENT ON TABLE auth.sso_domains
-    IS 'Auth: Manages SSO email address domain mapping to an SSO Identity Provider.';
+    IS 'Auth: Gestiona el mapeo de dominios de direcciones de correo SSO a un Proveedor de Identidad SSO.';
 
 CREATE TABLE IF NOT EXISTS auth.sso_providers
 (
@@ -360,10 +360,10 @@ ALTER TABLE IF EXISTS auth.sso_providers
     ENABLE ROW LEVEL SECURITY;
 
 COMMENT ON TABLE auth.sso_providers
-    IS 'Auth: Manages SSO identity provider information; see saml_providers for SAML.';
+    IS 'Auth: Gestiona información del proveedor de identidad SSO; ver saml_providers para SAML.';
 
 COMMENT ON COLUMN auth.sso_providers.resource_id
-    IS 'Auth: Uniquely identifies a SSO provider according to a user-chosen resource ID (case insensitive), useful in infrastructure as code.';
+    IS 'Auth: Identifica de forma única un proveedor SSO según un ID de recurso elegido por el usuario (no sensible a mayúsculas), útil en infraestructura como código.';
 
 CREATE TABLE IF NOT EXISTS auth.users
 (
@@ -410,10 +410,10 @@ ALTER TABLE IF EXISTS auth.users
     ENABLE ROW LEVEL SECURITY;
 
 COMMENT ON TABLE auth.users
-    IS 'Auth: Stores user login data within a secure schema.';
+    IS 'Auth: Almacena datos de inicio de sesión de usuario dentro de un esquema seguro.';
 
 COMMENT ON COLUMN auth.users.is_sso_user
-    IS 'Auth: Set this column to true when the account comes from SSO. These accounts can have duplicate emails.';
+    IS 'Auth: Establecer esta columna en verdadero cuando la cuenta proviene de SSO. Estas cuentas pueden tener correos duplicados.';
 
 CREATE TABLE IF NOT EXISTS public.actividades
 (
@@ -588,7 +588,7 @@ ALTER TABLE IF EXISTS storage.buckets
     ENABLE ROW LEVEL SECURITY;
 
 COMMENT ON COLUMN storage.buckets.owner
-    IS 'Field is deprecated, use owner_id instead';
+    IS 'El campo está obsoleto, usar owner_id en su lugar';
 
 CREATE TABLE IF NOT EXISTS storage.buckets_analytics
 (
@@ -652,7 +652,7 @@ ALTER TABLE IF EXISTS storage.objects
     ENABLE ROW LEVEL SECURITY;
 
 COMMENT ON COLUMN storage.objects.owner
-    IS 'Field is deprecated, use owner_id instead';
+    IS 'El campo está obsoleto, usar owner_id en su lugar';
 
 CREATE TABLE IF NOT EXISTS storage.prefixes
 (

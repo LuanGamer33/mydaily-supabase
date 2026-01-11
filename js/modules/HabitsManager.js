@@ -20,8 +20,8 @@ export class HabitsManager {
                     name: formData.get('name'),
                     description: formData.get('description'),
                     frequency: formData.get('frequency'),
-                    // Default values handled in createHabit if not here
-                    priority: 'medium' // Default or add field to form
+                    // Valores por defecto manejados en createHabit si no están aquí
+                    priority: 'medium' // Por defecto o agregar campo al formulario
                 };
 
                 if (this.currentEditId) {
@@ -52,7 +52,7 @@ export class HabitsManager {
             return this.habits;
         } catch (error) {
             console.error('Error loading habits:', error);
-            // this.ui.showToast('Error cargando hábitos', 'error'); // Optional: avoid spamming on load
+            // this.ui.showToast('Error cargando hábitos', 'error'); // Opcional: evitar spam al cargar
             return [];
         }
     }
@@ -69,15 +69,15 @@ export class HabitsManager {
             this.container.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 2rem;">No tienes hábitos aún. ¡Crea tu primer hábito!</p>';
         } else {
             this.habits.forEach(habit => {
-                const habitCard = document.createElement('li'); // Changed to li to match activities if using ul, or div. Activities uses li. container is ul?
-                // Checking HabitsManager constructor: container is getElementById('habits-list'). habits.html uses div id="habits-list" class="items-grid". Activities uses ul.
-                // If habits uses div grid, I should probably switch to ul list or style the div like a list.
-                // Let's use div but with "activity-card" class which likely has flex row style.
+                // Cambiado a li para coincidir con actividades si se usa ul, o div. Actividades usa li. ¿el contenedor es ul?
+                // Revisando constructor de HabitsManager: container es getElementById('habits-list'). habits.html usa div id="habits-list" class="items-grid". Actividades usa ul.
+                // Si hábitos usa div grid, probablemente debería cambiar a ul lista o estilar el div como lista.
+                // Usemos div pero con clase "activity-card" que probablemente tiene estilo flex row.
                 
                 habitCard.className = `activity-card habit-card ${habit.completado_hoy ? 'completed' : 'pending'}`;
                 const progressPercent = Math.round((habit.progreso_semanal / 7) * 100);
                 
-                // Mimic Activity Layout
+                // Imitar diseño de Actividad
                 habitCard.innerHTML = `
                     <div class="activity-priority medium" style="background: var(--accent-color);">
                          <i class="fas fa-running" style="color: white;"></i>
@@ -136,7 +136,7 @@ export class HabitsManager {
                 return;
             }
 
-            // Default values mapping
+            // Mapeo de valores por defecto
             const prioridadNum = habitData.priority === 'high' ? 3 : habitData.priority === 'medium' ? 2 : 1;
 
             const { error } = await supabase
@@ -169,7 +169,7 @@ export class HabitsManager {
                 .update({
                     nom: habitData.name,
                     descr: habitData.description,
-                    // Add other fields if editable
+                    // Agregar otros campos si son editables
                 })
                 .eq('id_hab', id)
                 .eq('user_id', user.id);
@@ -214,7 +214,7 @@ export class HabitsManager {
 
             if (error) throw error;
             
-            // Optimistic update or reload
+            // Actualización optimista o recarga
             await this.loadHabits();
         } catch (error) {
             console.error('Error toggling habit:', error);
@@ -223,7 +223,7 @@ export class HabitsManager {
     }
 
     async deleteHabit(id) {
-        // Here we use window.confirm or UIManager.showConfirm if implemented
+        // Aquí usamos window.confirm o UIManager.showConfirm si está implementado
         if (!confirm('Perderás todo el progreso y racha de este hábito. ¿Eliminar?')) return;
 
         try {

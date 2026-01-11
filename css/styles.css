@@ -355,7 +355,6 @@ form {
     pointer-events: none;
     border: 2px solid rgba(143, 164, 200, 0.395);
     z-index: 2;
-    /*background-color: rgba(93, 184, 209); /*este es un color q se puede ver tras el panel azul*/
     border-radius: 30px;
 }
 
@@ -365,7 +364,7 @@ form {
     left: -250%;
     width: 300%;
     height: 100%;
-    background-color: #53a1e5; /* rgb(74, 146, 208);usar esto si se deja el color de arriba*/
+    background-color: #53a1e5;
     border-radius: 30px;
     transition: 1.7s ease-in-out;
 }
@@ -546,7 +545,7 @@ form {
     pointer-events: none;
 }
 
-/* RESPONSIVE DESIGN */
+/* DISEÑO RESPONSIVO */
 @media screen and (max-width: 768px) {
     body {
         padding: 5px;

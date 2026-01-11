@@ -21,7 +21,7 @@
     opacity: 1;
 }
 
-/* Alert Box */
+/* Caja de Alerta */
 .custom-alert-box {
     background: var(--card-background);
     border-radius: 20px;
@@ -119,7 +119,7 @@
     transform: translateY(-2px);
 }
 
-/* Toast Notifications */
+/* Notificaciones Toast */
 .custom-toast {
     position: fixed;
     bottom: 20px;

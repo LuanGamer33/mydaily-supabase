@@ -11,7 +11,7 @@ export class SettingsManager {
             const user = await getUser();
             if (!user) return;
 
-            // Update UI elements (username/email from Auth)
+            // Actualizar elementos de UI (nombre usuario/email desde Auth)
             const usernameDisplays = document.querySelectorAll('.username');
             const usernameInputs = document.querySelectorAll('#username');
             const emailInputs = document.querySelectorAll('#email');
@@ -22,7 +22,7 @@ export class SettingsManager {
             usernameInputs.forEach(el => el.value = displayName);
             emailInputs.forEach(el => el.value = user.email);
 
-            // Load extra Profile & Config (normalized)
+            // Cargar Perfil extra y Configuración (normalizado)
             await this.loadExtendedProfile(user.id);
 
         } catch (error) {
@@ -32,7 +32,7 @@ export class SettingsManager {
 
     async loadExtendedProfile(userId) {
         try {
-            // 1. Fetch Profile (usuarios) for Avatar & Theme
+            // 1. Obtener Perfil (usuarios) para Avatar y Tema
             const { data: profile } = await supabase
                 .from('usuarios')
                 .select('avatar, tema, nombre, apellido')
@@ -43,7 +43,7 @@ export class SettingsManager {
                 this.applyProfile(profile);
             }
 
-            // 2. Fetch Config (configuraciones) for other settings
+            // 2. Obtener Configuración para otros ajustes
             const { data: config } = await supabase
                 .from('configuraciones')
                 .select('*')
@@ -68,7 +68,7 @@ export class SettingsManager {
         
         if (profile.tema) {
             document.documentElement.setAttribute('data-theme', profile.tema);
-            localStorage.setItem('theme', profile.tema); // Save for performance
+            localStorage.setItem('theme', profile.tema); // Guardar para rendimiento
             
             const themeOptions = document.querySelectorAll('.theme-option');
             themeOptions.forEach(o => {
@@ -79,8 +79,8 @@ export class SettingsManager {
 
     applyConfig(config) {
         if (!config) return;
-        // Here we would apply other settings like notifications enabled, etc.
-        // For now, visual settings are in 'usuarios' (profile).
+        // Aquí aplicaríamos otros ajustes como notificaciones habilitadas, etc.
+        // Por ahora, ajustes visuales están en 'usuarios' (perfil).
         console.log('App config loaded:', config);
     }
 
@@ -97,7 +97,7 @@ export class SettingsManager {
     }
 
     setupListeners() {
-        // Save Profile Button
+        // Botón Guardar Perfil
         const saveBtn = document.getElementById('save-profile-btn');
         if (saveBtn) {
             saveBtn.addEventListener('click', (e) => {
@@ -106,7 +106,7 @@ export class SettingsManager {
             });
         }
 
-        // Avatar Options
+        // Opciones de Avatar
         const avatarOptions = document.querySelectorAll('.avatar-option');
         avatarOptions.forEach(option => {
             option.addEventListener('click', () => {
@@ -115,20 +115,20 @@ export class SettingsManager {
             });
         });
 
-        // Theme Options
+        // Opciones de Tema
         const themeOptions = document.querySelectorAll('.theme-option');
         themeOptions.forEach(option => {
             option.addEventListener('click', () => {
                 document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active'));
                 option.classList.add('active');
-                // Optional: Preview theme immediately
+                // Opcional: Previsualizar tema inmediatamente
                 const theme = option.dataset.theme;
                 document.documentElement.setAttribute('data-theme', theme);
-                localStorage.setItem('theme', theme); // Save immediate preview
+                localStorage.setItem('theme', theme); // Guardar previsualización inmediata
             });
         });
 
-        // New Action Buttons
+        // Nuevos Botones de Acción
         const exportBtn = document.getElementById('export-data-btn');
         if (exportBtn) {
             exportBtn.addEventListener('click', () => {
@@ -168,17 +168,17 @@ export class SettingsManager {
             const selectedAvatar = document.querySelector('.avatar-option.active')?.dataset.avatar || 'user-circle';
             const selectedTheme = document.querySelector('.theme-option.active')?.dataset.theme || 'default';
 
-            // 1. Update Auth User Metadata (Supabase Auth)
+            // 1. Actualizar Metadatos de Usuario Auth (Supabase Auth)
             const { error: authError } = await supabase.auth.updateUser({
                 data: { full_name: username }
             });
             if (authError) throw authError;
 
-            // 2. Update/Upsert 'usuarios' table (Profile)
+            // 2. Actualizar/Insertar tabla 'usuarios' (Perfil)
             const profileData = {
-                id: user.id, // PK
-                username: user.email.split('@')[0], // Fallback/Default
-                nombre: username, // Storing display name as 'nombre'
+                id: user.id, // Clave Primaria (PK)
+                username: user.email.split('@')[0], // Respaldo/Por defecto
+                nombre: username, // Almacenando nombre mostrado como 'nombre'
                 avatar: selectedAvatar,
                 tema: selectedTheme,
                 updated_at: new Date()
@@ -190,9 +190,9 @@ export class SettingsManager {
 
             if (profileError) throw profileError;
 
-            // 3. Update/Upsert 'configuraciones' table (Settings)
-            // (Only if we had specific settings in the form, currently we only have profile stuff)
-            // But let's create the row if missing
+            // 3. Actualizar/Insertar tabla 'configuraciones' (Ajustes)
+            // (Solo si tuviéramos ajustes específicos en el formulario, actualmente solo tenemos cosas del perfil)
+            // Pero creemos la fila si falta
             /*
             const configData = {
                 user_id: user.id,
@@ -203,7 +203,7 @@ export class SettingsManager {
 
             this.ui.showToast('Perfil guardado exitosamente', 'success');
             
-            // Re-apply to UI
+            // Re-aplicar a la UI
             this.applyProfile(profileData);
              const usernameDisplays = document.querySelectorAll('.username');
             usernameDisplays.forEach(el => el.textContent = username);

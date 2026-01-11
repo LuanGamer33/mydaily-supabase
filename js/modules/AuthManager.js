@@ -17,7 +17,7 @@ export class AuthManager {
     // Configurar listener para cambios de auth
     supabase.auth.onAuthStateChange(this.handleAuthStateChange.bind(this));
     
-    // Strict check for protected pages
+    // Verificación estricta para páginas protegidas
     if (!session && !this.isPublicRoute()) {
         window.location.replace('index.html');
     }
@@ -32,8 +32,8 @@ export class AuthManager {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      // Handle redirect via state change or manual replace if needed immediately
-      // The state change listener will catch SIGNED_OUT, but we can force it too
+      // Manejar redirección vía cambio de estado o reemplazo manual si es necesario
+      // El listener de cambio de estado capturará SIGNED_OUT, pero podemos forzarlo también
     } catch (error) {
       console.error("Logout error:", error);
       this.friendlyErrorMessage(error);
@@ -48,7 +48,7 @@ export class AuthManager {
     if (event === "SIGNED_IN") {
       this.redirect("dashboard.html");
     } else if (event === "SIGNED_OUT") {
-      // Use replace to prevent back button from returning to protected page
+      // Usar replace para evitar que el botón atrás regrese a la página protegida
       window.location.replace("index.html");
     }
   }
@@ -77,14 +77,14 @@ export class AuthManager {
     try {
       const { email, password, ...meta } = userData;
       
-      // Construct redirect URL dynamically
+      // Construir URL de redirección dinámicamente
       const redirectUrl = new URL('dashboard.html', window.location.href).href;
 
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: meta, // Save additional data like name, username in metadata
+          data: meta, // Guardar datos adicionales como nombre, usuario en metadatos
           emailRedirectTo: redirectUrl,
         },
       });
@@ -104,8 +104,8 @@ export class AuthManager {
 
   async loginWithProvider(provider) {
     try {
-      // Construct redirect URL dynamically based on current location
-      // This handles 'localhost/MyDaily/' correctly
+      // Construir URL de redirección dinámicamente basada en la ubicación actual
+      // Esto maneja 'localhost/MyDaily/' correctamente
       const redirectUrl = new URL('dashboard.html', window.location.href).href;
       
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -137,17 +137,17 @@ export class AuthManager {
       return !!this.session;
   }
 
-  // ... (lines 103-121 same) ...
+
 
   redirect(path) {
-    // Basic relative redirect check
+    // Verificación básica de redirección relativa
     if (!window.location.pathname.endsWith(path)) {
       window.location.href = path;
     }
   }
 
   friendlyErrorMessage(error) {
-      // ... (existing error messages) ...
+
     if (error.message.includes("Invalid login credentials"))
       return "Correo o contraseña incorrectos";
     if (error.message.includes("Email not confirmed"))

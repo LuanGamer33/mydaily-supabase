@@ -9,24 +9,24 @@ export class UIManager {
         this.setupModalListeners();
     }
 
-    // --- Sidebar & Navigation ---
+    // --- Barra lateral y Navegación ---
     initSidebar() {
         if (!this.sidebar) return;
 
-        // Toggle button logic
+        // Lógica del botón de alternancia
         const toggleBtn = this.createSidebarToggle();
         if (toggleBtn) {
             this.sidebar.insertBefore(toggleBtn, this.sidebar.firstChild);
             toggleBtn.addEventListener('click', () => this.toggleSidebar());
         }
 
-        // Mobile logo click
+        // Clic en logo móvil
         const logo = document.querySelector(".logo");
         if (logo) {
             logo.addEventListener("click", () => this.sidebar.classList.toggle("open"));
         }
 
-        // Click outside to close (mobile)
+        // Clic afuera para cerrar (móvil)
         document.addEventListener("click", (e) => {
             if (this.sidebar.classList.contains("open") &&
                 !this.sidebar.contains(e.target) &&
@@ -72,9 +72,9 @@ export class UIManager {
         });
     }
 
-    // --- Modals ---
+    // --- Modales ---
     setupModalListeners() {
-        // Close buttons in modals
+        // Botones de cerrar en modales
         document.querySelectorAll('.close-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const modal = e.target.closest('.modal');
@@ -82,16 +82,16 @@ export class UIManager {
             });
         });
 
-        // Close on click outside
+        // Cerrar al hacer clic afuera
         window.addEventListener('click', (e) => {
             if (e.target.classList.contains('modal')) {
                 this.closeModal(e.target.id);
             }
         });
 
-        // Legacy/Hydration: Handle legacy 'onclick' buttons for opening modals
-        // Note: We use the text of the onclick to identify purpose because we can't select by 'onclick' safely if CSP blocks it, 
-        // but simple attribute selection works for hydration before user clicks.
+        // Legado/Hidratación: Manejar botones 'onclick' antiguos para abrir modales
+        // Nota: Usamos el texto del onclick para identificar el propósito ya que no podemos seleccionar por 'onclick' de forma segura si CSP lo bloquea,
+        // pero la selección simple de atributos funciona para hidratación antes de que el usuario haga clic.
         
         const modalMap = {
             'Note': 'note-modal',
@@ -103,7 +103,7 @@ export class UIManager {
         Object.keys(modalMap).forEach(key => {
             const selector = `[onclick*="open${key}Modal"]`;
             document.querySelectorAll(selector).forEach(el => {
-                el.removeAttribute('onclick'); // Remove legacy handler
+                el.removeAttribute('onclick'); // Eliminar manejador antiguo
                 el.addEventListener('click', (e) => {
                     e.preventDefault();
                     this.openModal(modalMap[key]);
@@ -111,9 +111,9 @@ export class UIManager {
             });
         });
 
-        // General close
+        // Cierre general
         document.querySelectorAll('[onclick="closeModal()"], [onclick^="closeModal("]').forEach(el => {
-             // Extract ID if present like closeModal('id')
+             // Extraer ID si está presente como closeModal('id')
              const onClickText = el.getAttribute('onclick');
              let targetId = null;
              if (onClickText && onClickText.includes("'")) {
@@ -126,7 +126,7 @@ export class UIManager {
                  if (targetId) {
                      this.closeModal(targetId);
                  } else {
-                     // Try to find parent modal
+                     // Intentar encontrar modal padre
                      const modal = el.closest('.modal');
                      if (modal) {
                          this.closeModal(modal.id);
@@ -135,11 +135,11 @@ export class UIManager {
              });
         });
         
-        // Also handle 'Cancel' buttons inside forms mostly just close
+        // También manejar botones 'Cancelar' dentro de formularios, mayormente solo cerrar
         document.querySelectorAll('button:not([type="submit"])').forEach(btn => {
             if (btn.textContent.trim() === 'Cancelar') {
-                 // Check if it has a listener already? Hard to know. 
-                 // But usually they just close modal.
+                 // ¿Verificar si ya tiene un listener? Difícil de saber.
+                 // Pero usualmente solo cierran el modal.
                  btn.addEventListener('click', (e) => {
                      const modal = btn.closest('.modal');
                      if (modal) {
@@ -167,7 +167,7 @@ export class UIManager {
             modal.classList.remove('show');
             document.body.style.overflow = 'auto';
             
-            // Reset forms inside
+            // Resetear formularios dentro
             const forms = modal.querySelectorAll('form');
             forms.forEach(form => {
                 form.reset();
@@ -180,7 +180,7 @@ export class UIManager {
         }
     }
 
-    // --- Notifications (Toast/Alerts) ---
+    // --- Notificaciones (Toast/Alertas) ---
     // Refactorizado de alerts.js / main.js
     // Refactorizado para usar el estilo original de alerts.js (.message)
     showToast(message, type = 'info') {
