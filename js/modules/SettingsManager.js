@@ -6,24 +6,24 @@ export class SettingsManager {
         this.ui = uiManager;
     }
 
-    async loadUserProfile() {
+    async loadUserProfile(user) {
         try {
-            const user = await getUser();
-            if (!user) return;
+            const currentUser = user || await getUser();
+            if (!currentUser) return;
 
             // Actualizar elementos de UI (nombre usuario/email desde Auth)
             const usernameDisplays = document.querySelectorAll('.username');
             const usernameInputs = document.querySelectorAll('#username');
             const emailInputs = document.querySelectorAll('#email');
             
-            const displayName = user.user_metadata?.full_name || user.email.split('@')[0];
+            const displayName = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
             
             usernameDisplays.forEach(el => el.textContent = displayName);
             usernameInputs.forEach(el => el.value = displayName);
-            emailInputs.forEach(el => el.value = user.email);
+            emailInputs.forEach(el => el.value = currentUser.email);
 
             // Cargar Perfil extra y Configuración (normalizado)
-            await this.loadExtendedProfile(user.id);
+            await this.loadExtendedProfile(currentUser.id);
 
         } catch (error) {
             console.error('Error loading profile:', error);

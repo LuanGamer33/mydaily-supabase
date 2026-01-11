@@ -60,12 +60,18 @@ export class UIManager {
     }
 
     updateActiveMenu() {
-        const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
+        const path = window.location.pathname;
+        const page = path.split("/").pop();
+        // Normalizar para root o index
+        const currentPage = (page === "" || page === "index.html") ? "dashboard.html" : page;
+
         const navItems = document.querySelectorAll('.nav-item');
         
         navItems.forEach(item => {
             item.classList.remove('active');
             const href = item.getAttribute('href');
+            
+            // Comparación simple, puede mejorarse si rutas son complejas
             if (href === currentPage) {
                 item.classList.add('active');
             }

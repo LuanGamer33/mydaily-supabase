@@ -59,10 +59,10 @@ export class EventsManager {
         }
     }
 
-    async loadEvents() {
+    async loadEvents(user) {
         try {
-            const user = await getUser();
-            if (!user) return [];
+            const currentUser = user || await getUser();
+            if (!currentUser) return [];
 
             const { data, error } = await supabase
                 .from('calendario')
@@ -77,7 +77,7 @@ export class EventsManager {
                     created_at,
                     agenda (id_ag, hora_i, hora_f)
                 `)
-                .eq('user_id', user.id)
+                .eq('user_id', currentUser.id)
                 .order('fecha', { ascending: true });
 
             if (error) throw error;

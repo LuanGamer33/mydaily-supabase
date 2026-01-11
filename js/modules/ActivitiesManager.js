@@ -37,17 +37,17 @@ export class ActivitiesManager {
     }
   }
 
-  async loadActivities() {
+  async loadActivities(user) {
     try {
-      const user = await getUser();
-      if (!user) return [];
+      const currentUser = user || await getUser();
+      if (!currentUser) return [];
 
       const { data, error } = await supabase
         .from("actividades")
         .select(
           "id, titulo, descripcion, fecha, hora, prioridad, categoria, completada, created_at"
         )
-        .eq("user_id", user.id)
+        .eq("user_id", currentUser.id)
         .order("fecha", { ascending: true });
 
       if (error) throw error;

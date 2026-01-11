@@ -35,15 +35,16 @@ export class HabitsManager {
         }
     }
 
-    async loadHabits() {
+    async loadHabits(user) {
         try {
-            const user = await getUser();
-            if (!user) return [];
+            // Optimización: usar usuario pasado si existe, sino buscarlo
+            const currentUser = user || await getUser();
+            if (!currentUser) return [];
 
             const { data, error } = await supabase
                 .from('habitos')
                 .select('id_hab, nom, hora, prior, descr, racha, progreso_semanal, completado_hoy, created_at')
-                .eq('user_id', user.id)
+                .eq('user_id', currentUser.id)
                 .order('id_hab', { ascending: false });
 
             if (error) throw error;

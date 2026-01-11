@@ -44,17 +44,17 @@ export class NotesManager {
     }
   }
 
-  async loadNotes() {
+  async loadNotes(user) {
     try {
-      const user = await getUser();
-      if (!user) return [];
+      const currentUser = user || await getUser();
+      if (!currentUser) return [];
 
       const { data, error } = await supabase
         .from("notas")
         .select(
           "id_notas, nom, cont, imagen, estado_animo, favorita, created_at"
         )
-        .eq("user_id", user.id)
+        .eq("user_id", currentUser.id)
         .order("id_notas", { ascending: false });
 
       if (error) throw error;

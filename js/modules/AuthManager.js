@@ -1,4 +1,4 @@
-import { supabase } from '../supabase.js';
+import { supabase } from "../supabase.js";
 
 export class AuthManager {
   constructor() {
@@ -16,16 +16,16 @@ export class AuthManager {
 
     // Configurar listener para cambios de auth
     supabase.auth.onAuthStateChange(this.handleAuthStateChange.bind(this));
-    
+
     // Verificación estricta para páginas protegidas
     if (!session && !this.isPublicRoute()) {
-        window.location.replace('index.html');
+      window.location.replace("index.html");
     }
   }
-  
+
   isPublicRoute() {
-      const path = window.location.pathname;
-      return path.includes('index.html') || path === '/' || path.endsWith('/');
+    const path = window.location.pathname;
+    return path.includes("index.html") || path === "/" || path.endsWith("/");
   }
 
   async logout() {
@@ -69,16 +69,20 @@ export class AuthManager {
       return { user: data.user, session: data.session, error: null };
     } catch (error) {
       console.error("Login error:", error);
-      return { user: null, session: null, error: this.friendlyErrorMessage(error) };
+      return {
+        user: null,
+        session: null,
+        error: this.friendlyErrorMessage(error),
+      };
     }
   }
 
   async register(userData) {
     try {
       const { email, password, ...meta } = userData;
-      
+
       // Construir URL de redirección dinámicamente
-      const redirectUrl = new URL('dashboard.html', window.location.href).href;
+      const redirectUrl = new URL("dashboard.html", window.location.href).href;
 
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -91,6 +95,27 @@ export class AuthManager {
 
       if (error) throw error;
 
+      // INSERTAR PERFIL EN BASE DE DATOS PÚBLICA (CRUCIAL PARA QUE APAREZCA EL NOMBRE)
+      if (data.user) {
+        const { error: profileError } = await supabase.from("usuarios").insert([
+          {
+            id: data.user.id,
+            username: meta.username,
+            nombre: meta.nombre,
+            apellido: meta.apellido,
+            fecha_nacimiento: meta.fechaNacimiento,
+            genero: meta.genero,
+            avatar: "user-circle", // Default
+            tema: "default", // Default
+          },
+        ]);
+
+        if (profileError) {
+          console.error("Error creating user profile:", profileError);
+          // No lanzamos error para no bloquear el login, pero lo logueamos
+        }
+      }
+
       if (data.session) {
         this.setSession(data.session);
       }
@@ -98,7 +123,11 @@ export class AuthManager {
       return { user: data.user, session: data.session, error: null };
     } catch (error) {
       console.error("Register error:", error);
-      return { user: null, session: null, error: this.friendlyErrorMessage(error) };
+      return {
+        user: null,
+        session: null,
+        error: this.friendlyErrorMessage(error),
+      };
     }
   }
 
@@ -106,8 +135,8 @@ export class AuthManager {
     try {
       // Construir URL de redirección dinámicamente basada en la ubicación actual
       // Esto maneja 'localhost/MyDaily/' correctamente
-      const redirectUrl = new URL('dashboard.html', window.location.href).href;
-      
+      const redirectUrl = new URL("dashboard.html", window.location.href).href;
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: provider,
         options: {
@@ -115,29 +144,31 @@ export class AuthManager {
         },
       });
       if (error) throw error;
-      
+
       // Si hay sesión, el usuario ya está logueado (auto-confirm desactivado en Supabase)
       if (data.session) {
-          this.setSession(data.session);
+        this.setSession(data.session);
       }
-      
+
       return { user: data.user, session: data.session, error: null };
     } catch (error) {
       console.error("Register error:", error);
-      return { user: null, session: null, error: this.friendlyErrorMessage(error) };
+      return {
+        user: null,
+        session: null,
+        error: this.friendlyErrorMessage(error),
+      };
     }
   }
 
   setSession(session) {
-      this.session = session;
-      this.user = session?.user || null;
+    this.session = session;
+    this.user = session?.user || null;
   }
 
   isAuthenticated() {
-      return !!this.session;
+    return !!this.session;
   }
-
-
 
   redirect(path) {
     // Verificación básica de redirección relativa
@@ -147,7 +178,6 @@ export class AuthManager {
   }
 
   friendlyErrorMessage(error) {
-
     if (error.message.includes("Invalid login credentials"))
       return "Correo o contraseña incorrectos";
     if (error.message.includes("Email not confirmed"))

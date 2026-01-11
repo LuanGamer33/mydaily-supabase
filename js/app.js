@@ -34,9 +34,12 @@ class App {
             // Check if we are on index/login page and redirect to dashboard
             const path = window.location.pathname;
             if (path.includes('index.html') || path === '/' || path.endsWith('/')) {
-                setTimeout(() => window.location.href = 'dashboard.html', 1000);
+                // REDIRECCION INMEDIATA SIN ESPERAS
+                 window.location.href = 'dashboard.html';
+            } else {
+                 // Si ya estamos en dashboard u otra interna, cargamos datos
+                 await this.loadDashboardData();
             }
-            await this.loadDashboardData();
         } else {
             // Logic for public pages or redirect done by AuthManager
         }
@@ -206,11 +209,15 @@ class App {
     }
 
     async loadDashboardData() {
+        // OPTIMIZACIÓN: Pasar el usuario ya autenticado para evitar llamadas repetitivas a getUser()
+        const currentUser = this.auth.user; 
+        if (!currentUser) return;
+
         // Load Profile first for Theme/Avatar
-        await this.settings.loadUserProfile();
+        await this.settings.loadUserProfile(currentUser);
 
         // Update Daily Motivation
-        const motivation = getDailyMotivation(this.auth.user?.id);
+        const motivation = getDailyMotivation(currentUser.id);
         const motivationContainer = document.querySelector('.daily-motivation');
         if (motivationContainer) {
             motivationContainer.querySelector('.motivation-text').textContent = motivation.text;
@@ -220,19 +227,20 @@ class App {
 
     async renderCurrentPage() {
         const path = window.location.pathname;
+        const currentUser = this.auth.user;
 
         if (path.includes('index.html') || path === '/' || path.endsWith('/')) {
             // Login page handled by AuthManager mostly, but we can clear things here
         } else if (path.includes('dashboard.html')) {
             await this.renderDashboard();
         } else if (path.includes('notes.html')) {
-            await this.notes.loadNotes();
+            await this.notes.loadNotes(currentUser);
         } else if (path.includes('habits.html')) {
-            await this.habits.loadHabits();
+            await this.habits.loadHabits(currentUser);
         } else if (path.includes('events.html')) {
-            await this.events.loadEvents();
+            await this.events.loadEvents(currentUser);
         } else if (path.includes('activities.html')) {
-            await this.activities.loadActivities();
+            await this.activities.loadActivities(currentUser);
         } else if (path.includes('settings.html')) {
             // Re-run setup listeners ensuring elements exist
             this.settings.setupListeners();
@@ -241,11 +249,12 @@ class App {
     }
 
     async renderDashboard() {
+        const currentUser = this.auth.user;
         const [notes, habits, events, activities] = await Promise.all([
-            this.notes.loadNotes(),
-            this.habits.loadHabits(),
-            this.events.loadEvents(),
-            this.activities.loadActivities()
+            this.notes.loadNotes(currentUser),
+            this.habits.loadHabits(currentUser), // Pasar usuario
+            this.events.loadEvents(currentUser),
+            this.activities.loadActivities(currentUser)
         ]);
 
         this.renderDashboardStats(notes, habits, events, activities);
