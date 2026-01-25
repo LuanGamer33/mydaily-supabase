@@ -912,23 +912,27 @@
     color: var(--text-light);
 }
 
+.separator {
+    padding: 7rem 0;
+}
+
 .support-links {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    align-items: flex-end;
 }
 
 .link-btn {
     background: none;
     border: none;
     padding: 0.75rem;
-    text-align: left;
     cursor: pointer;
     border-radius: 8px;
     transition: all 0.3s ease;
     display: flex;
-    align-items: center;
     gap: 0.5rem;
+    font-size: 1rem;
     color: var(--primary-color);
 }
 
@@ -1006,4 +1010,76 @@
     .avatar-options {
         justify-content: center;
     }
+}
+
+/* Estilos para Tarjetas de Listas */
+.list-card {
+    background: var(--card-background);
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 20px var(--shadow);
+}
+
+.list-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px var(--shadow);
+}
+
+.tasks-list {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+    padding-right: 5px;
+}
+
+.tasks-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.tasks-list::-webkit-scrollbar-thumb {
+    background: var(--text-light);
+    border-radius: 4px;
+}
+
+
+/* Planning Styles (Moved from planning.html) */
+.planning-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+.planning-card {
+    background: var(--card-background);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 15px var(--shadow);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.full-width {
+    grid-column: 1 / -1;
+}
+.card-header-plan {
+    padding: 1rem;
+    font-weight: bold;
+    background: rgba(0,0,0,0.05);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.planning-input {
+    width: 100%;
+    border: none;
+    padding: 1rem;
+    background: transparent;
+    resize: vertical;
+    min-height: 150px;
+    font-family: inherit;
+    color: var(--text-dark);
+}
+.planning-input:focus {
+    outline: none;
+    background: rgba(0,0,0,0.02);
 }

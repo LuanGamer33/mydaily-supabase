@@ -16,7 +16,8 @@ export class SettingsManager {
             const usernameInputs = document.querySelectorAll('#username');
             const emailInputs = document.querySelectorAll('#email');
             
-            const displayName = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+            // Prioridad: Metadata > Email
+            const displayName = currentUser.user_metadata?.username || currentUser.email.split('@')[0];
             
             usernameDisplays.forEach(el => el.textContent = displayName);
             usernameInputs.forEach(el => el.value = displayName);
@@ -35,9 +36,15 @@ export class SettingsManager {
             // 1. Obtener Perfil (usuarios) para Avatar y Tema
             const { data: profile } = await supabase
                 .from('usuarios')
-                .select('avatar, tema, nombre, apellido')
+                .select('avatar, tema, nombre, apellido, username')
                 .eq('id', userId)
                 .single();
+
+            if (!profile) {
+                // Auto-healing: Crear perfil si no existe
+                console.warn('Perfil no encontrado, creando perfil por defecto...');
+                profile = await this.createDefaultProfile(userId);
+            }
 
             if (profile) {
                 this.applyProfile(profile);
@@ -59,9 +66,44 @@ export class SettingsManager {
         }
     }
 
+    async createDefaultProfile(userId) {
+        try {
+            const user = await getUser();
+            const metadata = user?.user_metadata || {};
+            
+            const newProfile = {
+                id: userId,
+                username: metadata.username || user?.email?.split('@')[0] || 'User',
+                nombre: metadata.nombre || 'Usuario',
+                apellido: metadata.apellido || '',
+                avatar: 'user-circle',
+                tema: 'default'
+            };
+            
+            const { error } = await supabase.from('usuarios').insert([newProfile]);
+            
+            if (error) {
+                console.error('Error creando perfil por defecto:', error);
+                return null;
+            }
+            
+            return newProfile;
+        } catch (e) {
+            console.error('Excepción creando perfil:', e);
+            return null;
+        }
+    }
+
     applyProfile(profile) {
         if (!profile) return;
         
+        if (profile.username) {
+            const usernameDisplays = document.querySelectorAll('.username');
+            const usernameInputs = document.querySelectorAll('#username');
+            usernameDisplays.forEach(el => el.textContent = profile.username);
+            usernameInputs.forEach(el => el.value = profile.username);
+        }
+
         if (profile.avatar) {
             this.updateAvatarDisplay(profile.avatar);
         }
@@ -163,22 +205,23 @@ export class SettingsManager {
             if (!user) return;
 
             const usernameInput = document.getElementById('username');
-            const username = usernameInput ? usernameInput.value : user.email.split('@')[0];
+            // Preferir valor de entrada de nombre de usuario, respaldo a nombre de usuario de metadatos existente, respaldo a parte de correo electrónico
+            const username = usernameInput ? usernameInput.value : (user.user_metadata?.username || user.email.split('@')[0]);
             
             const selectedAvatar = document.querySelector('.avatar-option.active')?.dataset.avatar || 'user-circle';
             const selectedTheme = document.querySelector('.theme-option.active')?.dataset.theme || 'default';
 
             // 1. Actualizar Metadatos de Usuario Auth (Supabase Auth)
             const { error: authError } = await supabase.auth.updateUser({
-                data: { full_name: username }
+                data: { username: username } // Guardar como 'username' para coincidir con el registro
             });
             if (authError) throw authError;
 
             // 2. Actualizar/Insertar tabla 'usuarios' (Perfil)
             const profileData = {
                 id: user.id, // Clave Primaria (PK)
-                username: user.email.split('@')[0], // Respaldo/Por defecto
-                nombre: username, // Almacenando nombre mostrado como 'nombre'
+                username: username,
+                nombre: user.user_metadata?.nombre || username, // Mantener nombre existente o usar nombre de usuario
                 avatar: selectedAvatar,
                 tema: selectedTheme,
                 updated_at: new Date()
@@ -190,23 +233,10 @@ export class SettingsManager {
 
             if (profileError) throw profileError;
 
-            // 3. Actualizar/Insertar tabla 'configuraciones' (Ajustes)
-            // (Solo si tuviéramos ajustes específicos en el formulario, actualmente solo tenemos cosas del perfil)
-            // Pero creemos la fila si falta
-            /*
-            const configData = {
-                user_id: user.id,
-                updated_at: new Date()
-            };
-            await supabase.from('configuraciones').upsert(configData);
-            */
-
             this.ui.showToast('Perfil guardado exitosamente', 'success');
             
             // Re-aplicar a la UI
             this.applyProfile(profileData);
-             const usernameDisplays = document.querySelectorAll('.username');
-            usernameDisplays.forEach(el => el.textContent = username);
 
         } catch (error) {
             console.error('Error saving profile:', error);

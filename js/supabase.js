@@ -5,7 +5,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // Crear y exportar cliente
 export const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Helper para obtener usuario actual (utilidad compartida)
+// Ayudante para obtener usuario actual (utilidad compartida)
 export async function getUser() {
     const { data: { user } } = await supabase.auth.getUser();
     return user;

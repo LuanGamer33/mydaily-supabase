@@ -32,6 +32,11 @@
     <div class="main-container">
         <!-- Sidebar Izquierdo -->
         <aside class="sidebar">
+            <!-- Botón Toggle Sidebar -->
+            <button class="sidebar-toggle">
+                <i class="fas fa-bars"></i>
+                <span class="toggle-text">Contraer menú</span>
+            </button>
             <!-- Información de Usuario -->
             <div class="user-info">
                 <div class="user-avatar">
@@ -47,8 +52,11 @@
                     <li><a href="habits.html" class="nav-item " data-title="Habitos diarios"><i class="fas fa-check-circle"></i><span> Hábitos Diarios</span></a></li>
                     <li><a href="events.html" class="nav-item" data-title="Eventos"><i class="fas fa-calendar-alt"></i><span> Eventos</span></a></li>
                     <li><a href="notes.html" class="nav-item" data-title="Notas"><i class="fas fa-sticky-note"></i><span> Notas</span></a></li>
+                    <li><a href="lists.html" class="nav-item" data-title="Listas"><i class="fas fa-list-check"></i><span> Listas</span></a></li>
                     <li><a href="activities.html" class="nav-item" data-title="Actividades"><i class="fas fa-tasks"></i><span> Actividades</span></a></li>
-                    <li><a href="settings.html" class="nav-item" data-title="Configuraciones"><i class="fas fa-cog"></i><span> Configuraciones</span></a></li>
+                    <li><a href="planning.html" class="nav-item" data-title="Planificación Diaria"><i class="fas fa-calendar-day"></i><span> Planificación</span></a></li>
+                    <li><a href="calendar.html" class="nav-item" data-title="Calendario"><i class="fas fa-calendar-alt"></i><span> Calendario</span></a></li>
+                    <li><a href="settings.html" class="nav-item active" data-title="Configuraciones"><i class="fas fa-cog"></i><span> Configuraciones</span></a></li>
                 </ul>
             </nav>
 
@@ -275,18 +283,7 @@
                                     <span class="info-label">Última actualización:</span>
                                     <span class="info-value">10 Octubre 2025</span>
                                 </div>
-                                <div class="info-item">
-                                    <span class="info-label">Notas guardadas:</span>
-                                    <span class="info-value">0</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Hábitos activos:</span>
-                                    <span class="info-value">0</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Eventos próximos:</span>
-                                    <span class="info-value">0</span>
-                                </div>
+                                <div class="separator"></div>
                             </div>
                             <div class="support-links">
                                 <button class="link-btn" id="show-help-btn">

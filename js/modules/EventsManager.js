@@ -33,26 +33,11 @@ export class EventsManager {
                 // Se asumirá el uso de createEvent por ahora, aunque esto pueda crear duplicados al editar.
                 // Se debería implementar updateEvent o una verificación aquí.
                 
-               if (this.currentEditId) {
-                   // Se detecta intento de edición.
-                   // Asumiremos la creación por ahora para mantener la funcionalidad existente,
-                   // ya que agregar updateEvent requeriría cambios más extensos.
-                   // Se estandariza en createEvent temporalmente.
-                   // `prepareEdit` establece `currentEditId`, si no lo manejamos, crea duplicados.
-                   // Intentaremos manejarlo en el futuro implementando updateEvent.
-                   
-                   if (this.currentEditId) {
-                       // Como updateEvent falta, no podemos llamarlo.
-                       // Usaremos createEvent e ignoraremos editId por ahora (comportamiento de duplicado conocido).
-                       // Esto coincide con el estado actual pero arregla la recarga.
-                       // Se sugiere implementar updateEvent.
-                        await this.createEvent(eventData);
-                   } else {
-                        await this.createEvent(eventData);
-                   }
-               } else {
-                   await this.createEvent(eventData);
-               }
+                if (this.currentEditId) {
+                    await this.updateEvent(this.currentEditId, eventData);
+                } else {
+                    await this.createEvent(eventData);
+                }
                
                this.ui.closeModal('event-modal');
             });
@@ -188,6 +173,55 @@ export class EventsManager {
         } catch (error) {
             console.error('Error creating event:', error);
             this.ui.showToast('Error al crear evento: ' + error.message, 'error');
+        }
+    }
+
+    async updateEvent(id, eventData) {
+        try {
+            const user = await getUser();
+            const prioridadNum = eventData.priority === 'high' ? 3 : eventData.priority === 'medium' ? 2 : 1;
+
+            // 1. Actualizar calendario
+            const { error: calError } = await supabase
+                .from('calendario')
+                .update({
+                    nom: eventData.title,
+                    descr: eventData.description,
+                    fecha: eventData.date,
+                    lugar: eventData.location || '',
+                    prior: prioridadNum
+                })
+                .eq('id_cal', id)
+                .eq('user_id', user.id);
+
+            if (calError) throw calError;
+
+            // 2. Actualizar agenda si hay hora (Manejo simplificado: borrar y crear o update. Update es mejor si existe)
+            if (eventData.time) {
+                const startTime = eventData.time;
+                const endTime = this.addHour(startTime);
+                
+                // Buscar si existe agenda para este evento
+                const { data: agendaData } = await supabase.from('agenda').select('id_ag').eq('id_cal', id).single();
+                
+                if (agendaData) {
+                    await supabase
+                        .from('agenda')
+                        .update({ hora_i: startTime, hora_f: endTime })
+                        .eq('id_ag', agendaData.id_ag);
+                } else {
+                    await supabase
+                        .from('agenda')
+                        .insert([{ hora_i: startTime, hora_f: endTime, id_cal: id }]);
+                }
+            }
+
+            this.ui.showToast('Evento actualizado', 'success');
+            this.currentEditId = null;
+            await this.loadEvents();
+        } catch (error) {
+            console.error('Error updating event:', error);
+            this.ui.showToast('Error al actualizar evento: ' + error.message, 'error');
         }
     }
 

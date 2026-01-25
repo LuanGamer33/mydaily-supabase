@@ -192,4 +192,40 @@ export class AuthManager {
       return "La contraseña debe tener al menos 6 caracteres";
     return error.message;
   }
+
+  async sendPasswordReset(email) {
+    try {
+        const resetUrl = new URL("reset-password.html", window.location.href).href;
+        
+        const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: resetUrl,
+        });
+
+        if (error) throw error;
+        
+        if (this.ui) this.ui.showToast('Correo de recuperación enviado. Revisa tu bandeja.', 'success');
+        return data;
+    } catch (error) {
+        console.error("Reset password error:", error);
+        if (this.ui) this.ui.showToast('Error enviando correo: ' + error.message, 'error');
+        throw error;
+    }
+  }
+
+  async updateUserPassword(newPassword) {
+    try {
+        const { data, error } = await supabase.auth.updateUser({ 
+            password: newPassword 
+        });
+
+        if (error) throw error;
+        
+        if (this.ui) this.ui.showToast('Contraseña actualizada correctamente', 'success');
+        return data;
+    } catch (error) {
+        console.error("Update password error:", error);
+        if (this.ui) this.ui.showToast('Error actualizando contraseña: ' + error.message, 'error');
+        throw error;
+    }
+  }
 }

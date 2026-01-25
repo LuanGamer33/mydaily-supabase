@@ -951,10 +951,62 @@ ALTER TABLE IF EXISTS storage.vector_indexes
 -- Add a JSONB column to store flexible frequency details
 ALTER TABLE public.habitos 
 ADD COLUMN IF NOT EXISTS frecuencia_config JSONB DEFAULT '{}'::jsonb;
--- Example of what will be stored:
--- Weekly: {"type": "weekly", "days": [1, 3, 5]}
--- Monthly: {"type": "monthly", "day": 15}
--- Yearly: {"type": "yearly", "month": 2, "day": 14}
--- Custom: {"type": "custom", "interval": 3}
+
+-- Agrega una columna para rastrear la fecha exacta de la última vez que se completó el hábito
+ALTER TABLE public.habitos
+ADD COLUMN IF NOT EXISTS last_completed_date date DEFAULT NULL;
+
+COMMENT ON COLUMN public.habitos.last_completed_date IS 'Fecha de la última compleción para cálculo preciso de rachas';
+
+-- Tabla para Listas
+CREATE TABLE IF NOT EXISTS public.listas (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) NOT NULL,
+    nombre TEXT NOT NULL,
+    icon TEXT DEFAULT 'fa-list',
+    color TEXT DEFAULT '#d4a89a',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Tabla para Tareas
+CREATE TABLE IF NOT EXISTS public.tareas (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    lista_id UUID REFERENCES public.listas(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID REFERENCES auth.users(id) NOT NULL,
+    texto TEXT NOT NULL,
+    completada BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Tabla para Planificación Diaria
+CREATE TABLE IF NOT EXISTS public.planificacion_diaria (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) NOT NULL,
+    fecha DATE NOT NULL,
+    texto_manana TEXT,
+    texto_tarde TEXT,
+    texto_noche TEXT,
+    notas TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    UNIQUE(user_id, fecha)
+);
+
+-- RLS Policies (Ejemplo básico, ajustar según necesidades de seguridad)
+ALTER TABLE public.listas ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Usuarios pueden ver sus propias listas" ON public.listas FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Usuarios pueden crear sus propias listas" ON public.listas FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Usuarios pueden actualizar sus propias listas" ON public.listas FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Usuarios pueden eliminar sus propias listas" ON public.listas FOR DELETE USING (auth.uid() = user_id);
+
+ALTER TABLE public.tareas ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Usuarios pueden ver sus propias tareas" ON public.tareas FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Usuarios pueden crear sus propias tareas" ON public.tareas FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Usuarios pueden actualizar sus propias tareas" ON public.tareas FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Usuarios pueden eliminar sus propias tareas" ON public.tareas FOR DELETE USING (auth.uid() = user_id);
+
+ALTER TABLE public.planificacion_diaria ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Usuarios pueden ver su planificacion" ON public.planificacion_diaria FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Usuarios pueden crear su planificacion" ON public.planificacion_diaria FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Usuarios pueden actualizar su planificacion" ON public.planificacion_diaria FOR UPDATE USING (auth.uid() = user_id);
 
 END;

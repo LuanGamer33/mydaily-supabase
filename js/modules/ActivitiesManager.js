@@ -25,9 +25,7 @@ export class ActivitiesManager {
         };
 
         if (this.currentEditId) {
-          // Similar a EventsManager, falta lógica de actualización explícita en el archivo original
-          // Solo crearemos por ahora para arreglar el comportamiento del formulario
-          await this.createActivity(activityData);
+          await this.updateActivity(this.currentEditId, activityData);
         } else {
           await this.createActivity(activityData);
         }
@@ -183,6 +181,32 @@ export class ActivitiesManager {
     } catch (error) {
       console.error("Error creating activity:", error);
       this.ui.showToast("Error al crear: " + error.message, "error");
+    }
+  }
+
+  async updateActivity(id, activityData) {
+    try {
+      const user = await getUser();
+      const { error } = await supabase
+        .from("actividades")
+        .update({
+          titulo: activityData.title,
+          descripcion: activityData.description,
+          fecha: activityData.date,
+          hora: activityData.time,
+          prioridad: activityData.priority,
+          categoria: activityData.category,
+        })
+        .eq("id", id)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+      this.ui.showToast("Actividad actualizada", "success");
+      this.currentEditId = null;
+      await this.loadActivities();
+    } catch (error) {
+      console.error("Error updating activity:", error);
+      this.ui.showToast("Error al actualizar: " + error.message, "error");
     }
   }
 

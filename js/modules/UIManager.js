@@ -14,11 +14,21 @@ export class UIManager {
         if (!this.sidebar) return;
 
         // Lógica del botón de alternancia
-        const toggleBtn = this.createSidebarToggle();
-        if (toggleBtn) {
-            this.sidebar.insertBefore(toggleBtn, this.sidebar.firstChild);
-            toggleBtn.addEventListener('click', () => this.toggleSidebar());
+        // Buscamos si ya existe el botón en el DOM (globalmente)
+        this.toggleBtn = document.querySelector('.sidebar-toggle');
+
+        if (!this.toggleBtn) {
+            // Si no existe, lo creamos y lo agregamos al sidebar (fallback)
+            this.toggleBtn = this.createSidebarToggle();
+            this.sidebar.insertBefore(this.toggleBtn, this.sidebar.firstChild);
         }
+        
+        // Agregar listener
+        this.toggleBtn.addEventListener('click', (e) => {
+            // Prevenir comportamiento default por si acaso está dentro de un form o es link
+            e.preventDefault(); 
+            this.toggleSidebar();
+        });
 
         // Clic en logo móvil
         const logo = document.querySelector(".logo");
@@ -42,19 +52,20 @@ export class UIManager {
         const btn = document.createElement('button');
         btn.className = 'sidebar-toggle';
         btn.innerHTML = '<i class="fas fa-bars"></i><span class="toggle-text">Contraer</span>';
-        // Solo mostrar si hay overflow o en ciertas condiciones (lógica simplificada del original)
         return btn;
     }
 
     toggleSidebar() {
         this.sidebar.classList.toggle('collapsed');
-        const toggleBtn = this.sidebar.querySelector('.sidebar-toggle');
-        if (toggleBtn) {
-            const text = toggleBtn.querySelector('.toggle-text');
-            if (this.sidebar.classList.contains('collapsed')) {
-                text.textContent = '';
-            } else {
-                text.textContent = 'Contraer';
+        
+        if (this.toggleBtn) {
+            const text = this.toggleBtn.querySelector('.toggle-text');
+            if (text) {
+                if (this.sidebar.classList.contains('collapsed')) {
+                    text.textContent = '';
+                } else {
+                    text.textContent = 'Menú';
+                }
             }
         }
     }
@@ -190,10 +201,13 @@ export class UIManager {
     // Refactorizado de alerts.js / main.js
     // Refactorizado para usar el estilo original de alerts.js (.message)
     showToast(message, type = 'info') {
-        const messageEl = document.getElementById('message');
+        let messageEl = document.getElementById('message');
+        
+        // Auto-create element if missing (fixes missing div in dashboard pages)
         if (!messageEl) {
-            console.warn('Elemento #message no encontrado en el DOM');
-            return;
+            messageEl = document.createElement('div');
+            messageEl.id = 'message';
+            document.body.appendChild(messageEl);
         }
 
         // Limpiar timeout anterior si existe
@@ -202,14 +216,25 @@ export class UIManager {
         }
 
         // Resetear clases y contenido
-        messageEl.className = 'message'; // Mantiene la clase base
-        messageEl.textContent = message;
+        // Usamos 'custom-toast' que está definido en messages.css
+        // En index.html se debe incluir messages.css o usar 'message' de styles.css
+        // Para consistencia, estandarizamos a 'custom-toast' y aseguramos que messages.css se cargue.
+        messageEl.className = 'custom-toast'; 
+        
+        // Icono según tipo (opcional, si el CSS lo soporta o si agregamos HTML)
+        const icons = {
+            success: '<i class="fas fa-check-circle"></i>',
+            error: '<i class="fas fa-exclamation-circle"></i>',
+            warning: '<i class="fas fa-exclamation-triangle"></i>',
+            info: '<i class="fas fa-info-circle"></i>'
+        };
+        
+        messageEl.innerHTML = `${icons[type] || ''} <span>${message}</span>`;
         
         // Agregar tipo y mostrar
-        // Mapear tipos si es necesario, aunque info/success/error coinciden
         messageEl.classList.add(type, 'show');
 
-        // Configurar auto-ocultado según el tipo (tiempos originales)
+        // Configurar auto-ocultado
         const duration = type === 'error' ? 6000 : (type === 'success' ? 4000 : 3000);
 
         this.messageTimeout = setTimeout(() => {

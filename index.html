@@ -11,6 +11,11 @@
       href="img/Carpincho de pie sobre un parche de hierba.png"
     />
     <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/messages.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
     <link
       href="https://cdn.boxicons.com/fonts/basic/boxicons.min.css"
       rel="stylesheet"
@@ -34,6 +39,7 @@
                 name="Correo"
                 placeholder="Correo electrónico"
                 required
+                maxlength="255"
               />
               <i class="bx bx-envelope"></i>
             </div>
@@ -42,12 +48,14 @@
                 type="password"
                 name="pass"
                 placeholder="Contraseña"
+                minlength="8"
+                maxlength="128"
                 required
               />
               <i class="bx bxs-lock"></i>
             </div>
             <div class="forgot-link">
-              <a href="#">¿Olvidaste tu contraseña?</a>
+              <a href="forgot-password.html">¿Olvidaste tu contraseña?</a>
             </div>
             <button type="submit" class="btn">Ingresar</button>
             <p>o ingresar con redes sociales</p>
@@ -74,8 +82,9 @@
                   type="text"
                   name="nombre"
                   placeholder="Nombre"
+                  minlength="1"
+                  maxlength="64"
                   required
-                  minlength="2"
                 />
               </div>
               <div class="inb">
@@ -83,8 +92,9 @@
                   type="text"
                   name="apellido"
                   placeholder="Apellido"
-                  required
                   minlength="2"
+                  maxlength="100"
+                  required
                 />
               </div>
             </div>
@@ -108,6 +118,7 @@
                 name="Correo"
                 placeholder="Correo electrónico"
                 required
+                maxlength="255"
               />
             </div>
             <div class="complete">
@@ -117,6 +128,7 @@
                 placeholder="Nombre de Usuario"
                 required
                 minlength="3"
+                maxlength="66"
               />
             </div>
             <div class="reg">
@@ -125,8 +137,9 @@
                   type="password"
                   name="pass"
                   placeholder="Contraseña"
+                  minlength="8"
+                  maxlength="128"
                   required
-                  minlength="6"
                 />
               </div>
               <div class="inb">
@@ -134,8 +147,9 @@
                   type="password"
                   name="conf_pass"
                   placeholder="Confirmar"
+                  minlength="8"
+                  maxlength="128"
                   required
-                  minlength="6"
                 />
               </div>
             </div>

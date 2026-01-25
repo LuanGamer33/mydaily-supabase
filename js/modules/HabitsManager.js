@@ -79,23 +79,37 @@ export class HabitsManager {
 
     async loadHabits(user) {
         try {
-            // Optimización: usar usuario pasado si existe, sino buscarlo
             const currentUser = user || await getUser();
             if (!currentUser) return [];
 
             const { data, error } = await supabase
                 .from('habitos')
-                .select('id_hab, nom, hora, prior, descr, racha, progreso_semanal, completado_hoy, created_at, frecuencia_config') // Incluir nuevo campo
+                .select('id_hab, nom, hora, prior, descr, racha, progreso_semanal, completado_hoy, created_at, frecuencia_config, last_completed_date')
                 .eq('user_id', currentUser.id)
                 .order('id_hab', { ascending: false });
 
             if (error) throw error;
-            this.habits = data || [];
+            
+            // Procesar hábitos para verificar si el estado 'completado_hoy' es válido para la fecha actual
+            const todayStr = new Date().toISOString().split('T')[0];
+            
+            this.habits = (data || []).map(habit => {
+                // Si la última fecha completada no es hoy, visualmente reiniciamos.
+                // En una app más compleja, podríamos actualizar la DB aquí, pero basta con mostrarlo bien.
+                const isCompletedToday = habit.last_completed_date === todayStr;
+                
+                // Si en DB dice completado pero la fecha no coincide, forzamos false visualmente
+                // Nota: Racha se mantiene, solo el checkbox se reinicia
+                return {
+                    ...habit,
+                    completado_hoy: isCompletedToday
+                };
+            });
+            
             this.render();
             return this.habits;
         } catch (error) {
             console.error('Error loading habits:', error);
-            // this.ui.showToast('Error cargando hábitos', 'error'); // Opcional: evitar spam al cargar
             return [];
         }
     }
@@ -106,8 +120,6 @@ export class HabitsManager {
         }
         
         if (!this.container) {
-             // Si no encuentro el container, puede que estemos en otra página. 
-             // Loguear solo si estamos en habits.html
              if (window.location.pathname.includes('habits.html')) {
                  console.error("Error: Container #habits-list not found in habits.html");
              }
@@ -126,16 +138,9 @@ export class HabitsManager {
             return;
         }    
         this.habits.forEach(habit => {
-                // Cambiado a li para coincidir con actividades si se usa ul, o div. Actividades usa li. ¿el contenedor es ul?
-                // Revisando constructor de HabitsManager: container es getElementById('habits-list'). habits.html usa div id="habits-list" class="items-grid". Actividades usa ul.
-                // Si hábitos usa div grid, probablemente debería cambiar a ul lista o estilar el div como lista.
-                // Usemos div pero con clase "activity-card" que probablemente tiene estilo flex row.
-                
-                const habitCard = document.createElement('div'); // Define habitCard here
+                const habitCard = document.createElement('div');
                 habitCard.className = `activity-card habit-card ${habit.completado_hoy ? 'completed' : 'pending'}`;
-                const progressPercent = Math.round((habit.progreso_semanal / 7) * 100);
                 
-                // Imitar diseño de Actividad
                 habitCard.innerHTML = `
                     <div class="activity-priority medium" style="background: var(--accent-color);">
                          <i class="fas fa-running" style="color: white;"></i>
@@ -160,7 +165,6 @@ export class HabitsManager {
                     </div>
                 `;
 
-                // Listeners
                 habitCard.querySelector('input[data-action="toggle"]').addEventListener('change', () => this.toggleHabit(habit.id_hab));
                 habitCard.querySelector('button[data-action="edit"]').addEventListener('click', () => this.prepareEdit(habit));
                 habitCard.querySelector('button[data-action="delete"]').addEventListener('click', () => this.deleteHabit(habit.id_hab));
@@ -193,7 +197,6 @@ export class HabitsManager {
                 return;
             }
 
-            // Mapeo de valores por defecto
             const prioridadNum = habitData.priority === 'high' ? 3 : habitData.priority === 'medium' ? 2 : 1;
 
             const { data, error } = await supabase
@@ -207,27 +210,22 @@ export class HabitsManager {
                     racha: 0,
                     progreso_semanal: 0,
                     completado_hoy: false,
-                    frecuencia_config: habitData.frequency_config // Guardar configuración
+                    frecuencia_config: habitData.frequency_config,
+                    last_completed_date: null // Inicializar fecha
                 }])
-                .select(); // IMPORTANTE: Select para devolver datos insertados y verificar
+                .select();
 
             if (error) {
                 console.error("Supabase create error:", error);
                 throw error;
             }
-            
-            if (!data || data.length === 0) {
-                 console.warn("No data returned from insert. RLS policy might be blocking select.");
-                 // Aunque RLS bloquee select, si no hubo error, se insertó.
-            }
 
             this.ui.showToast('Hábito creado', 'success');
-            await this.loadHabits(user); // Pasar usuario explícitamente para evitar recarga
+            await this.loadHabits(user);
         } catch (error) {
             console.error('Error creating habit:', error);
-            // Mensaje amigable si falla por columna faltante
             if (error.message && error.message.includes('frecuencia_config')) {
-                 this.ui.showToast('Error: Base de datos desactualizada. Ejecuta la migración SQL.', 'error');
+                 this.ui.showToast('Error: BD desactualizada. Ejecuta la migración.', 'error');
             } else {
                  this.ui.showToast('Error al crear hábito: ' + error.message, 'error');
             }
@@ -243,7 +241,6 @@ export class HabitsManager {
                     nom: habitData.name,
                     descr: habitData.description,
                     frecuencia_config: habitData.frequency_config
-                    // Agregar otros campos si son editables
                 })
                 .eq('id_hab', id)
                 .eq('user_id', user.id);
@@ -264,15 +261,39 @@ export class HabitsManager {
             const habit = this.habits.find(h => h.id_hab === id);
             if (!habit) return;
 
-            const nuevoEstado = !habit.completado_hoy;
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+            let nuevoEstado = !habit.completado_hoy;
             let nuevaRacha = habit.racha;
             let nuevoProgreso = habit.progreso_semanal;
+            let newLastCompletedDate = habit.last_completed_date;
 
             if (nuevoEstado) {
-                nuevaRacha = habit.racha + 1;
+                // Marcar como completado
+                if (habit.last_completed_date === yesterdayStr) {
+                    // Continuar racha
+                    nuevaRacha++;
+                } else if (habit.last_completed_date === todayStr) {
+                    // Ya estaba completado hoy (click bug?), no sumar
+                } else {
+                    // Racha rota o nuevo inicio
+                    nuevaRacha = 1;
+                }
+                newLastCompletedDate = todayStr;
                 nuevoProgreso = Math.min(habit.progreso_semanal + 1, 7);
             } else {
-                nuevaRacha = Math.max(habit.racha - 1, 0);
+                // Desmarcar
+                if (habit.last_completed_date === todayStr) {
+                     // Solo bajamos racha si fue completado hoy
+                     nuevaRacha = Math.max(habit.racha - 1, 0);
+                     // Restaurar fecha anterior es difícil sin historial, 
+                     // pero si racha > 0, asumimos ayer.
+                     newLastCompletedDate = (nuevaRacha > 0) ? yesterdayStr : null;
+                }
                 nuevoProgreso = Math.max(habit.progreso_semanal - 1, 0);
             }
 
@@ -281,20 +302,21 @@ export class HabitsManager {
                 .update({
                     completado_hoy: nuevoEstado,
                     racha: nuevaRacha,
-                    progreso_semanal: nuevoProgreso
+                    progreso_semanal: nuevoProgreso,
+                    last_completed_date: newLastCompletedDate
                 })
                 .eq('id_hab', id)
                 .eq('user_id', user.id);
 
             if (error) throw error;
             
-            // Actualización optimista o recarga
             await this.loadHabits();
         } catch (error) {
             console.error('Error toggling habit:', error);
             this.ui.showToast('Error al actualizar estado', 'error');
         }
     }
+
 
     async deleteHabit(id) {
         // Aquí usamos window.confirm o UIManager.showConfirm si está implementado

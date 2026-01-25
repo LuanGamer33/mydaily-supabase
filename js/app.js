@@ -6,6 +6,9 @@ import { HabitsManager } from './modules/HabitsManager.js';
 import { EventsManager } from './modules/EventsManager.js';
 import { ActivitiesManager } from './modules/ActivitiesManager.js';
 import { SettingsManager } from './modules/SettingsManager.js';
+import { ListsManager } from './modules/ListsManager.js';
+import { PlanningManager } from './modules/PlanningManager.js';
+import { CalendarManager } from './modules/CalendarManager.js';
 import { getDailyMotivation } from './utils.js';
 import { getUser } from './supabase.js';
 
@@ -18,16 +21,19 @@ class App {
         this.events = new EventsManager(this.ui);
         this.activities = new ActivitiesManager(this.ui);
         this.settings = new SettingsManager(this.ui);
+        this.lists = new ListsManager();
+        this.planning = new PlanningManager();
+        this.calendar = new CalendarManager(this.ui, this.events, this.activities);
     }
 
     async init() {
         console.log('App Initializing...');
         
-        // Setup Auth Listeners immediately (for login page)
+        // Configurar escuchas de autenticación inmediatamente (para la página de inicio de sesión)
         this.setupAuthUiListeners();
         this.configureDateLimits();
 
-        // ESPERAR a que la inicialización de auth termine
+        // Esperar a que la inicialización de autenticación termine
         await this.auth.init();
         
         if (this.auth.isAuthenticated()) {
@@ -35,20 +41,20 @@ class App {
             
             const path = window.location.pathname;
             if (path.includes('index.html') || path === '/' || path.endsWith('/')) {
-                // Si estamos en login y hay sesión -> Dashboard
+                // Si estamos en inicio de sesión y hay sesión -> Panel de control
                  window.location.href = 'dashboard.html';
             } else {
-                 // Si estamos en interna -> Cargar la página actual CORRECTAMENTE con usuario
-                 // NO cargar dashboardData ciegamente, renderCurrentPage lo manejará
+                 // Si estamos en página interna -> Cargar la página actual CORRECTAMENTE con usuario
+                 // NO cargar datos del panel ciegamente, renderCurrentPage lo manejará
                  await this.renderCurrentPage();
             }
         } else {
-            // Logic for public pages or redirect done by AuthManager
+            // Lógica para páginas públicas o redirección realizada por AuthManager
         }
 
         this.setupGlobalListeners();
-        // renderCurrentPage check removed from here to avoid double render or render before auth
-        // Only render if we didn't redirect
+        // Verificación de renderCurrentPage eliminada de aquí para evitar doble renderizado o renderizado antes de autenticación
+        // Solo renderizar si no redirigimos
     }
 
     setupGlobalListeners() {
@@ -150,13 +156,12 @@ class App {
             });
         }
 
-        // Social Logins
-        // Social Logins
-        // Use class selectors as onclicks were removed from HTML
+        // Inicios de sesión social
+        // Usar selectores de clase ya que los onclicks fueron eliminados del HTML
         const googleLinks = document.querySelectorAll('.social-login-google');
         googleLinks.forEach(link => {
-            // Remove old listeners to be safe, though cloning/replacing is better if we worry about duplicates. 
-            // Simple addEventListener is fine here as this runs once.
+            // Eliminar oyentes antiguos para estar seguros, aunque clonar/reemplazar es mejor si nos preocupan los duplicados.
+            // addEventListener simple está bien aquí ya que esto se ejecuta una vez.
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.auth.loginWithProvider('google');
@@ -191,7 +196,8 @@ class App {
             return 'Por favor completa todos los campos';
         }
         
-        // Simple email regex
+        
+        // Regex simple para correo electrónico
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) return 'Por favor ingresa un correo electrónico válido';
 
@@ -216,11 +222,11 @@ class App {
         const currentUser = this.auth.user; 
         if (!currentUser) return;
 
-        // Load Profile first for Theme/Avatar
+        // Cargar perfil primero para Tema/Avatar
         await this.settings.loadUserProfile(currentUser);
 
-        // Update Daily Motivation
-        // Update Daily Motivation
+        // Actualizar motivación diaria
+        // Actualizar motivación diaria
         // Usar 'default' si no hay ID, para mostrar algo siempre
         const motivation = getDailyMotivation(currentUser ? currentUser.id : 'default');
         const motivationText = document.getElementById('motivation-message');
@@ -234,13 +240,13 @@ class App {
         const path = window.location.pathname;
         const currentUser = this.auth.user;
 
-        // CARGA GLOBAL DE PERFIL (Para sidebar y tema en todas las páginas)
+        // CARGA GLOBAL DE PERFIL (Para barra lateral y tema en todas las páginas)
         if (currentUser) {
             await this.settings.loadUserProfile(currentUser);
         }
 
         if (path.includes('index.html') || path === '/' || path.endsWith('/')) {
-            // Login page handled by AuthManager mostly, but we can clear things here
+            // Página de inicio de sesión manejada mayormente por AuthManager, pero podemos limpiar cosas aquí
         } else if (path.includes('dashboard.html')) {
             await this.renderDashboard();
         } else if (path.includes('notes.html')) {
@@ -251,6 +257,14 @@ class App {
             await this.events.loadEvents(currentUser);
         } else if (path.includes('activities.html')) {
             await this.activities.loadActivities(currentUser);
+        } else if (path.includes('lists.html')) {
+            await this.lists.loadLists(currentUser);
+            // Setup global list listeners if needed, mostly handled within Manager
+        } else if (path.includes('planning.html')) {
+            await this.planning.loadPlanning(currentUser);
+            this.planning.setupListeners(currentUser);
+        } else if (path.includes('calendar.html')) {
+            await this.calendar.init(currentUser);
         } else if (path.includes('settings.html')) {
             // Re-run setup listeners ensuring elements exist
             this.settings.setupListeners();
@@ -347,15 +361,15 @@ class App {
         });
 
         // Events
-        // Filter upcoming - Ensure robust date comparison
+        // Filtrar próximos - Asegurar comparación de fechas robusta
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Normalize today
+        today.setHours(0, 0, 0, 0); // Normalizar hoy
         
         const upcomingEvents = (events || []).filter(e => {
             if (!e.fecha) return false;
-            // Handle YYYY-MM-DD explicitly to prevent timezone shifts
+            // Manejar YYYY-MM-DD explícitamente para evitar cambios de zona horaria
             const [y, m, d] = e.fecha.split('-').map(Number);
-            const eventDate = new Date(y, m - 1, d); // Month is 0-indexed
+            const eventDate = new Date(y, m - 1, d); // El mes es índice 0
             return eventDate >= today;
         }).slice(0, 3);
 
@@ -458,7 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.app.init();
 });
 
-// Prevent bfcache issues (Back button showing cached authenticated page)
+// Prevenir problemas de bfcache (Botón atrás mostrando página autenticada en caché)
 window.addEventListener('pageshow', (event) => {
     if (event.persisted) {
         window.location.reload();
