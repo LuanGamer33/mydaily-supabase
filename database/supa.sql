@@ -1009,4 +1009,14 @@ CREATE POLICY "Usuarios pueden ver su planificacion" ON public.planificacion_dia
 CREATE POLICY "Usuarios pueden crear su planificacion" ON public.planificacion_diaria FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Usuarios pueden actualizar su planificacion" ON public.planificacion_diaria FOR UPDATE USING (auth.uid() = user_id);
 
+-- Ejecuta esto en el editor SQL de Supabase para forzar el rol de administrador
+-- Esto evita cualquier restricción de seguridad (RLS) que impida hacerlo desde la web
+
+ALTER TABLE public.usuarios 
+ADD COLUMN IF NOT EXISTS rol VARCHAR(20) DEFAULT 'usuario';
+
+UPDATE public.usuarios 
+SET rol = 'admin' 
+WHERE username = 'SuperAdmin';
+
 END;

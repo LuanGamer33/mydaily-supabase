@@ -247,16 +247,61 @@ export class UIManager {
         this.showToast(message, type);
     }
 
-    async showConfirm(message, options = {}) {
+    async showConfirm(message, title = 'Confirmar', type = 'warning') {
         return new Promise((resolve) => {
-            // Implementación simple de confirmación custom o usar window.confirm
-            // Para mantener la estética, deberíamos usar un modal custom.
-            // Por simplicidad en este paso, usaremos confirm nativo pero encapsulado
-            // O idealmente reconstruir el modal de confirmación de alerts.js
+            // Create elements
+            const overlay = document.createElement('div');
+            overlay.className = 'custom-alert-overlay'; 
             
-            // TODO: Implementar modal visual real si alerts.js lo tenía
-            const result = window.confirm(message); 
-            resolve(result);
+            const box = document.createElement('div');
+            box.className = `custom-alert-box ${type}`;
+            
+            const iconMap = {
+                warning: '<i class="fas fa-exclamation-triangle"></i>',
+                danger: '<i class="fas fa-exclamation-circle"></i>',
+                info: '<i class="fas fa-info-circle"></i>'
+            };
+            
+            box.innerHTML = `
+                <div class="custom-alert-icon">${iconMap[type] || iconMap.warning}</div>
+                <div class="custom-alert-title">${title}</div>
+                <div class="custom-alert-message">${message}</div>
+                <div class="custom-alert-buttons">
+                    <button class="custom-alert-btn custom-alert-btn-secondary">Cancelar</button>
+                    <button class="custom-alert-btn custom-alert-btn-primary">Aceptar</button>
+                </div>
+            `;
+            
+            overlay.appendChild(box);
+            document.body.appendChild(overlay);
+            
+            // Animation
+            requestAnimationFrame(() => {
+                overlay.classList.add('show');
+                box.classList.add('show');
+            });
+            
+            const close = (result) => {
+                overlay.classList.remove('show');
+                box.classList.remove('show');
+                setTimeout(() => {
+                    if (document.body.contains(overlay)) {
+                        document.body.removeChild(overlay);
+                    }
+                    resolve(result);
+                }, 300);
+            };
+            
+            const primaryBtn = box.querySelector('.custom-alert-btn-primary');
+            const secondaryBtn = box.querySelector('.custom-alert-btn-secondary');
+            
+            if (primaryBtn) primaryBtn.onclick = () => close(true);
+            if (secondaryBtn) secondaryBtn.onclick = () => close(false);
+            
+            // Click outside to cancel
+            overlay.onclick = (e) => {
+                if(e.target === overlay) close(false);
+            };
         });
     }
 }

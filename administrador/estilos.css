@@ -1,0 +1,369 @@
+/* Paleta de colores MyDaily */
+:root {
+    --bg-sidebar: #d4a391; /* Tono rosado/tierra de la izquierda */
+    --bg-cards: rgba(255, 255, 255, 0.85); /* Blanco translúcido */
+    --text-main: #6d4c41; /* Café oscuro para textos */
+    --accent: #a1887f; /* Café medio */
+}
+
+body {
+    font-family: 'Quicksand', sans-serif; /* Tipografía suave */
+    background: url('img/fondo_login.jpg') no-repeat center center fixed;
+    background-size: cover;
+    margin: 0;
+    display: flex;
+    color: var(--text-main);
+}
+
+/* Header Superior Rediseñado */
+.header-admin {
+    width: calc(100% - 250px); /* Deja espacio para la sidebar de 250px */
+    position: fixed;
+    top: 0;
+    right: 0;
+    background: rgba(251, 243, 233, 0.95);
+    padding: 0 40px; /* Quitamos padding vertical para controlar altura con height */
+    height: 70px;
+    display: flex;
+    align-items: center; /* Centrado vertical de los 3 bloques */
+    z-index: 1000;
+    border-bottom: 2px solid #e0d5c8;
+    box-sizing: border-box;
+}
+
+/* Dividimos el header en 3 columnas iguales */
+.header-col-izq, 
+.header-col-der, 
+.header-col-centro {
+    flex: 1; 
+    display: flex;
+    align-items: center;
+}
+
+.header-col-centro {
+    justify-content: center; /* Centra el logo/título horizontalmente */
+}
+
+.header-col-der {
+    justify-content: flex-end; /* Empuja el texto de admin a la derecha */
+    text-align: right;
+}
+
+.header-col-centro h1 {
+    font-size: 1.6rem;
+    color: #5d4037;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Ajuste de texto para el rol */
+.admin-label {
+    font-size: 0.85rem;
+    color: #a1887f;
+    font-weight: 500;
+}
+
+/* Sidebar (Barra Lateral Izquierda) */
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    background-color: var(--bg-sidebar);
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0;
+    top: 0;
+}
+
+.sidebar-btn {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 15px;
+    text-decoration: none;
+    margin-bottom: 10px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sidebar-btn:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.logout-btn {
+    margin-top: auto;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Contenedor Principal */
+.main-content {
+    margin-left: 250px;
+    padding: 100px 40px 40px 40px;
+    width: 100%;
+}
+
+/* Tarjeta de la Tabla */
+.contenedor-tabla {
+    background: var(--bg-cards);
+    backdrop-filter: blur(10px);
+    border-radius: 25px;
+    padding: 30px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+}
+
+/* Centrado total de la tabla */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 12px; /* Espaciado entre filas para el efecto de tarjetas */
+    margin-top: 20px;
+}
+
+/* Centrar encabezados */
+th {
+    padding: 15px;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    color: #8d6e63;
+    border-bottom: 2px solid #efebe9;
+    text-align: center; /* Centrado horizontal */
+}
+
+/* Centrar celdas de datos */
+td {
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.6); /* Fondo translúcido de la fila */
+    text-align: center; /* Centrado horizontal del contenido */
+    vertical-align: middle; /* Centrado vertical */
+    color: #5d4037;
+    font-size: 0.95rem;
+}
+
+/* Redondear bordes de las filas (Efecto cápsula) */
+tr td:first-child { 
+    border-radius: 20px 0 0 20px; 
+}
+
+tr td:last-child { 
+    border-radius: 0 20px 20px 0; 
+}
+
+/* Estilo para el Badge del ROL centrado */
+.badge-rol {
+    display: inline-block;
+    background: #d7ccc8;
+    padding: 5px 15px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    color: #5d4037;
+    text-transform: lowercase;
+}
+
+.badge-rol {
+    transition: all 0.3s ease;
+}
+
+/* Efecto al pasar el mouse por los botones de acción */
+td a {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 10px;
+    transition: 0.3s;
+}
+
+td a:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: scale(1.05);
+}
+
+/* Contenedor de acciones para mantener el centrado */
+td:last-child {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 0 20px 20px 0;
+}
+
+.btn-accion {
+    padding: 6px 12px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: 0.3s all ease;
+}
+
+/* Color para Hacer Admin (Azul suave) */
+.btn-hacer-admin {
+    background-color: rgba(93, 173, 226, 0.2);
+    color: #2980b9;
+}
+.btn-hacer-admin:hover { background-color: #5dade2; color: white; }
+
+/* Color para Quitar Admin (Café/Tierra) */
+.btn-quitar-admin {
+    background-color: rgba(161, 136, 127, 0.2);
+    color: #6d4c41;
+}
+.btn-quitar-admin:hover { background-color: #a1887f; color: white; }
+
+/* Color para Eliminar (Rojo suave) */
+.btn-eliminar {
+    background-color: rgba(229, 115, 115, 0.2);
+    color: #c62828;
+}
+.btn-eliminar:hover { background-color: #e57373; color: white; }
+
+/* Buscador Estético */
+.barra-busqueda {
+    background: #fdf5e6;
+    padding: 20px;
+    border-radius: 20px;
+    margin-bottom: 25px;
+    display: flex;
+    gap: 15px;
+}
+
+input, select {
+    border: 1px solid #d7ccc8;
+    border-radius: 12px;
+    padding: 10px;
+    background: white;
+}
+
+button.btn-buscar {
+    background: #8d6e63;
+    color: white;
+    border-radius: 12px;
+    padding: 10px 25px;
+    border: none;
+    cursor: pointer;
+}
+
+/* --- Estilos para Login y Registro --- */
+
+/* Clase para el cuerpo de las páginas de acceso (Login/Registro) */
+.auth-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: url('https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?q=80&w=2074&auto=format&fit=crop') no-repeat center center fixed;
+    background-size: cover;
+    margin: 0;
+    padding: 20px;
+}
+
+/* Tarjeta centralizada */
+.auth-card {
+    background: rgba(255, 255, 255, 0.25); /* Transparencia */
+    backdrop-filter: blur(15px); /* Efecto desenfoque */
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 40px;
+    border-radius: 30px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    color: #5d4037;
+}
+
+.auth-card h2 {
+    margin-bottom: 25px;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.auth-card input, .auth-card select {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 15px;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: 'Quicksand', sans-serif;
+}
+/*Login*/
+/* --- Estilos para Login y Registro --- */
+
+/* Clase para el cuerpo de las páginas de acceso (Login/Registro) */
+.auth-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: url('https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?q=80&w=2074&auto=format&fit=crop') no-repeat center center fixed;
+    background-size: cover;
+    margin: 0;
+    padding: 20px;
+}
+
+/* Tarjeta centralizada */
+.auth-card {
+    background: rgba(255, 255, 255, 0.25); /* Transparencia */
+    backdrop-filter: blur(15px); /* Efecto desenfoque */
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 40px;
+    border-radius: 30px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    color: #5d4037;
+}
+
+.auth-card h2 {
+    margin-bottom: 25px;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.auth-card input, .auth-card select {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 15px;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: 'Quicksand', sans-serif;
+}
+
+.auth-card button {
+    background: #d4a391; /* El color de tu sidebar */
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 15px;
+    width: 100%;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.auth-card button:hover {
+    background: #a1887f;
+}
+
+.auth-card a {
+    color: #5d4037;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+

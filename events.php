@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyDaily - Eventos</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/styles2.css">
+    <link rel="stylesheet" href="css/messages.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="img/Carpincho de pie sobre un parche de hierba.png" rel="icon">
+    <script>
+        (function() {
+            const theme = localStorage.getItem("theme");
+            if (theme) {
+                document.documentElement.setAttribute("data-theme", theme);
+            }
+        })();
+    </script>
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <img src="img/logo_capybara.gif" class="logo">
+                <h1>MyDaily</h1>
+            </div>
+        </div>
+
+        <img src="img/unefa.png" alt="Logo Unefa"
+            style="
+                    position: fixed; 
+                    top: 20px;
+                    right: 10px; 
+                    width: 130px; 
+                    opacity: 0.9; 
+                    z-index: 1000; 
+                    pointer-events: none;
+                    ">
+    </header>
+
+    <!-- Container Principal -->
+    <div class="main-container">
+        <!-- Sidebar Izquierdo -->
+        <?php include_once 'includes/sidebar.php'; ?>
+
+        <!-- Contenido Principal -->
+        <main class="main-content">
+            <!-- Contenido de Eventos -->
+            <div class="section active">
+                <div class="section-header-main">
+                    <h2>Eventos</h2>
+                    <p class="section-subtitle">Organiza tus eventos importantes y ocasiones especiales</p>
+                </div>
+
+                <div class="section-actions">
+                    <button class="action-btn" onclick="openEventModal()">
+                        <i class="fas fa-plus"></i> Añadir Evento
+                    </button>
+                    <div class="event-filters">
+                        <select id="event-filter">
+                            <option value="all">Todos los eventos</option>
+                            <option value="upcoming">Próximos</option>
+                            <option value="past">Pasados</option>
+                            <option value="today">Hoy</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="events-timeline">
+                    <ul id="events-list">
+                        <!-- Los eventos se cargarán aquí dinámicamente -->
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para eventos -->
+    <div class="modal" id="event-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Nuevo Evento</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="event-form">
+                    <div class="form-field">
+                        <label>Título del Evento</label>
+                        <input type="text" name="title" required placeholder="Nombre del evento">
+                    </div>
+                    <div class="form-field">
+                        <label>Descripción</label>
+                        <textarea name="description" rows="3" placeholder="Describe el evento..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label>Fecha</label>
+                            <input type="date" name="date" required>
+                        </div>
+                        <div class="form-field">
+                            <label>Hora</label>
+                            <input type="time" name="time">
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label>Ubicación</label>
+                        <input type="text" name="location" placeholder="Lugar del evento">
+                    </div>
+                    <div class="form-field">
+                        <label>Categoría</label>
+                        <select name="category">
+                            <option value="personal">Personal</option>
+                            <option value="work">Trabajo</option>
+                            <option value="tech">Tecnología</option>
+                            <option value="music">Música</option>
+                            <option value="sport">Deporte</option>
+                            <option value="education">Educación</option>
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" onclick="closeModal()">Cancelar</button>
+                        <button type="submit">Guardar Evento</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="js/app.js"></script>
+</body>
+
+</html>

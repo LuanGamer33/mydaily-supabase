@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyDaily - Configuraciones</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/styles2.css">
+    <link rel="stylesheet" href="css/messages.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="img/Carpincho de pie sobre un parche de hierba.png" rel="icon">
+    <script>
+        (function() {
+            const theme = localStorage.getItem("theme");
+            if (theme) {
+                document.documentElement.setAttribute("data-theme", theme);
+            }
+        })();
+    </script>
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <img src="img/logo_capybara.gif" class="logo">
+                <h1>MyDaily</h1>
+            </div>
+        </div>
+
+        <img src="img/unefa.png" alt="Logo Unefa"
+            style="
+    position: fixed; 
+    top: 20px;
+    right: 10px; 
+    width: 130px; 
+    opacity: 0.9; 
+    z-index: 1000; 
+    pointer-events: none;
+    ">
+    </header>
+
+    <!-- Container Principal -->
+    <div class="main-container">
+        <!-- Sidebar Izquierdo -->
+        <?php include_once 'includes/sidebar.php'; ?>
+
+        <!-- Contenido Principal -->
+        <main class="main-content">
+
+            <!-- Contenido de Configuraciones -->
+            <div class="section active">
+                <div class="section-header-main">
+                    <h2>Configuraciones</h2>
+                    <p class="section-subtitle">Personaliza tu experiencia en MyDaily</p>
+                </div>
+
+                <div class="settings-grid">
+                    <!-- Configuración de Perfil -->
+                    <div class="setting-card">
+                        <div class="setting-header">
+                            <i class="fas fa-user-circle"></i>
+                            <h3>Perfil de Usuario</h3>
+                        </div>
+                        <div class="setting-content">
+                            <div class="form-field">
+                                <label>Nombre de Usuario</label>
+                                <input type="text" id="username" value="Usuario Demo" placeholder="Tu nombre">
+                            </div>
+                            <div class="form-field">
+                                <label>Email</label>
+                                <input type="email" id="email" value="usuario@email.com" readonly style="background-color: var(--border-color); cursor: not-allowed;">
+                                <small style="color: var(--text-light); margin-top: 5px;">El correo electrónico no puede ser modificado</small>
+                            </div>
+                            <div class="form-field">
+                                <label>Avatar de Usuario</label>
+                                <div class="avatar-options">
+                                    <i class="fas fa-user-circle avatar-option active" data-avatar="user-circle"></i>
+                                    <i class="fas fa-user-astronaut avatar-option" data-avatar="user-astronaut"></i>
+                                    <i class="fas fa-user-ninja avatar-option" data-avatar="user-ninja"></i>
+                                    <i class="fas fa-user-tie avatar-option" data-avatar="user-tie"></i>
+                                    <i class="fas fa-user-graduate avatar-option" data-avatar="user-graduate"></i>
+                                    <i class="fas fa-user-secret avatar-option" data-avatar="user-secret"></i>
+                                </div>
+                            </div>
+                            <button class="save-btn" id="save-profile-btn">Guardar Perfil</button>
+                        </div>
+                    </div>
+
+                    <!-- Configuración de Tema -->
+                    <div class="setting-card">
+                        <div class="setting-header">
+                            <i class="fas fa-palette"></i>
+                            <h3>Tema de Color</h3>
+                        </div>
+                        <div class="setting-content">
+                            <div class="form-field">
+                                <label>Selecciona tu tema favorito</label>
+                                <div class="theme-options">
+                                    <div class="theme-option active" data-theme="default">
+                                        <div class="theme-preview default-theme"></div>
+                                        <span>Calido</span>
+                                    </div>
+                                    <div class="theme-option" data-theme="blue">
+                                        <div class="theme-preview blue-theme"></div>
+                                        <span>Azul</span>
+                                    </div>
+                                    <div class="theme-option" data-theme="green">
+                                        <div class="theme-preview green-theme"></div>
+                                        <span>Verde</span>
+                                    </div>
+                                    <div class="theme-option" data-theme="purple">
+                                        <div class="theme-preview purple-theme"></div>
+                                        <span>Púrpura</span>
+                                    </div>
+                                    <div class="theme-option" data-theme="dark">
+                                        <div class="theme-preview dark-theme"></div>
+                                        <span>Oscuro</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configuración de Notificaciones -->
+                    <div class="setting-card">
+                        <div class="setting-header">
+                            <i class="fas fa-bell"></i>
+                            <h3>Notificaciones</h3>
+                        </div>
+                        <div class="setting-content">
+                            <div class="setting-toggle">
+                                <label>
+                                    <input type="checkbox" id="email-notifications" checked>
+                                    <span class="toggle-slider"></span>
+                                    Notificaciones por email
+                                </label>
+                            </div>
+                            <div class="setting-toggle">
+                                <label>
+                                    <input type="checkbox" id="push-notifications" checked>
+                                    <span class="toggle-slider"></span>
+                                    Notificaciones push
+                                </label>
+                            </div>
+                            <div class="setting-toggle">
+                                <label>
+                                    <input type="checkbox" id="habit-reminders" checked>
+                                    <span class="toggle-slider"></span>
+                                    Recordatorios de hábitos
+                                </label>
+                            </div>
+                            <div class="setting-toggle">
+                                <label>
+                                    <input type="checkbox" id="event-reminders" checked>
+                                    <span class="toggle-slider"></span>
+                                    Recordatorios de eventos
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configuración de Productividad -->
+                    <div class="setting-card">
+                        <div class="setting-header">
+                            <i class="fas fa-rocket"></i>
+                            <h3>Productividad</h3>
+                        </div>
+                        <div class="setting-content">
+                            <div class="setting-toggle">
+                                <label>
+                                    <input type="checkbox" id="keyboard-shortcuts">
+                                    <span class="toggle-slider"></span>
+                                    Habilitar atajos de teclado
+                                </label>
+                            </div>
+                            <div class="shortcuts-info">
+                                <h4>Atajos disponibles:</h4>
+                                <div class="shortcut-list">
+                                    <div class="shortcut-item">
+                                        <span>Nueva nota</span>
+                                        <div>
+                                            <kbd>Ctrl</kbd> + <kbd>Q</kbd>
+                                        </div>
+                                    </div>
+                                    <div class="shortcut-item">
+                                        <span>Ir a hábitos</span>
+                                        <div>
+                                            <kbd>Ctrl</kbd> + <kbd>H</kbd>
+                                        </div>
+                                    </div>
+                                    <div class="shortcut-item">
+                                        <span>Ir a eventos</span>
+                                        <div>
+                                            <kbd>Ctrl</kbd> + <kbd>E</kbd>
+                                        </div>
+                                    </div>
+                                    <div class="shortcut-item">
+                                        <span>Ir a dashboard</span>
+                                        <div>
+                                            <kbd>Ctrl</kbd> + <kbd>D</kbd>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-field">
+                                <label>Hora de inicio del día</label>
+                                <input type="time" id="day-start" value="06:00">
+                            </div>
+                            <div class="form-field">
+                                <label>Meta diaria de hábitos</label>
+                                <input type="number" id="daily-goal" value="3" min="1" max="10">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configuración de Privacidad -->
+                    <div class="setting-card">
+                        <div class="setting-header">
+                            <i class="fas fa-shield-alt"></i>
+                            <h3>Privacidad y Seguridad</h3>
+                        </div>
+                        <div class="setting-content">
+                            <div class="setting-toggle">
+                                <label>
+                                    <input type="checkbox" id="data-backup" checked>
+                                    <span class="toggle-slider"></span>
+                                    Backup automático de datos
+                                </label>
+                            </div>
+                            <div class="setting-toggle">
+                                <label>
+                                    <input type="checkbox" id="analytics" checked>
+                                    <span class="toggle-slider"></span>
+                                    Permitir análisis de uso
+                                </label>
+                            </div>
+                            <div class="privacy-actions">
+                                <button class="action-btn secondary" id="export-data-btn">
+                                    <i class="fas fa-download"></i> Exportar mis datos
+                                </button>
+                                <button class="action-btn danger" id="delete-account-btn">
+                                    <i class="fas fa-trash"></i> Eliminar cuenta
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información de la Aplicación -->
+                    <div class="setting-card">
+                        <div class="setting-header">
+                            <i class="fas fa-info-circle"></i>
+                            <h3>Acerca de MyDaily</h3>
+                        </div>
+                        <div class="setting-content">
+                            <div class="app-info">
+                                <div class="info-item">
+                                    <span class="info-label">Versión:</span>
+                                    <span class="info-value">5.8</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Última actualización:</span>
+                                    <span class="info-value">08 Febrero 2026</span>
+                                </div>
+                                <div class="separator"></div>
+                            </div>
+                            <div class="support-links">
+                                <button class="link-btn" id="show-help-btn">
+                                    <i class="fas fa-question-circle"></i> Centro de ayuda
+                                </button>
+                                <button class="link-btn" id="report-bug-btn">
+                                    <i class="fas fa-bug"></i> Reportar problema
+                                </button>
+                                <button class="link-btn" id="send-feedback-btn">
+                                    <i class="fas fa-comment"></i> Enviar feedback
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="js/app.js"></script>
+</body>
+
+</html>

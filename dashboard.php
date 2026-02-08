@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=0.9" />
+  <title>MyDaily - Panel Principal</title>
+  <!-- Bootstrap 5.3.3 CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+    crossorigin="anonymous" />
+  <!-- Font Awesome -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    rel="stylesheet" />
+  <!-- Estilos personalizados -->
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/messages.css" />
+  <link
+    href="img/Carpincho de pie sobre un parche de hierba.png"
+    rel="icon" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem("theme");
+      if (theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+      }
+    })();
+  </script>
+</head>
+
+<body>
+  <div
+    id="loading-indicator"
+    style="
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 3000;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 1rem;
+        border-radius: 8px;
+      ">
+    <i class="fas fa-spinner fa-spin"></i> Cargando...
+  </div>
+
+  <header class="header">
+    <div class="header-content">
+      <div class="logo-section">
+        <img src="img/logo_capybara.gif" class="logo" />
+        <h1>MyDaily</h1>
+      </div>
+    </div>
+
+    <img src="img/unefa.png" alt="Logo Unefa"
+      style="
+    position: fixed; 
+    top: 20px;
+    right: 10px; 
+    width: 130px; 
+    opacity: 0.9; 
+    z-index: 1000; 
+    pointer-events: none;
+    ">
+  </header>
+
+  <!-- Container Principal -->
+  <div class="main-container">
+    <!-- Sidebar Izquierdo -->
+    <?php include_once 'includes/sidebar.php'; ?>
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+      <!-- Motivación Diaria -->
+      <div class="daily-motivation">
+        <div class="motivation-content">
+          <div class="motivation-icon">
+            <i class="fas fa-lightbulb"></i>
+          </div>
+          <div class="motivation-text-container">
+            <p class="motivation-text" id="motivation-message">
+              Frase del dia...
+            </p>
+            <small class="motivation-time" id="motivation-time">Fecha actualizada...</small>
+          </div>
+        </div>
+        <!-- Logo en esquina inferior derecha -->
+        <img src="img/capibara.png" alt="Logo" class="motivation-logo" />
+      </div>
+
+      <!-- Contenido del Panel Principal -->
+      <div class="dashboard-section active">
+        <!-- Nueva estructura con Bootstrap Grid -->
+        <div class="container-fluid p-0">
+          <div class="row g-3">
+            <!-- Columna izquierda: Secciones de vista previa (8 columnas) -->
+            <div class="col-12 col-lg-8">
+              <div class="row g-3">
+                <!-- Vista previa de Notas -->
+                <div class="col-12 col-md-6">
+                  <div class="preview-card h-100">
+                    <div class="card-header">
+                      <h4>NOTAS</h4>
+                      <button class="add-btn" onclick="openNoteModal()">
+                        <i class="fas fa-plus"></i>
+                      </button>
+                    </div>
+                    <div
+                      class="carousel-container card-content"
+                      id="notes-carousel">
+                      <div
+                        class="preview-item"
+                        style="color: var(--text-light); text-align: center">
+                        <i class="fas fa-spinner fa-spin"></i> Cargando
+                        notas...
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Vista previa de Hábitos Diarios -->
+                <div class="col-12 col-md-6">
+                  <div class="preview-card h-100">
+                    <div class="card-header">
+                      <h4>HÁBITOS DIARIOS</h4>
+                      <button class="add-btn" onclick="openHabitModal()">
+                        <i class="fas fa-plus"></i>
+                      </button>
+                    </div>
+                    <div
+                      class="carousel-container card-content"
+                      id="habits-carousel">
+                      <div
+                        class="preview-item"
+                        style="color: var(--text-light); text-align: center">
+                        <i class="fas fa-spinner fa-spin"></i> Cargando
+                        hábitos...
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Vista previa de Actividades -->
+                <?php /*<div class="col-12 col-md-6">
+                    <div class="preview-card h-100">
+                      <div class="card-header">
+                        <h4>ACTIVIDADES</h4>
+                        <button class="add-btn" onclick="openActivityModal()">
+                          <i class="fas fa-plus"></i>
+                        </button>
+                      </div>
+                      <div
+                        class="carousel-container card-content"
+                        id="activities-carousel"
+                      >
+                        <div
+                          class="preview-item"
+                          style="color: var(--text-light); text-align: center"
+                        >
+                          <i class="fas fa-spinner fa-spin"></i> Cargando
+                          actividades...
+                        </div>
+                      </div>
+                    </div>
+                  </div>*/
+                ?>
+
+                <!-- Vista previa de Eventos -->
+                <div class="col-12 col-md-6">
+                  <div class="preview-card h-100">
+                    <div class="card-header">
+                      <h4>EVENTOS</h4>
+                      <button class="add-btn" onclick="openEventModal()">
+                        <i class="fas fa-plus"></i>
+                      </button>
+                    </div>
+                    <div
+                      class="carousel-container card-content"
+                      id="events-carousel">
+                      <div
+                        class="preview-item"
+                        style="color: var(--text-light); text-align: center">
+                        <i class="fas fa-spinner fa-spin"></i> Cargando
+                        eventos...
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Columna derecha: Calendario y Estadísticas (4 columnas) -->
+            <div class="col-12 col-lg-4">
+              <div class="d-flex flex-column gap-3">
+                <!-- Calendario -->
+                <div class="calendar-section">
+                  <div class="section-header">
+                    <h3 id="current-month">Calendario</h3>
+                  </div>
+                  <div class="calendar-grid">
+                    <div class="calendar-header">
+                      <span>D</span><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span>
+                    </div>
+                    <div class="calendar-body" id="calendar-body"></div>
+                  </div>
+                </div>
+
+                <!-- Estadísticas -->
+                <div class="stats-sidebar">
+                  <div class="preview-card stats-card">
+                    <div class="card-header">
+                      <h4>ESTADÍSTICAS</h4>
+                    </div>
+                    <div class="card-content stats-content">
+                      <div class="stat-row">
+                        <span class="stat-label">Notas totales:</span>
+                        <span class="stat-value" id="total-notes-stat">0</span>
+                      </div>
+                      <div class="stat-row">
+                        <span class="stat-label">Hábitos activos:</span>
+                        <span class="stat-value" id="total-habits-stat">0</span>
+                      </div>
+                      <div class="stat-row">
+                        <span class="stat-label">Eventos próximos:</span>
+                        <span class="stat-value" id="total-events-stat">0</span>
+                      </div>
+                      <?php /*<div class="stat-row">
+                        <span class="stat-label">Actividades pendientes:</span>
+                        <span class="stat-value" id="pending-activities-stat">0</span>
+                      </div>
+                      <div class="stat-row">
+                        <span class="stat-label">Eventos de hoy:</span>
+                        <span class="stat-value" id="today-events-stat">0</span>
+                      </div>
+                      <div class="stat-row">
+                        <span class="stat-label">Actividades de hoy:</span>
+                        <span class="stat-value" id="today-activities-stat">0</span>
+                      </div>*/ ?>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modales para añadir desde el dashboard -->
+  <!-- Modal para notas -->
+  <div class="modal" id="note-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Nueva Nota</h3>
+        <button class="close-btn" onclick="closeModal('note-modal')">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="note-form">
+          <div class="form-field">
+            <label>Título de la Nota</label>
+            <input
+              type="text"
+              name="title"
+              required
+              placeholder="Título de tu nota" />
+          </div>
+          <div class="form-field">
+            <label>Contenido</label>
+            <textarea
+              name="content"
+              rows="8"
+              required
+              placeholder="Escribe aquí el contenido de tu nota..."></textarea>
+          </div>
+          <div class="form-field">
+            <label>Imagen de la Nota</label>
+            <input type="file" name="image" accept="image/*" />
+          </div>
+          <div class="form-field">
+            <label>Estado de Ánimo</label>
+            <select name="mood">
+              <option value="sun"><i class="fas fa-sun"></i> Soleado</option>
+              <option value="cloud">
+                <i class="fas fa-cloud"></i> Nublado
+              </option>
+              <option value="rain">
+                <i class="fas fa-cloud-rain"></i> Lluvioso
+              </option>
+              <option value="storm">
+                <i class="fas fa-bolt"></i> Tormenta
+              </option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>
+              <input type="checkbox" name="favorite" /> Marcar como favorita
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button type="button" onclick="closeModal('note-modal')">
+              Cancelar
+            </button>
+            <button type="submit">Guardar Nota</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para eventos -->
+  <div class="modal" id="event-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Nuevo Evento</h3>
+        <button class="close-btn" onclick="closeModal('event-modal')">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="event-form">
+          <div class="form-field">
+            <label>Título del Evento</label>
+            <input
+              type="text"
+              name="title"
+              required
+              placeholder="Nombre del evento" />
+          </div>
+          <div class="form-field">
+            <label>Descripción</label>
+            <textarea
+              name="description"
+              rows="3"
+              placeholder="Describe el evento..."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Fecha</label>
+              <input type="date" name="date" required />
+            </div>
+            <div class="form-field">
+              <label>Hora</label>
+              <input type="time" name="time" />
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Ubicación</label>
+            <input
+              type="text"
+              name="location"
+              placeholder="Lugar del evento" />
+          </div>
+          <div class="form-field">
+            <label>Categoría</label>
+            <select name="category">
+              <option value="personal">Personal</option>
+              <option value="work">Trabajo</option>
+              <option value="tech">Tecnología</option>
+              <option value="music">Música</option>
+              <option value="sport">Deporte</option>
+              <option value="education">Educación</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="button" onclick="closeModal('event-modal')">
+              Cancelar
+            </button>
+            <button type="submit">Guardar Evento</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para actividades -->
+  <div class="modal" id="activity-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Nueva Actividad</h3>
+        <button class="close-btn" onclick="closeModal('activity-modal')">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="activity-form">
+          <div class="form-field">
+            <label>Título de la Actividad</label>
+            <input
+              type="text"
+              name="title"
+              required
+              placeholder="¿Qué necesitas hacer?" />
+          </div>
+          <div class="form-field">
+            <label>Descripción</label>
+            <textarea
+              name="description"
+              rows="3"
+              placeholder="Detalles adicionales..."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Fecha</label>
+              <input type="date" name="date" required />
+            </div>
+            <div class="form-field">
+              <label>Hora</label>
+              <input type="time" name="time" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Prioridad</label>
+              <select name="priority">
+                <option value="low">Baja</option>
+                <option value="medium" selected>Media</option>
+                <option value="high">Alta</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Categoría</label>
+              <select name="category">
+                <option value="personal">Personal</option>
+                <option value="work">Trabajo</option>
+                <option value="health">Salud</option>
+                <option value="administrative">Administrativa</option>
+                <option value="education">Educación</option>
+                <option value="other">Otro</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" onclick="closeModal('activity-modal')">
+              Cancelar
+            </button>
+            <button type="submit">Guardar Actividad</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para hábitos -->
+  <div class="modal" id="habit-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Nuevo Hábito</h3>
+        <button class="close-btn" onclick="closeModal('habit-modal')">
+          &times;
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="habit-form">
+          <div class="form-field">
+            <label>Nombre del Hábito</label>
+            <input
+              type="text"
+              name="name"
+              required
+              placeholder="Ej: Hacer ejercicio" />
+          </div>
+          <div class="form-field">
+            <label>Descripción</label>
+            <textarea
+              name="description"
+              rows="3"
+              placeholder="Describe tu hábito..."></textarea>
+          </div>
+          <div class="form-field">
+            <label>Frecuencia</label>
+            <select name="frequency" id="habit-frequency">
+              <option value="daily">Diario</option>
+              <option value="weekly">Semanal</option>
+              <option value="custom">Personalizado</option>
+            </select>
+          </div>
+
+          <!-- Campos dinámicos de frecuencia -->
+          <div class="form-field" id="frequency-days" style="display: none">
+            <label>Días de la semana</label>
+            <div class="week-days-selector">
+              <label><input type="checkbox" name="days" value="1" /> L</label>
+              <label><input type="checkbox" name="days" value="2" /> M</label>
+              <label><input type="checkbox" name="days" value="3" /> M</label>
+              <label><input type="checkbox" name="days" value="4" /> J</label>
+              <label><input type="checkbox" name="days" value="5" /> V</label>
+              <label><input type="checkbox" name="days" value="6" /> S</label>
+              <label><input type="checkbox" name="days" value="0" /> D</label>
+            </div>
+          </div>
+
+          <div class="form-field" id="frequency-custom" style="display: none">
+            <label>Repetir cada (días)</label>
+            <input
+              type="number"
+              name="custom_interval"
+              min="1"
+              max="365"
+              placeholder="Ej: 3 (Cada 3 días)" />
+          </div>
+          <div class="modal-actions">
+            <button type="button" onclick="closeModal('habit-modal')">
+              Cancelar
+            </button>
+            <button type="submit">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5.3.3 JS Bundle (incluye Popper) -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+
+</html>

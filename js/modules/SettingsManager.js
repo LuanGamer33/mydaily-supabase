@@ -174,29 +174,36 @@ export class SettingsManager {
         const exportBtn = document.getElementById('export-data-btn');
         if (exportBtn) {
             exportBtn.addEventListener('click', () => {
-                this.ui.showToast('Iniciando exportación de datos...', 'info');
-                setTimeout(() => this.ui.showToast('Datos exportados (Demo)', 'success'), 2000);
+                this.ui.showToast('Función "Exportar datos" próximamente', 'info');
             });
         }
 
         const deleteAccountBtn = document.getElementById('delete-account-btn');
         if (deleteAccountBtn) {
             deleteAccountBtn.addEventListener('click', () => {
-                if(confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.')) {
-                    this.ui.showToast('Contacta al administrador para eliminar tu cuenta.', 'warning');
-                }
+                 this.ui.showToast('Función "Eliminar cuenta" en desarrollo', 'warning');
             });
         }
 
         const helpBtn = document.getElementById('show-help-btn');
-        if (helpBtn) helpBtn.addEventListener('click', () => this.ui.showToast('Centro de ayuda próximamente', 'info'));
+        if (helpBtn) helpBtn.addEventListener('click', () => this.ui.showToast('Centro de ayuda en desarrollo', 'info'));
 
         const bugBtn = document.getElementById('report-bug-btn');
-        if (bugBtn) bugBtn.addEventListener('click', () => this.ui.showToast('Gracias por reportar, lo revisaremos.', 'success'));
+        if (bugBtn) bugBtn.addEventListener('click', () => this.ui.showToast('Formulario de reporte próximamente', 'info'));
 
         const feedbackBtn = document.getElementById('send-feedback-btn');
-        if (feedbackBtn) feedbackBtn.addEventListener('click', () => this.ui.showToast('Gracias por tus comentarios.', 'success'));
+        if (feedbackBtn) feedbackBtn.addEventListener('click', () => this.ui.showToast('Envío de feedback próximamente', 'info'));
 
+        const shortcutsToggle = document.getElementById('keyboard-shortcuts');
+        if (shortcutsToggle) {
+             shortcutsToggle.addEventListener('change', (e) => {
+                 if(e.target.checked) {
+                     this.ui.showToast('Atajos de teclado próximamente', 'info');
+                     // Revertir cambio visualmente si se desea, o dejarlo activado pero sin efecto real
+                     setTimeout(() => e.target.checked = false, 500); 
+                 }
+             });
+        }
     }
 
     async saveProfile() {

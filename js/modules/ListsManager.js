@@ -2,8 +2,9 @@
 import { supabase } from '../supabase.js';
 
 export class ListsManager {
-    constructor() {
+    constructor(ui) {
         this.lists = [];
+        this.ui = ui;
     }
 
     async loadLists(user) {
@@ -74,7 +75,7 @@ export class ListsManager {
             });
 
             // Volver a adjuntar escuchas de eventos para elementos dinámicos
-            this.attachDynamicListeners();
+            // this.attachDynamicListeners(); // DEPRECATED: delegación de eventos en setupListeners
         }
         
         // Actualizar selección en Modal si existe
@@ -146,7 +147,7 @@ export class ListsManager {
     }
     
     async deleteList(listId, userId) {
-        if(!confirm('¿Estás seguro de eliminar esta lista y todas sus tareas?')) return;
+        if(!await this.ui.showConfirm('¿Estás seguro de eliminar esta lista y todas sus tareas?', 'Eliminar Lista', 'danger')) return;
         
         try {
             const { error } = await supabase
@@ -158,7 +159,7 @@ export class ListsManager {
             await this.loadLists({ id: userId });
         } catch (error) {
              console.error('Error deleting list:', error);
-             alert('Error al eliminar la lista');
+             this.ui.showToast('Error al eliminar la lista', 'error');
         }
     }
 
@@ -199,12 +200,12 @@ export class ListsManager {
             console.error('Error toggling task:', error);
             const checkbox = document.getElementById(`task-${taskId}`);
             if(checkbox) checkbox.checked = !completed; 
-            alert('Error al actualizar la tarea');
+            this.ui.showToast('Error al actualizar la tarea', 'error');
         }
     }
     
     async deleteTask(taskId, listId) {
-        if(!confirm('¿Eliminar tarea?')) return;
+        if(!await this.ui.showConfirm('¿Eliminar tarea?', 'Eliminar Tarea', 'warning')) return;
         try {
              const { error } = await supabase
                 .from('tareas')
@@ -219,7 +220,9 @@ export class ListsManager {
     }
 
     setupListeners(user) {
-        // Formularios
+        this.currentUser = user; // Ensure user is available for delegated actions
+
+        // Form Listeners
         const listForm = document.getElementById('list-form');
         if (listForm) {
             listForm.addEventListener('submit', async (e) => {
@@ -232,7 +235,7 @@ export class ListsManager {
                     listForm.reset();
                     this.closeModal('list-modal');
                 } catch (err) {
-                    alert('Error al crear lista');
+                    this.ui?.showToast('Error al crear lista', 'error');
                 }
             });
         }
@@ -245,7 +248,7 @@ export class ListsManager {
                 const listId = taskForm.parentList.value;
                 
                 if (!title || !listId) {
-                    alert('Por favor completa todos los campos');
+                    this.ui?.showToast('Por favor completa todos los campos', 'warning');
                     return;
                 }
                 
@@ -254,75 +257,94 @@ export class ListsManager {
                     taskForm.reset();
                     this.closeModal('task-modal');
                 } catch (err) {
-                    alert('Error al crear tarea');
+                    this.ui?.showToast('Error al crear tarea', 'error');
                 }
             });
         }
 
-        // Ayudantes globales de modal (si no se usan los en línea o para anularlos para mejor control)
-        window.openListModal = () => document.getElementById('list-modal').style.display = 'block';
-        window.openTaskModal = () => document.getElementById('task-modal').style.display = 'block';
-        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
-        
-        // También adjuntar a ventana para verificar clics fuera
-        window.onclick = (event) => {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = "none";
+        // Global Helpers
+        window.openListModal = () => {
+            const el = document.getElementById('list-modal');
+            if(el) el.classList.add('show');
+        };
+        window.openTaskModal = () => {
+            const el = document.getElementById('task-modal');
+            if(el) el.classList.add('show');
+        };
+        window.closeModal = (id) => {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.remove('show');
+                modal.style.display = ''; 
             }
         };
+        
+        window.onclick = (event) => {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+                event.target.style.display = '';
+            }
+        };
+
+        // --- Event Delegation for Dynamic Elements ---
+        const listsContainer = document.getElementById('lists-container');
+        if (listsContainer) {
+            // Click Events (Delete List, Delete Task, Add Task Button)
+            listsContainer.addEventListener('click', (e) => {
+                // Delete List
+                const deleteListBtn = e.target.closest('.delete-list-btn');
+                if (deleteListBtn) {
+                    e.preventDefault();
+                    const listId = deleteListBtn.getAttribute('data-id');
+                    if (this.currentUser) {
+                        this.deleteList(listId, this.currentUser.id);
+                    }
+                    return;
+                }
+
+                // Delete Task
+                const deleteTaskBtn = e.target.closest('.delete-task-btn');
+                if (deleteTaskBtn) {
+                    e.preventDefault();
+                    const taskId = deleteTaskBtn.getAttribute('data-id');
+                    const listId = deleteTaskBtn.closest('.list-card').getAttribute('data-id'); // Get parent list ID
+                    this.deleteTask(taskId, listId);
+                    return;
+                }
+
+                // Add Task Button (Opens Modal)
+                const addTaskBtn = e.target.closest('.add-task-btn');
+                if (addTaskBtn) {
+                    const listId = addTaskBtn.getAttribute('data-list-id');
+                    const listSelect = document.getElementById('parent-list-select');
+                    if(listSelect) listSelect.value = listId;
+                    
+                    const modal = document.getElementById('task-modal');
+                    if(modal) modal.classList.add('show'); 
+                    return;
+                }
+            });
+
+            // Change Events (Task Checkbox)
+            listsContainer.addEventListener('change', (e) => {
+                if (e.target.classList.contains('task-checkbox')) {
+                    const taskId = e.target.getAttribute('data-id');
+                    const completed = e.target.checked;
+                    this.toggleTask(taskId, completed);
+                }
+            });
+        }
     }
 
     closeModal(id) {
         const modal = document.getElementById(id);
-        if (modal) modal.style.display = 'none';
+        if (modal) {
+            modal.classList.remove('show');
+            modal.style.display = '';
+        }
     }
 
     attachDynamicListeners() {
-        // Botones de Eliminar Lista
-        document.querySelectorAll('.delete-list-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const listId = e.currentTarget.getAttribute('data-id');
-                const userId = supabase.auth.user()?.id; // Respaldo, mejor si se pasa
-                // Pero espera, setupListeners tiene 'user'. attachDynamicListeners se llama desde renderLists que no tiene 'user' en el ámbito fácilmente a menos que se almacene.
-                // ¿Deberíamos almacenar el usuario en el constructor o loadLists?
-                // Por ahora, asumamos que la sesión es válida.
-                // En realidad, renderLists es llamado por loadLists que tiene 'user'. 
-                // Almacenemos el usuario en this.currentUser cuando se llama a loadLists.
-                if (this.currentUser) {
-                    this.deleteList(listId, this.currentUser.id);
-                }
-            });
-        });
-        
-        // Botones de Agregar Tarea (Abrir Modal con lista preseleccionada)
-        document.querySelectorAll('.add-task-btn').forEach(btn => {
-             btn.addEventListener('click', (e) => {
-                 const listId = e.currentTarget.getAttribute('data-list-id');
-                 const listSelect = document.getElementById('parent-list-select');
-                 if(listSelect) listSelect.value = listId;
-                 
-                 const modal = document.getElementById('task-modal');
-                 if(modal) modal.style.display = 'block'; 
-             });
-        });
-        
-        // Casillas de verificación de tareas
-         document.querySelectorAll('.task-checkbox').forEach(chk => {
-            chk.addEventListener('change', (e) => {
-                const taskId = e.target.getAttribute('data-id');
-                const completed = e.target.checked;
-                this.toggleTask(taskId, completed);
-            });
-        });
-        
-        // Botones de Eliminar Tarea
-        document.querySelectorAll('.delete-task-btn').forEach(btn => {
-             btn.addEventListener('click', (e) => {
-                 const taskId = e.currentTarget.getAttribute('data-id');
-                 const listId = e.currentTarget.closest('.list-card').getAttribute('data-id');
-                 this.deleteTask(taskId, listId);
-             });
-        });
+        // Deprecated: Logic moved to setupListeners using event delegation
     }
 }

@@ -19,13 +19,13 @@ export class AuthManager {
 
     // Verificación estricta para páginas protegidas
     if (!session && !this.isPublicRoute()) {
-      window.location.replace("index.html");
+      window.location.replace("index.php");
     }
   }
 
   isPublicRoute() {
     const path = window.location.pathname;
-    return path.includes("index.html") || path === "/" || path.endsWith("/");
+    return path.includes("index.php") || path === "/" || path.endsWith("/");
   }
 
   async logout() {
@@ -47,14 +47,40 @@ export class AuthManager {
 
     if (event === "SIGNED_IN") {
       // SOLO redirigir si estamos en páginas públicas (login/landing)
-      // Si el usuario recarga 'habits.html', NO queremos enviarlo al dashboard
       if (this.isPublicRoute()) {
-           this.redirect("dashboard.html");
+           this.checkRoleAndRedirect(session.user);
       }
     } else if (event === "SIGNED_OUT") {
       // Usar replace para evitar que el botón atrás regrese a la página protegida
-      window.location.replace("index.html");
+      window.location.replace("index.php");
     }
+  }
+
+  async checkRoleAndRedirect(user) {
+      if (!user) return;
+
+      try {
+          const { data, error } = await supabase
+              .from('usuarios')
+              .select('rol')
+              .eq('id', user.id)
+              .single();
+
+          if (error) {
+              console.error('Error fetching user role:', error);
+              this.redirect("dashboard.php"); // Fallback seguro
+              return;
+          }
+
+          if (data && data.rol === 'admin') {
+              window.location.href = "administrador/admin.php";
+          } else {
+              this.redirect("dashboard.php");
+          }
+      } catch (err) {
+          console.error('Unexpected error checking role:', err);
+          this.redirect("dashboard.php");
+      }
   }
 
   async login(email, password) {
@@ -86,7 +112,7 @@ export class AuthManager {
       const { email, password, ...meta } = userData;
 
       // Construir URL de redirección dinámicamente
-      const redirectUrl = new URL("dashboard.html", window.location.href).href;
+      const redirectUrl = new URL("dashboard.php", window.location.href).href;
 
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -139,7 +165,7 @@ export class AuthManager {
     try {
       // Construir URL de redirección dinámicamente basada en la ubicación actual
       // Esto maneja 'localhost/MyDaily/' correctamente
-      const redirectUrl = new URL("dashboard.html", window.location.href).href;
+      const redirectUrl = new URL("dashboard.php", window.location.href).href;
 
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: provider,
@@ -195,7 +221,7 @@ export class AuthManager {
 
   async sendPasswordReset(email) {
     try {
-        const resetUrl = new URL("reset-password.html", window.location.href).href;
+        const resetUrl = new URL("reset-password.php", window.location.href).href;
         
         const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: resetUrl,
